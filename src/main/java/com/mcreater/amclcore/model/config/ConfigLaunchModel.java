@@ -6,7 +6,6 @@ import lombok.Data;
 
 @Data
 @Builder
-public class ConfigMemoryModel implements ConfigModel {
-    private long minMemory;
-    private long maxMemory;
+public class ConfigLaunchModel implements ConfigModel {
+    public ConfigMemoryModel memory;
 }
