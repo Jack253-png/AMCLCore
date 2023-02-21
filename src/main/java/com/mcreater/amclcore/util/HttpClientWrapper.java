@@ -1,5 +1,6 @@
 package com.mcreater.amclcore.util;
 
+import com.mcreater.amclcore.exceptions.RequestException;
 import org.apache.commons.lang3.tuple.Pair;
 import org.apache.http.HttpEntity;
 import org.apache.http.HttpResponse;
@@ -22,6 +23,8 @@ import org.apache.http.impl.client.HttpClients;
 import java.io.IOException;
 import java.net.URISyntaxException;
 import java.nio.charset.Charset;
+
+import static com.mcreater.amclcore.util.JsonUtil.GSON_PARSER;
 
 public class HttpClientWrapper {
     public enum Method {
@@ -113,6 +116,8 @@ public class HttpClientWrapper {
         return this;
     }
 
+
+
     public HttpClientWrapper requestOnCancelled(Cancellable cancellable) {
         request.setCancellable(cancellable);
         return this;
@@ -123,12 +128,16 @@ public class HttpClientWrapper {
         return this;
     }
 
-    public void sendRequest() throws URISyntaxException, IOException {
+    public HttpEntity sendRequest() throws URISyntaxException, IOException {
         request.setURI(requestURI.build());
         request.setConfig(config.build());
         HttpResponse req = client.execute(request);
-//        if (req.getStatusLine().getStatusCode() > 399 && catchHttpError)
-        // TODO to be completed
+        if (req.getStatusLine().getStatusCode() > 399 && catchHttpError) throw new RequestException(req.getStatusLine(), req.getEntity());
+        return req.getEntity();
+    }
+
+    public <T> T sendRequestAndReadJson(Class<T> clazz) throws URISyntaxException, IOException {
+        return GSON_PARSER.fromJson(IOStreamUtil.readStream(sendRequest().getContent()), clazz);
     }
 
     private HttpRequestBase createUriRequest(Method method) {
