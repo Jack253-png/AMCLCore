@@ -23,6 +23,7 @@ import org.apache.http.entity.StringEntity;
 import org.apache.http.impl.client.HttpClients;
 
 import java.io.IOException;
+import java.io.UnsupportedEncodingException;
 import java.net.URISyntaxException;
 import java.nio.charset.Charset;
 
@@ -58,7 +59,7 @@ public class HttpClientWrapper {
     private final RequestConfig.Builder config = RequestConfig.custom();
     private final URIBuilder requestURI = new URIBuilder().setScheme("https");
     private boolean catchHttpError = false;
-    public HttpClientWrapper(URIBuilder builder, Method method) {
+    public HttpClientWrapper(Method method) {
         client = HttpClients.createDefault();
         request = createUriRequest(method);
     }
@@ -164,11 +165,14 @@ public class HttpClientWrapper {
 
     @Builder
     public static class HttpStringEntityWrapper {
-        public String content;
-        public Charset charset;
-        public String contentType;
-        public StringEntity toEntity() {
-
+        public String content = "";
+        public String charset = "UTF-8";
+        public String contentType = "application/json";
+        public StringEntity toEntity() throws UnsupportedEncodingException {
+            StringEntity entity = new StringEntity(content);
+            entity.setContentEncoding(content);
+            entity.setContentType(contentType);
+            return entity;
         }
     }
 }
