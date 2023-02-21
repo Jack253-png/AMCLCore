@@ -1,8 +1,12 @@
 package com.mcreater.amclcore.util;
 
+import org.apache.commons.lang3.tuple.Pair;
+import org.apache.http.HttpEntity;
+import org.apache.http.HttpResponse;
 import org.apache.http.client.HttpClient;
 import org.apache.http.client.config.RequestConfig;
 import org.apache.http.client.methods.HttpDelete;
+import org.apache.http.client.methods.HttpEntityEnclosingRequestBase;
 import org.apache.http.client.methods.HttpGet;
 import org.apache.http.client.methods.HttpHead;
 import org.apache.http.client.methods.HttpOptions;
@@ -12,7 +16,12 @@ import org.apache.http.client.methods.HttpPut;
 import org.apache.http.client.methods.HttpRequestBase;
 import org.apache.http.client.methods.HttpTrace;
 import org.apache.http.client.utils.URIBuilder;
+import org.apache.http.concurrent.Cancellable;
 import org.apache.http.impl.client.HttpClients;
+
+import java.io.IOException;
+import java.net.URISyntaxException;
+import java.nio.charset.Charset;
 
 public class HttpClientWrapper {
     public enum Method {
@@ -25,9 +34,25 @@ public class HttpClientWrapper {
         HEAD,
         TRACE
     }
-    private HttpClient client;
-    private HttpRequestBase request;
-    private RequestConfig.Builder config = RequestConfig.custom();
+    public enum Scheme {
+        HTTP("http"),
+        HTTPS("https"),
+        TCP("tcp"),
+        UDP("udp");
+        private final String scheme;
+        Scheme(String scheme) {
+            this.scheme = scheme;
+        }
+
+        public String getScheme() {
+            return scheme;
+        }
+    }
+    private final HttpClient client;
+    private final HttpRequestBase request;
+    private final RequestConfig.Builder config = RequestConfig.custom();
+    private final URIBuilder requestURI = new URIBuilder().setScheme("https");
+    private boolean catchHttpError = false;
     public HttpClientWrapper(URIBuilder builder, Method method) {
         client = HttpClients.createDefault();
         request = createUriRequest(method);
@@ -43,9 +68,67 @@ public class HttpClientWrapper {
         return this;
     }
 
-    public HttpClientWrapper ConnectionRequestTimeout(int timeout) {
+    public HttpClientWrapper connectionRequestTimeout(int timeout) {
         config.setConnectionRequestTimeout(timeout);
         return this;
+    }
+
+    public HttpClientWrapper requestURIScheme(Scheme scheme) {
+        requestURI.setScheme(scheme.getScheme());
+        return this;
+    }
+
+    public HttpClientWrapper requestURI(String host, String path) {
+        requestURI.setHost(host).setPath(path);
+        return this;
+    }
+
+    public HttpClientWrapper requestURI(String url) {
+        Pair<String, String> parsed = NetUtils.parseToPair(url);
+        return requestURI(parsed.getKey(), parsed.getValue());
+    }
+
+    public HttpClientWrapper requestURIPort(int port) {
+        requestURI.setPort(port);
+        return this;
+    }
+
+    public HttpClientWrapper requestURICharset(Charset charset) {
+        requestURI.setCharset(charset);
+        return this;
+    }
+
+    public HttpClientWrapper requestURIParam(String key, String value) {
+        requestURI.addParameter(key, value);
+        return this;
+    }
+
+    public HttpClientWrapper requestHeader(String key, String value) {
+        request.addHeader(key, value);
+        return this;
+    }
+
+    public HttpClientWrapper requestEntity(HttpEntity entity) {
+        if (request instanceof HttpEntityEnclosingRequestBase) ((HttpEntityEnclosingRequestBase) request).setEntity(entity);
+        return this;
+    }
+
+    public HttpClientWrapper requestOnCancelled(Cancellable cancellable) {
+        request.setCancellable(cancellable);
+        return this;
+    }
+
+    public HttpClientWrapper catchHttpExc(boolean catchHttpError) {
+        this.catchHttpError = catchHttpError;
+        return this;
+    }
+
+    public void sendRequest() throws URISyntaxException, IOException {
+        request.setURI(requestURI.build());
+        request.setConfig(config.build());
+        HttpResponse req = client.execute(request);
+//        if (req.getStatusLine().getStatusCode() > 399 && catchHttpError)
+        // TODO to be completed
     }
 
     private HttpRequestBase createUriRequest(Method method) {
