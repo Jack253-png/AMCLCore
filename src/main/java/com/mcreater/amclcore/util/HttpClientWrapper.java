@@ -1,6 +1,7 @@
 package com.mcreater.amclcore.util;
 
 import com.mcreater.amclcore.exceptions.RequestException;
+import lombok.Builder;
 import org.apache.commons.lang3.tuple.Pair;
 import org.apache.http.HttpEntity;
 import org.apache.http.HttpResponse;
@@ -18,6 +19,7 @@ import org.apache.http.client.methods.HttpRequestBase;
 import org.apache.http.client.methods.HttpTrace;
 import org.apache.http.client.utils.URIBuilder;
 import org.apache.http.concurrent.Cancellable;
+import org.apache.http.entity.StringEntity;
 import org.apache.http.impl.client.HttpClients;
 
 import java.io.IOException;
@@ -116,8 +118,6 @@ public class HttpClientWrapper {
         return this;
     }
 
-
-
     public HttpClientWrapper requestOnCancelled(Cancellable cancellable) {
         request.setCancellable(cancellable);
         return this;
@@ -159,6 +159,16 @@ public class HttpClientWrapper {
                 return new HttpHead();
             case TRACE:
                 return new HttpTrace();
+        }
+    }
+
+    @Builder
+    public static class HttpStringEntityWrapper {
+        public String content;
+        public Charset charset;
+        public String contentType;
+        public StringEntity toEntity() {
+
         }
     }
 }
