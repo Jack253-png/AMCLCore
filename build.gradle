@@ -5,6 +5,22 @@ plugins {
 group 'com.mcreater'
 version '1.0-SNAPSHOT'
 
+compileJava {
+    sourceCompatibility = JavaVersion.VERSION_1_8
+    targetCompatibility = JavaVersion.VERSION_1_8
+    options.verbose = false
+    options.listFiles = true
+    options.annotationProcessorPath = files(new File(projectDir.getAbsolutePath(), "lombok.jar").getAbsolutePath())
+}
+
+compileTestJava {
+    sourceCompatibility = JavaVersion.VERSION_1_8
+    targetCompatibility = JavaVersion.VERSION_1_8
+    options.verbose = false
+    options.listFiles = true
+    options.annotationProcessorPath = files(new File(projectDir.getAbsolutePath(), "lombok.jar").getAbsolutePath())
+}
+
 repositories {
     maven { url = "https://maven.aliyun.com/repository/public" }
     maven { url = "https://maven.aliyun.com/repository/jcenter" }
@@ -16,7 +32,7 @@ repositories {
 dependencies {
     testImplementation 'org.junit.jupiter:junit-jupiter-api:5.8.1'
     testRuntimeOnly 'org.junit.jupiter:junit-jupiter-engine:5.8.1'
-    implementation "org.projectlombok:lombok:1.18.10"
+    implementation "org.projectlombok:lombok:1.18.14"
     implementation "com.google.code.gson:gson:2.9.0"
     implementation "org.apache.commons:commons-lang3:3.8.1"
     implementation "org.apache.httpcomponents:httpclient:4.5.13"

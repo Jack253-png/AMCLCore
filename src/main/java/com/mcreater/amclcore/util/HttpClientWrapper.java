@@ -59,9 +59,13 @@ public class HttpClientWrapper {
     private final RequestConfig.Builder config = RequestConfig.custom();
     private final URIBuilder requestURI = new URIBuilder().setScheme("https");
     private boolean catchHttpError = false;
-    public HttpClientWrapper(Method method) {
+    private HttpClientWrapper(Method method) {
         client = HttpClients.createDefault();
         request = createUriRequest(method);
+    }
+
+    public static HttpClientWrapper createNew(Method method) {
+        return new HttpClientWrapper(method);
     }
 
     public HttpClientWrapper connectTimeout(int timeout) {
@@ -119,6 +123,18 @@ public class HttpClientWrapper {
         return this;
     }
 
+    public HttpClientWrapper requestEntityJson(String data) throws UnsupportedEncodingException {
+        return requestEntity(
+                HttpStringEntityWrapper.builder()
+                        .content(data)
+                        .build().toEntity()
+        );
+    }
+
+    public <T> HttpClientWrapper requestEntityJson(T data) throws UnsupportedEncodingException {
+        return requestEntityJson(GSON_PARSER.toJson(data));
+    }
+
     public HttpClientWrapper requestOnCancelled(Cancellable cancellable) {
         request.setCancellable(cancellable);
         return this;
@@ -165,9 +181,12 @@ public class HttpClientWrapper {
 
     @Builder
     public static class HttpStringEntityWrapper {
-        public String content = "";
-        public String charset = "UTF-8";
-        public String contentType = "application/json";
+        @Builder.Default
+        private String content = "";
+        @Builder.Default
+        private String charset = "UTF-8";
+        @Builder.Default
+        private String contentType = "application/json";
         public StringEntity toEntity() throws UnsupportedEncodingException {
             StringEntity entity = new StringEntity(content);
             entity.setContentEncoding(content);
