@@ -15,4 +15,13 @@ public class ConcurrentExecutors {
             Executors.defaultThreadFactory(),
             new ThreadPoolExecutor.DiscardOldestPolicy()
     );
+    public static final ThreadPoolExecutor OAUTH_LOGIN_EXECUTOR = new ThreadPoolExecutor(
+            8,
+            16,
+            30,
+            TimeUnit.SECONDS,
+            new ArrayBlockingQueue<>(64),
+            Executors.defaultThreadFactory(),
+            new ThreadPoolExecutor.AbortPolicy()
+    );
 }
