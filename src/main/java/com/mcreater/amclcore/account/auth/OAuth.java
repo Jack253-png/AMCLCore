@@ -1,6 +1,7 @@
 package com.mcreater.amclcore.account.auth;
 
 import com.google.gson.annotations.SerializedName;
+import com.mcreater.amclcore.concurrent.oauth.LoginCodeTask;
 import com.mcreater.amclcore.util.HttpClientWrapper;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -31,7 +32,7 @@ public class OAuth {
         private int interval;
     }
 
-    public void createDeviceToken() throws URISyntaxException, IOException {
+    public DeviceCodeModel createDeviceToken() throws URISyntaxException, IOException {
         DeviceCodeModel model = HttpClientWrapper.createNew(HttpClientWrapper.Method.GET)
                 .requestURI(tokenUrl)
                 .requestURIParam("client_id", clientId)
@@ -41,5 +42,10 @@ public class OAuth {
                 .sendRequestAndReadJson(DeviceCodeModel.class);
 
         System.out.println(model.getUserCode());
+        return model;
+    }
+
+    public LoginCodeTask createDeviceTokenAsync() {
+        return new LoginCodeTask();
     }
 }
