@@ -29,6 +29,15 @@ public class ConcurrentExecutors {
             Executors.defaultThreadFactory(),
             new ThreadPoolExecutor.AbortPolicy()
     );
+    public static final ThreadPoolExecutor AWT_EVENT_EXECUTOR = new ThreadPoolExecutor(
+            32,
+            64,
+            30,
+            TimeUnit.SECONDS,
+            new ArrayBlockingQueue<>(64),
+            Executors.defaultThreadFactory(),
+            new ThreadPoolExecutor.DiscardOldestPolicy()
+    );
 
     public static List<? extends Object> runAllTask(ExecutorService executor, AbstractTask<?>... tasks) {
         return Arrays.stream(tasks)

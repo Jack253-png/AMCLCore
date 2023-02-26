@@ -10,7 +10,7 @@ public class Main {
     public static void main(String[] args) throws Exception {
         CompletableFuture.runAsync(
                 OAuth.MICROSOFT.fetchDeviceTokenAsync(model -> ConcurrentExecutors.runAllTask(
-                        ConcurrentExecutors.OAUTH_LOGIN_EXECUTOR,
+                        ConcurrentExecutors.AWT_EVENT_EXECUTOR,
                         SwingUtils.copyContentAsync(model.getUserCode()),
                         SwingUtils.openBrowserAsync(model.getVerificationUri())
                 )),
