@@ -5,6 +5,7 @@ import lombok.Builder;
 import org.apache.commons.lang3.tuple.Pair;
 import org.apache.http.HttpEntity;
 import org.apache.http.HttpResponse;
+import org.apache.http.NameValuePair;
 import org.apache.http.client.HttpClient;
 import org.apache.http.client.config.RequestConfig;
 import org.apache.http.client.methods.HttpDelete;
@@ -18,6 +19,7 @@ import org.apache.http.client.methods.HttpPut;
 import org.apache.http.client.methods.HttpRequestBase;
 import org.apache.http.client.methods.HttpTrace;
 import org.apache.http.client.utils.URIBuilder;
+import org.apache.http.client.utils.URLEncodedUtils;
 import org.apache.http.concurrent.Cancellable;
 import org.apache.http.entity.StringEntity;
 import org.apache.http.impl.client.HttpClients;
@@ -26,6 +28,9 @@ import java.io.IOException;
 import java.io.UnsupportedEncodingException;
 import java.net.URISyntaxException;
 import java.nio.charset.Charset;
+import java.nio.charset.StandardCharsets;
+import java.util.Arrays;
+import java.util.stream.Collectors;
 
 import static com.mcreater.amclcore.util.JsonUtil.GSON_PARSER;
 
@@ -133,6 +138,15 @@ public class HttpClientWrapper {
 
     public <T> HttpClientWrapper requestEntityJson(T data) throws UnsupportedEncodingException {
         return requestEntityJson(GSON_PARSER.toJson(data));
+    }
+
+    public HttpClientWrapper requestEntityEncodedURL(NameValuePair... pairs) throws UnsupportedEncodingException {
+        return requestEntityJson(
+                URLEncodedUtils.format(
+                        Arrays.stream(pairs).collect(Collectors.toList()),
+                        StandardCharsets.UTF_8
+                )
+        );
     }
 
     public HttpClientWrapper requestOnCancelled(Cancellable cancellable) {
