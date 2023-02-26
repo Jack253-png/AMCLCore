@@ -2,6 +2,7 @@ package com.mcreater.amclcore.util;
 
 import com.mcreater.amclcore.concurrent.AbstractTask;
 import com.mcreater.amclcore.util.platform.OperatingSystem;
+import lombok.AllArgsConstructor;
 
 import java.awt.*;
 import java.awt.datatransfer.StringSelection;
@@ -24,11 +25,9 @@ public class SwingUtils {
         NOT_FOUND,
         INTERNAL_EXCEPTION
     }
+    @AllArgsConstructor
     public static class BrowserOpenTask extends AbstractTask<BrowserState> {
         private final String url;
-        public BrowserOpenTask(String url) {
-            this.url = url;
-        }
         public BrowserState call() {
             try {
                 if (supportAction(Desktop.Action.BROWSE)) {
@@ -59,14 +58,23 @@ public class SwingUtils {
             return BrowserState.NOT_FOUND;
         }
     }
-    public static BrowserOpenTask openBrowser(String url) {
+
+    @AllArgsConstructor
+    public static class CopyContentTask extends AbstractTask<Void> {
+        private final String content;
+        public Void call() {
+            Toolkit.getDefaultToolkit()
+                    .getSystemClipboard()
+                    .setContents(new StringSelection(content), (clipboard1, transferable) -> {});
+            return null;
+        }
+    }
+    public static BrowserOpenTask openBrowserAsync(String url) {
         return new BrowserOpenTask(url);
     }
 
-    public static void copyContent(String content) {
-        Toolkit.getDefaultToolkit()
-                .getSystemClipboard()
-                .setContents(new StringSelection(content), (clipboard1, transferable) -> {});
+    public static CopyContentTask copyContentAsync(String content) {
+        return new CopyContentTask(content);
     }
 
 
