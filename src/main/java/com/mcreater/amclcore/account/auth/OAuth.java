@@ -5,13 +5,12 @@ import com.mcreater.amclcore.model.oauth.DeviceCodeModel;
 import com.mcreater.amclcore.model.oauth.TokenResponseModel;
 import com.mcreater.amclcore.util.HttpClientWrapper;
 import lombok.AllArgsConstructor;
+import org.apache.http.NameValuePair;
 import org.apache.http.message.BasicNameValuePair;
 
 import java.io.IOException;
 import java.net.URISyntaxException;
 import java.util.Arrays;
-import java.util.HashMap;
-import java.util.Map;
 import java.util.Optional;
 import java.util.function.Consumer;
 
@@ -42,16 +41,10 @@ public class OAuth {
     }
 
     public TokenResponseModel checkToken(String deviceCode) throws URISyntaxException, IOException {
-        Map<String, Object> data = new HashMap<>();
-        data.put("grant_type", "urn:ietf:params:oauth:grant-type:device_code");
-        data.put("client_id", createClientID());
-        data.put("code", deviceCode);
-
         return HttpClientWrapper.createNew(HttpClientWrapper.Method.POST)
                 .requestURI(tokenUrl)
-                .requestHeader("Content-Type", "application/x-www-form-urlencoded")
                 .requestEntityEncodedURL(
-                        new BasicNameValuePair("grant_type", "urn:ietf:params:oauth:grant-type:device_code"),
+                        new BasicNameValuePair("grant_type", buildScopeString2("urn", "ietf", "params", "oauth", "grant-type", "device_code")),
                         new BasicNameValuePair("client_id", createClientID()),
                         new BasicNameValuePair("code", deviceCode)
                 )
@@ -66,6 +59,10 @@ public class OAuth {
 
     private static String buildScopeString(String... s) {
         return String.join(" ", Arrays.asList(s));
+    }
+
+    private static String buildScopeString2(String... s) {
+        return String.join(":", Arrays.asList(s));
     }
 
     private static String createClientID() {

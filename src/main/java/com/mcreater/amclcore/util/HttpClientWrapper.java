@@ -140,11 +140,20 @@ public class HttpClientWrapper {
         return requestEntityJson(GSON_PARSER.toJson(data));
     }
 
+    public HttpClientWrapper requestEntityEncodedURL(String data) throws UnsupportedEncodingException {
+        return requestEntity(
+                HttpStringEntityWrapper.builder()
+                        .contentType("application/x-www-form-urlencoded")
+                        .content(data)
+                        .build().toEntity()
+        );
+    }
+
     public HttpClientWrapper requestEntityEncodedURL(NameValuePair... pairs) throws UnsupportedEncodingException {
-        return requestEntityJson(
+        return requestEntityEncodedURL(
                 URLEncodedUtils.format(
-                        Arrays.stream(pairs).collect(Collectors.toList()),
-                        StandardCharsets.UTF_8
+                    Arrays.stream(pairs).collect(Collectors.toList()),
+                    StandardCharsets.UTF_8
                 )
         );
     }
@@ -152,6 +161,10 @@ public class HttpClientWrapper {
     public HttpClientWrapper requestOnCancelled(Cancellable cancellable) {
         request.setCancellable(cancellable);
         return this;
+    }
+
+    public HttpClientWrapper requestCancel(boolean b) {
+        return requestOnCancelled(() -> b);
     }
 
     public HttpClientWrapper catchHttpExc(boolean catchHttpError) {
