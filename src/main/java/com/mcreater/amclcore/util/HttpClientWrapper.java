@@ -99,7 +99,7 @@ public class HttpClientWrapper {
     }
 
     public HttpClientWrapper requestURI(String url) {
-        Pair<String, String> parsed = NetUtils.parseToPair(url);
+        Pair<String, String> parsed = NetUtil.parseToPair(url);
         return requestURI(parsed.getKey(), parsed.getValue());
     }
 

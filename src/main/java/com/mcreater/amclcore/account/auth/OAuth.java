@@ -1,6 +1,9 @@
 package com.mcreater.amclcore.account.auth;
 
 import com.mcreater.amclcore.concurrent.AbstractTask;
+import com.mcreater.amclcore.concurrent.ConcurrentUtil;
+import com.mcreater.amclcore.exceptions.OAuthTimeOutException;
+import com.mcreater.amclcore.model.oauth.DeviceCodeConverterModel;
 import com.mcreater.amclcore.model.oauth.DeviceCodeModel;
 import com.mcreater.amclcore.model.oauth.TokenResponseModel;
 import com.mcreater.amclcore.util.HttpClientWrapper;
@@ -11,6 +14,7 @@ import java.io.IOException;
 import java.net.URISyntaxException;
 import java.util.Arrays;
 import java.util.Optional;
+import java.util.concurrent.TimeUnit;
 import java.util.function.Consumer;
 
 import static com.mcreater.amclcore.util.PropertyUtil.readProperty;
@@ -30,7 +34,7 @@ public class OAuth {
         DeviceCodeModel model = HttpClientWrapper.createNew(HttpClientWrapper.Method.GET)
                 .requestURI(deviceCodeUrl)
                 .requestURIParam("client_id", createClientID())
-                .requestURIParam("scope", buildScopeString("XboxLive.signin", "openid", "profile", "offline_access"))
+                .requestURIParam("scope", buildScopeString("XboxLive.signin", "offline_access"))
                 .connectTimeout(5000)
                 .connectionRequestTimeout(5000)
                 .sendRequestAndReadJson(DeviceCodeModel.class);
@@ -69,10 +73,42 @@ public class OAuth {
     }
 
     @AllArgsConstructor
-    public class OAuthLoginTask extends AbstractTask<DeviceCodeModel> {
+    public class OAuthLoginTask extends AbstractTask<DeviceCodeConverterModel> {
         private final Consumer<DeviceCodeModel> requestHandler;
-        public DeviceCodeModel call() throws Exception {
-            return fetchDeviceToken(requestHandler);
+        public DeviceCodeConverterModel call() throws Exception {
+            DeviceCodeModel model = fetchDeviceToken(requestHandler);
+
+            long startTime = System.nanoTime();
+            int interval = model.getInterval();
+
+            while (true) {
+                ConcurrentUtil.sleepTime(Math.max(interval, 1));
+
+                long estimatedTime = System.nanoTime() - startTime;
+                if (TimeUnit.SECONDS.convert(estimatedTime, TimeUnit.NANOSECONDS) >= Math.min(model.getExpiresIn(), 900)) {
+                    throw new OAuthTimeOutException();
+                }
+
+                TokenResponseModel checkIn = checkToken(model.getDeviceCode());
+
+                if (checkIn.getError() == null) return DeviceCodeConverterModel
+                                                          .builder()
+                                                          .isDevice(true)
+                                                          .model(checkIn)
+                                                          .build();
+
+                switch (checkIn.getError()) {
+                    case "authorization_pending":
+                        continue;
+                    case "slow_down":
+                        interval += 5;
+                        continue;
+                    case "expired_token":
+                    case "invalid_grant":
+                    default:
+                        throw new OAuthTimeOutException();
+                }
+            }
         }
     }
 }

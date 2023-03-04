@@ -10,7 +10,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.net.URI;
 
-public class SwingUtils {
+public class SwingUtil {
     private static final String[] linuxBrowsers = {
             "xdg-open",
             "google-chrome",

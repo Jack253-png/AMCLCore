@@ -3,7 +3,7 @@ package com.mcreater.amclcore.util;
 import org.apache.commons.lang3.tuple.ImmutablePair;
 import org.apache.commons.lang3.tuple.Pair;
 
-public class NetUtils {
+public class NetUtil {
     public static Pair<String, String> parseToPair(String url) {
         int index = url.indexOf("/");
         String path = url.substring(index);
