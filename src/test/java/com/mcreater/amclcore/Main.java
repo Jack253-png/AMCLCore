@@ -4,6 +4,8 @@ import com.mcreater.amclcore.account.auth.OAuth;
 import com.mcreater.amclcore.concurrent.ConcurrentExecutors;
 import com.mcreater.amclcore.util.SwingUtils;
 
+import java.util.HashMap;
+import java.util.Set;
 import java.util.concurrent.CompletableFuture;
 
 import static com.mcreater.amclcore.util.JsonUtil.GSON_PARSER;
@@ -29,5 +31,8 @@ public class Main {
                 }),
                 ConcurrentExecutors.EVENT_QUEUE_EXECUTOR
         ).get();
+        new HashMap<String, String>() {{
+            put("test", "test");
+        }};
     }
 }

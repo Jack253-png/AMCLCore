@@ -5,7 +5,6 @@ import com.mcreater.amclcore.model.oauth.DeviceCodeModel;
 import com.mcreater.amclcore.model.oauth.TokenResponseModel;
 import com.mcreater.amclcore.util.HttpClientWrapper;
 import lombok.AllArgsConstructor;
-import org.apache.http.NameValuePair;
 import org.apache.http.message.BasicNameValuePair;
 
 import java.io.IOException;
