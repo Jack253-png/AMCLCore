@@ -1,13 +1,17 @@
 package com.mcreater.amclcore.account.auth;
 
 import com.mcreater.amclcore.concurrent.AbstractTask;
+import com.mcreater.amclcore.concurrent.ConcurrentExecutors;
 import com.mcreater.amclcore.concurrent.ConcurrentUtil;
 import com.mcreater.amclcore.exceptions.OAuthTimeOutException;
 import com.mcreater.amclcore.model.oauth.DeviceCodeConverterModel;
 import com.mcreater.amclcore.model.oauth.DeviceCodeModel;
 import com.mcreater.amclcore.model.oauth.TokenResponseModel;
 import com.mcreater.amclcore.util.HttpClientWrapper;
+import com.mcreater.amclcore.util.SwingUtil;
 import lombok.AllArgsConstructor;
+import lombok.Getter;
+import lombok.Setter;
 import org.apache.http.message.BasicNameValuePair;
 
 import java.io.IOException;
@@ -29,6 +33,13 @@ public class OAuth {
     private final String tokenUrl;
     private static final String clientID = "1a969022-f24f-4492-a91c-6f4a6fcb373c";
     public static final String CLIENT_ID_PROPERTY_NAME = "amclcore.oauth.clientid.override";
+
+    @Getter
+    private static final Consumer<DeviceCodeModel> defaultDevHandler = model2 -> ConcurrentExecutors.runAllTask(
+            ConcurrentExecutors.AWT_EVENT_EXECUTOR,
+            SwingUtil.copyContentAsync(model2.getUserCode()),
+            SwingUtil.openBrowserAsync(model2.getVerificationUri())
+    );
 
     protected DeviceCodeModel fetchDeviceToken(Consumer<DeviceCodeModel> requestHandler) throws URISyntaxException, IOException {
         DeviceCodeModel model = HttpClientWrapper.createNew(HttpClientWrapper.Method.GET)
