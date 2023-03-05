@@ -12,6 +12,6 @@ public class Main {
                 )
         ).get();
 
-        System.out.println(model.getModel().getAccessToken());
+        OAuth.MICROSOFT.fetchXBLToken(model);
     }
 }

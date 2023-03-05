@@ -10,16 +10,24 @@ public abstract class AbstractTask<T> extends FutureTask<T> {
         setCallable();
     }
 
+    /**
+     * Set internal callable after task instanced
+     */
     private void setCallable() {
         try {
             Field field = FutureTask.class.getDeclaredField("callable");
             field.setAccessible(true);
             field.set(this, (Callable<T>) AbstractTask.this::call);
-        }
-        catch (Exception e) {
+        } catch (Exception e) {
             e.printStackTrace();
         }
     }
 
+    /**
+     * abstract task for implement
+     *
+     * @return the task result
+     * @throws Exception when task throws an exception
+     */
     public abstract T call() throws Exception;
 }

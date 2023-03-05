@@ -8,4 +8,8 @@ import lombok.Data;
 public class DeviceCodeConverterModel {
     private TokenResponseModel model;
     private boolean isDevice;
+
+    public String createAccessToken() {
+        return isDevice() ? "d=" + getModel().getAccessToken() : getModel().getAccessToken();
+    }
 }

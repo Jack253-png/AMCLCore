@@ -13,7 +13,7 @@ plugins {
 }
 
 group 'com.mcreater'
-version '1.0-SNAPSHOT'
+version '0.1-SNAPSHOT'
 
 compileJava {
     sourceCompatibility = JavaVersion.VERSION_1_8

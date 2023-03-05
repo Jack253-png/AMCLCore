@@ -6,9 +6,13 @@ import org.apache.http.util.EntityUtils;
 
 import java.io.IOException;
 
+/**
+ * Used for {@link com.mcreater.amclcore.util.HttpClientWrapper}
+ */
 public class RequestException extends IOException {
     private final StatusLine line;
     private final HttpEntity entity;
+
     public RequestException(StatusLine line, HttpEntity entity) {
         this.line = line;
         this.entity = entity;

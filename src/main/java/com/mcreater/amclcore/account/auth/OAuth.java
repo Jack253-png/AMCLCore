@@ -8,11 +8,14 @@ import com.mcreater.amclcore.model.oauth.AuthCodeModel;
 import com.mcreater.amclcore.model.oauth.DeviceCodeConverterModel;
 import com.mcreater.amclcore.model.oauth.DeviceCodeModel;
 import com.mcreater.amclcore.model.oauth.TokenResponseModel;
+import com.mcreater.amclcore.model.oauth.XBLTokenResponseModel;
 import com.mcreater.amclcore.util.HttpClientWrapper;
 import com.mcreater.amclcore.util.SwingUtil;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
+import org.apache.http.HttpEntity;
 import org.apache.http.message.BasicNameValuePair;
+import org.apache.http.util.EntityUtils;
 
 import java.io.IOException;
 import java.net.URISyntaxException;
@@ -59,6 +62,12 @@ public class OAuth {
      */
     @Getter
     private static final String MINECRAFT_AZURE_LOGIN_URL = "https://login.live.com/oauth20_authorize.srf?client_id=00000000402b5328&response_type=code&scope=service%3A%3Auser.auth.xboxlive.com%3A%3AMBI_SSL&redirect_uri=https%3A%2F%2Flogin.live.com%2Foauth20_desktop.srf";
+
+    /**
+     * XBox token api url
+     */
+    @Getter
+    private static final String XBL_TOKEN_URL = "user.auth.xboxlive.com/user/authenticate";
 
     /**
      * Default device code handler, copy the user code {@link DeviceCodeModel#getUserCode()} and open browser {@link DeviceCodeModel#getVerificationUri()}
@@ -183,6 +192,26 @@ public class OAuth {
                     throw new OAuthTimeOutException();
             }
         }
+    }
+
+    public void fetchXBLToken(DeviceCodeConverterModel model) throws IOException, URISyntaxException {
+        HttpEntity entity = HttpClientWrapper.createNew(HttpClientWrapper.Method.POST)
+                .requestURI(getXBL_TOKEN_URL())
+                .requestEntityJson(
+                        XBLTokenResponseModel.builder()
+                                .Properties(
+                                        XBLTokenResponseModel.XBLTokenResponsePropertiesModel.builder()
+                                                .AuthMethod("RPS")
+                                                .SiteName("user.auth.xboxlive.com")
+                                                .RpsTicket(model.createAccessToken())
+                                                .build()
+                                )
+                                .RelyingParty("http://auth.xboxlive.com")
+                                .TokenType("JWT")
+                )
+                .sendRequest();
+
+        System.out.println(EntityUtils.toString(entity));
     }
 
     /**
