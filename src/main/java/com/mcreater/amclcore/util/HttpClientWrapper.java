@@ -23,6 +23,7 @@ import org.apache.http.client.utils.URLEncodedUtils;
 import org.apache.http.concurrent.Cancellable;
 import org.apache.http.entity.StringEntity;
 import org.apache.http.impl.client.HttpClients;
+import org.apache.http.message.BasicNameValuePair;
 
 import java.io.IOException;
 import java.io.UnsupportedEncodingException;
@@ -30,6 +31,10 @@ import java.net.URISyntaxException;
 import java.nio.charset.Charset;
 import java.nio.charset.StandardCharsets;
 import java.util.Arrays;
+import java.util.List;
+import java.util.Map;
+import java.util.Vector;
+import java.util.function.Function;
 import java.util.stream.Collectors;
 
 import static com.mcreater.amclcore.util.JsonUtil.GSON_PARSER;
@@ -152,9 +157,39 @@ public class HttpClientWrapper {
     public HttpClientWrapper requestEntityEncodedURL(NameValuePair... pairs) throws UnsupportedEncodingException {
         return requestEntityEncodedURL(
                 URLEncodedUtils.format(
-                    Arrays.stream(pairs).collect(Collectors.toList()),
-                    StandardCharsets.UTF_8
+                        Arrays.stream(pairs).collect(Collectors.toList()),
+                        StandardCharsets.UTF_8
                 )
+        );
+    }
+
+    public HttpClientWrapper requestEntityEncodedURL(List<NameValuePair> pairs) throws UnsupportedEncodingException {
+        return requestEntityEncodedURL(
+                URLEncodedUtils.format(
+                        pairs,
+                        StandardCharsets.UTF_8
+                )
+        );
+    }
+
+    @SafeVarargs
+    public final HttpClientWrapper requestEntityEncodedURLEntry(Map.Entry<String, String>... pairs) throws UnsupportedEncodingException {
+        return requestEntityEncodedURLEntry(
+                Arrays.stream(pairs).collect(Collectors.toList())
+        );
+    }
+
+    public HttpClientWrapper requestEntityEncodedURLEntry(List<Map.Entry<String, String>> pairs) throws UnsupportedEncodingException {
+        return requestEntityEncodedURL(
+                pairs.stream()
+                        .map((Function<Map.Entry<String, String>, NameValuePair>) entry -> new BasicNameValuePair(entry.getKey(), entry.getValue()))
+                        .collect(Collectors.toList())
+        );
+    }
+
+    public HttpClientWrapper requestEntityEncodedURLEntry(Map<String, String> pairs) throws UnsupportedEncodingException {
+        return requestEntityEncodedURLEntry(
+                new Vector<>(pairs.entrySet())
         );
     }
 
