@@ -156,7 +156,7 @@ public class OAuth {
     }
 
     /**
-     * as same as {@link OAuth#fetchDeviceToken(Consumer)}
+     * a wrapper for {@link OAuth#fetchDeviceToken(Consumer)}
      */
     protected DeviceCodeConverterModel detectUserCodeLoop(Consumer<DeviceCodeModel> requestHandler) throws URISyntaxException, IOException {
         DeviceCodeModel model = fetchDeviceToken(requestHandler);
@@ -194,6 +194,13 @@ public class OAuth {
         }
     }
 
+    /**
+     * convert from access token to Xbox Live token
+     *
+     * @param model the verified access token
+     * @throws URISyntaxException If the xbox live api url is malformed
+     * @throws IOException        If an I/O Exception occurred
+     */
     public void fetchXBLToken(DeviceCodeConverterModel model) throws IOException, URISyntaxException {
         HttpEntity entity = HttpClientWrapper.createNew(HttpClientWrapper.Method.POST)
                 .requestURI(getXBL_TOKEN_URL())
