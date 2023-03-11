@@ -34,7 +34,7 @@ public class ConcurrentExecutors {
             TimeUnit.SECONDS,
             new ArrayBlockingQueue<>(64),
             Executors.defaultThreadFactory(),
-            new ThreadPoolExecutor.AbortPolicy()
+            new ThreadPoolExecutor.DiscardOldestPolicy()
     );
     /**
      * Swing event queue(clipboard, desktop api...)
@@ -80,5 +80,26 @@ public class ConcurrentExecutors {
      */
     public static <T> Callable<T> fromTask(AbstractTask<T> task) {
         return task::call;
+    }
+
+    /**
+     * submit a task to executor
+     *
+     * @return the executed future task
+     */
+    public static <T> Future<T> fastSubmit(ExecutorService executor, AbstractTask<T> task) {
+        return executor.submit(fromTask(task));
+    }
+
+    /**
+     * submit some tasks to executor
+     *
+     * @return the executed future tasks
+     */
+    @SafeVarargs
+    public static <T> List<Future<T>> fastSubmit(ExecutorService executor, AbstractTask<T>... tasks) {
+        return Arrays.stream(tasks)
+                .map(task -> fastSubmit(executor, task))
+                .collect(Collectors.toList());
     }
 }

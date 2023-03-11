@@ -4,18 +4,19 @@ import com.mcreater.amclcore.concurrent.AbstractTask;
 import com.mcreater.amclcore.concurrent.ConcurrentExecutors;
 import com.mcreater.amclcore.concurrent.ConcurrentUtil;
 import com.mcreater.amclcore.exceptions.OAuthTimeOutException;
+import com.mcreater.amclcore.exceptions.OAuthXBLNotFoundException;
 import com.mcreater.amclcore.model.oauth.AuthCodeModel;
 import com.mcreater.amclcore.model.oauth.DeviceCodeConverterModel;
 import com.mcreater.amclcore.model.oauth.DeviceCodeModel;
 import com.mcreater.amclcore.model.oauth.TokenResponseModel;
+import com.mcreater.amclcore.model.oauth.XBLTokenRequestModel;
 import com.mcreater.amclcore.model.oauth.XBLTokenResponseModel;
+import com.mcreater.amclcore.model.oauth.XBLUserModel;
 import com.mcreater.amclcore.util.HttpClientWrapper;
 import com.mcreater.amclcore.util.SwingUtil;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
-import org.apache.http.HttpEntity;
 import org.apache.http.message.BasicNameValuePair;
-import org.apache.http.util.EntityUtils;
 
 import java.io.IOException;
 import java.net.URISyntaxException;
@@ -23,6 +24,9 @@ import java.util.Arrays;
 import java.util.Optional;
 import java.util.concurrent.TimeUnit;
 import java.util.function.Consumer;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
+import java.util.stream.Stream;
 
 import static com.mcreater.amclcore.util.PropertyUtil.readProperty;
 
@@ -62,6 +66,11 @@ public class OAuth {
      */
     @Getter
     private static final String MINECRAFT_AZURE_LOGIN_URL = "https://login.live.com/oauth20_authorize.srf?client_id=00000000402b5328&response_type=code&scope=service%3A%3Auser.auth.xboxlive.com%3A%3AMBI_SSL&redirect_uri=https%3A%2F%2Flogin.live.com%2Foauth20_desktop.srf";
+    /**
+     * Azure direct login url pattern.
+     */
+    @Getter
+    private static final Pattern MINECRAFT_AZURE_URL_PATTERN = Pattern.compile("https://login\\.live\\.com/oauth20_desktop\\.srf\\?code=(?<code>.*)&lc=(?<lc>.*)");
 
     /**
      * XBox token api url
@@ -156,6 +165,17 @@ public class OAuth {
     }
 
     /**
+     * parse url from {@link OAuth#MINECRAFT_AZURE_URL_PATTERN} login
+     *
+     * @param s the redirect url
+     * @return the parsed code
+     */
+    public String parseRedirUrl(String s) {
+        Matcher matcher = getMINECRAFT_AZURE_URL_PATTERN().matcher(s);
+        return matcher.find() ? matcher.group("code") : null;
+    }
+
+    /**
      * a wrapper for {@link OAuth#fetchDeviceToken(Consumer)}
      */
     protected DeviceCodeConverterModel detectUserCodeLoop(Consumer<DeviceCodeModel> requestHandler) throws URISyntaxException, IOException {
@@ -201,8 +221,8 @@ public class OAuth {
      * @throws URISyntaxException If the xbox live api url is malformed
      * @throws IOException        If an I/O Exception occurred
      */
-    public void fetchXBLToken(DeviceCodeConverterModel model) throws IOException, URISyntaxException {
-        HttpEntity entity = HttpClientWrapper.createNew(HttpClientWrapper.Method.POST)
+    public XBLUserModel fetchXBLToken(DeviceCodeConverterModel model) throws IOException, URISyntaxException {
+        XBLTokenRequestModel requestModel = HttpClientWrapper.createNew(HttpClientWrapper.Method.POST)
                 .requestURI(getXBL_TOKEN_URL())
                 .requestEntityJson(
                         XBLTokenResponseModel.builder()
@@ -216,9 +236,17 @@ public class OAuth {
                                 .RelyingParty("http://auth.xboxlive.com")
                                 .TokenType("JWT")
                 )
-                .sendRequest();
+                .sendRequestAndReadJson(XBLTokenRequestModel.class);
 
-        System.out.println(EntityUtils.toString(entity));
+        Stream<String> centeredUserHash = requestModel.getDisplayClaims().getXui().stream()
+                .map(XBLTokenRequestModel.XBLTokenUserHashModel::getUhs);
+        Optional<String> userHash = centeredUserHash.findAny();
+
+        if (!userHash.isPresent()) throw new OAuthXBLNotFoundException();
+        else return XBLUserModel.builder()
+                .token(requestModel.getToken())
+                .hash(userHash.get())
+                .build();
     }
 
     /**
@@ -243,10 +271,26 @@ public class OAuth {
     }
 
     @AllArgsConstructor
-    public class OAuthLoginTask extends AbstractTask<DeviceCodeConverterModel> {
+    public class OAuthLoginTask extends AbstractTask<XBLUserModel> {
         private final Consumer<DeviceCodeModel> requestHandler;
-        public DeviceCodeConverterModel call() throws Exception {
-            return detectUserCodeLoop(requestHandler);
+
+        public XBLUserModel call() throws Exception {
+
+            return ConcurrentExecutors.fastSubmit(
+                    ConcurrentExecutors.OAUTH_LOGIN_EXECUTOR,
+                    new OAuthLoginPartTask(
+                            detectUserCodeLoop(requestHandler)
+                    )
+            ).get();
+        }
+    }
+
+    @AllArgsConstructor
+    public class OAuthLoginPartTask extends AbstractTask<XBLUserModel> {
+        private final DeviceCodeConverterModel model;
+
+        public XBLUserModel call() throws Exception {
+            return fetchXBLToken(model);
         }
     }
 }
