@@ -1,17 +1,49 @@
 package com.mcreater.amclcore.concurrent;
 
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
+
 import java.util.Arrays;
 import java.util.List;
 import java.util.concurrent.ArrayBlockingQueue;
-import java.util.concurrent.Callable;
 import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Executors;
 import java.util.concurrent.Future;
+import java.util.concurrent.ThreadFactory;
 import java.util.concurrent.ThreadPoolExecutor;
 import java.util.concurrent.TimeUnit;
+import java.util.concurrent.atomic.AtomicInteger;
 import java.util.stream.Collectors;
 
 public class ConcurrentExecutors {
+    private static final Logger EVENT_LOGGER = LogManager.getLogger(ConcurrentExecutors.class);
+
+    public static class SimpleThreadFactory implements ThreadFactory {
+        private static final AtomicInteger poolNumber = new AtomicInteger(1);
+        private final ThreadGroup group;
+        private final AtomicInteger threadNumber = new AtomicInteger(1);
+        private final String namePrefix;
+
+        SimpleThreadFactory() {
+            SecurityManager s = System.getSecurityManager();
+            group = (s != null) ? s.getThreadGroup() :
+                    Thread.currentThread().getThreadGroup();
+            namePrefix = "pool-" +
+                    poolNumber.getAndIncrement() +
+                    "-thread-";
+        }
+
+        public Thread newThread(Runnable r) {
+            Thread t = new Thread(group, r,
+                    namePrefix + threadNumber.getAndIncrement(),
+                    0);
+            if (!t.isDaemon())
+                t.setDaemon(true);
+            if (t.getPriority() != Thread.NORM_PRIORITY)
+                t.setPriority(Thread.NORM_PRIORITY);
+            return t;
+        }
+    }
+
     /**
      * Main event queue(login, launch, download, task shells...)
      */
@@ -21,7 +53,7 @@ public class ConcurrentExecutors {
             1,
             TimeUnit.MINUTES,
             new ArrayBlockingQueue<>(64),
-            Executors.defaultThreadFactory(),
+            new SimpleThreadFactory(),
             new ThreadPoolExecutor.DiscardOldestPolicy()
     );
     /**
@@ -33,7 +65,7 @@ public class ConcurrentExecutors {
             30,
             TimeUnit.SECONDS,
             new ArrayBlockingQueue<>(64),
-            Executors.defaultThreadFactory(),
+            new SimpleThreadFactory(),
             new ThreadPoolExecutor.DiscardOldestPolicy()
     );
     /**
@@ -45,50 +77,21 @@ public class ConcurrentExecutors {
             30,
             TimeUnit.SECONDS,
             new ArrayBlockingQueue<>(64),
-            Executors.defaultThreadFactory(),
+            new SimpleThreadFactory(),
             new ThreadPoolExecutor.DiscardOldestPolicy()
     );
 
     /**
-     * Fastly run tasks
-     *
-     * @param executor the thread executor
-     * @param tasks    tasks to be executed
-     * @return task result
-     */
-    public static List<? extends Object> runAllTask(ExecutorService executor, AbstractTask<?>... tasks) {
-        return Arrays.stream(tasks)
-                .map(tAbstractTask -> executor.submit(tAbstractTask::call))
-                .map(ConcurrentExecutors::getFuture)
-                .collect(Collectors.toList());
-    }
-
-    private static <T> T getFuture(Future<T> tFuture) {
-        try {
-            return tFuture.get();
-        } catch (Exception ignored) {
-        }
-        return null;
-    }
-
-    /**
-     * convert task to callable
-     *
-     * @param task task to be converted
-     * @param <T>  the task result type
-     * @return converted callable
-     */
-    public static <T> Callable<T> fromTask(AbstractTask<T> task) {
-        return task::call;
-    }
-
-    /**
      * submit a task to executor
-     *
      * @return the executed future task
      */
     public static <T> Future<T> fastSubmit(ExecutorService executor, AbstractTask<T> task) {
-        return executor.submit(fromTask(task));
+        EVENT_LOGGER.info(String.format("Task %s submitted to executor %s", task, executor));
+        return executor.submit(() -> {
+            T result = task.getCallable().call();
+            EVENT_LOGGER.info(String.format("Task %s finished", task));
+            return result;
+        });
     }
 
     /**
@@ -98,6 +101,18 @@ public class ConcurrentExecutors {
      */
     @SafeVarargs
     public static <T> List<Future<T>> fastSubmit(ExecutorService executor, AbstractTask<T>... tasks) {
+        return Arrays.stream(tasks)
+                .map(task -> fastSubmit(executor, task))
+                .collect(Collectors.toList());
+    }
+
+    /**
+     * submit some non-type tasks to executor
+     *
+     * @return the executed future tasks
+     */
+    @SafeVarargs
+    public static List<Future<?>> fastSubmitEx(ExecutorService executor, AbstractTask<?>... tasks) {
         return Arrays.stream(tasks)
                 .map(task -> fastSubmit(executor, task))
                 .collect(Collectors.toList());

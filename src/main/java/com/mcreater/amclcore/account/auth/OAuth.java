@@ -12,6 +12,7 @@ import com.mcreater.amclcore.model.oauth.TokenResponseModel;
 import com.mcreater.amclcore.model.oauth.XBLTokenRequestModel;
 import com.mcreater.amclcore.model.oauth.XBLTokenResponseModel;
 import com.mcreater.amclcore.model.oauth.XBLUserModel;
+import com.mcreater.amclcore.model.oauth.XSTSTokenResponseModel;
 import com.mcreater.amclcore.util.HttpClientWrapper;
 import com.mcreater.amclcore.util.SwingUtil;
 import lombok.AllArgsConstructor;
@@ -22,11 +23,11 @@ import java.io.IOException;
 import java.net.URISyntaxException;
 import java.util.Arrays;
 import java.util.Optional;
+import java.util.Vector;
 import java.util.concurrent.TimeUnit;
 import java.util.function.Consumer;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
-import java.util.stream.Stream;
 
 import static com.mcreater.amclcore.util.PropertyUtil.readProperty;
 
@@ -77,12 +78,17 @@ public class OAuth {
      */
     @Getter
     private static final String XBL_TOKEN_URL = "user.auth.xboxlive.com/user/authenticate";
+    /**
+     * XSTS validation url
+     */
+    @Getter
+    private static final String XSTS_TOKEN_URL = "xsts.auth.xboxlive.com/xsts/authorize";
 
     /**
      * Default device code handler, copy the user code {@link DeviceCodeModel#getUserCode()} and open browser {@link DeviceCodeModel#getVerificationUri()}
      */
     @Getter
-    private static final Consumer<DeviceCodeModel> defaultDevHandler = model2 -> ConcurrentExecutors.runAllTask(
+    private static final Consumer<DeviceCodeModel> defaultDevHandler = model2 -> ConcurrentExecutors.fastSubmitEx(
             ConcurrentExecutors.AWT_EVENT_EXECUTOR,
             SwingUtil.copyContentAsync(model2.getUserCode()),
             SwingUtil.openBrowserAsync(model2.getVerificationUri())
@@ -238,15 +244,41 @@ public class OAuth {
                 )
                 .sendRequestAndReadJson(XBLTokenRequestModel.class);
 
-        Stream<String> centeredUserHash = requestModel.getDisplayClaims().getXui().stream()
-                .map(XBLTokenRequestModel.XBLTokenUserHashModel::getUhs);
-        Optional<String> userHash = centeredUserHash.findAny();
+        Optional<String> userHash = requestModel.getDisplayClaims().getXui().stream()
+                .map(XBLTokenRequestModel.XBLTokenUserHashModel::getUhs)
+                .findAny();
 
         if (!userHash.isPresent()) throw new OAuthXBLNotFoundException();
         else return XBLUserModel.builder()
                 .token(requestModel.getToken())
                 .hash(userHash.get())
                 .build();
+    }
+
+    public void fetchXSTSToken(XBLUserModel model) throws IOException, URISyntaxException {
+        XBLTokenRequestModel requestModel = HttpClientWrapper.createNew(HttpClientWrapper.Method.POST)
+                .requestURI(getXSTS_TOKEN_URL())
+                .requestEntityJson(XSTSTokenResponseModel.builder()
+                        .Properties(
+                                XSTSTokenResponseModel.XSTSTokenResponsePropertiesModel.builder()
+                                        .SandboxId("RETAIL")
+                                        .UserTokens(new Vector<String>() {{
+                                            add(model.getToken());
+                                        }})
+                                        .build()
+                        )
+                        .RelyingParty("rp://api.minecraftservices.com/")
+                        .TokenType("JWT")
+                        .build()
+                )
+                .sendRequestAndReadJson(XBLTokenRequestModel.class);
+
+        Optional<String> userHash = requestModel.getDisplayClaims().getXui().stream()
+                .map(XBLTokenRequestModel.XBLTokenUserHashModel::getUhs)
+                .findAny();
+
+        if (!userHash.isPresent()) throw new OAuthXBLNotFoundException();
+        System.out.println(userHash.get());
     }
 
     /**
@@ -275,12 +307,10 @@ public class OAuth {
         private final Consumer<DeviceCodeModel> requestHandler;
 
         public XBLUserModel call() throws Exception {
-
+            DeviceCodeConverterModel model = detectUserCodeLoop(requestHandler);
             return ConcurrentExecutors.fastSubmit(
                     ConcurrentExecutors.OAUTH_LOGIN_EXECUTOR,
-                    new OAuthLoginPartTask(
-                            detectUserCodeLoop(requestHandler)
-                    )
+                    new OAuthLoginPartTask(model)
             ).get();
         }
     }
@@ -290,7 +320,9 @@ public class OAuth {
         private final DeviceCodeConverterModel model;
 
         public XBLUserModel call() throws Exception {
-            return fetchXBLToken(model);
+            XBLUserModel model1 = fetchXBLToken(model);
+            fetchXSTSToken(model1);
+            return model1;
         }
     }
 }
