@@ -88,8 +88,9 @@ public class ConcurrentExecutors {
     public static <T> Future<T> fastSubmit(ExecutorService executor, AbstractTask<T> task) {
         EVENT_LOGGER.info(String.format("Task %s submitted to executor %s", task, executor));
         return executor.submit(() -> {
-            T result = task.getCallable().call();
+            T result = task.callableCall();
             EVENT_LOGGER.info(String.format("Task %s finished", task));
+            task.getResultConsumers().forEach(tConsumer -> tConsumer.accept(result));
             return result;
         });
     }
@@ -111,7 +112,6 @@ public class ConcurrentExecutors {
      *
      * @return the executed future tasks
      */
-    @SafeVarargs
     public static List<Future<?>> fastSubmitEx(ExecutorService executor, AbstractTask<?>... tasks) {
         return Arrays.stream(tasks)
                 .map(task -> fastSubmit(executor, task))

@@ -4,6 +4,7 @@ import com.mcreater.amclcore.concurrent.AbstractTask;
 import com.mcreater.amclcore.concurrent.ConcurrentExecutors;
 import com.mcreater.amclcore.concurrent.ConcurrentUtil;
 import com.mcreater.amclcore.exceptions.OAuthTimeOutException;
+import com.mcreater.amclcore.exceptions.OAuthUserHashException;
 import com.mcreater.amclcore.exceptions.OAuthXBLNotFoundException;
 import com.mcreater.amclcore.model.oauth.AuthCodeModel;
 import com.mcreater.amclcore.model.oauth.DeviceCodeConverterModel;
@@ -22,6 +23,7 @@ import org.apache.http.message.BasicNameValuePair;
 import java.io.IOException;
 import java.net.URISyntaxException;
 import java.util.Arrays;
+import java.util.Objects;
 import java.util.Optional;
 import java.util.Vector;
 import java.util.concurrent.TimeUnit;
@@ -255,7 +257,7 @@ public class OAuth {
                 .build();
     }
 
-    public void fetchXSTSToken(XBLUserModel model) throws IOException, URISyntaxException {
+    public XBLUserModel fetchXSTSToken(XBLUserModel model) throws IOException, URISyntaxException {
         XBLTokenRequestModel requestModel = HttpClientWrapper.createNew(HttpClientWrapper.Method.POST)
                 .requestURI(getXSTS_TOKEN_URL())
                 .requestEntityJson(XSTSTokenResponseModel.builder()
@@ -278,7 +280,11 @@ public class OAuth {
                 .findAny();
 
         if (!userHash.isPresent()) throw new OAuthXBLNotFoundException();
-        System.out.println(userHash.get());
+        if (!Objects.equals(userHash.get(), model.getHash())) throw new OAuthUserHashException();
+        else return XBLUserModel.builder()
+                .token(requestModel.getToken())
+                .hash(userHash.get())
+                .build();
     }
 
     /**
@@ -307,10 +313,10 @@ public class OAuth {
         private final Consumer<DeviceCodeModel> requestHandler;
 
         public XBLUserModel call() throws Exception {
-            DeviceCodeConverterModel model = detectUserCodeLoop(requestHandler);
+            DeviceCodeConverterModel deviceCode = detectUserCodeLoop(requestHandler);
             return ConcurrentExecutors.fastSubmit(
                     ConcurrentExecutors.OAUTH_LOGIN_EXECUTOR,
-                    new OAuthLoginPartTask(model)
+                    new OAuthLoginPartTask(deviceCode)
             ).get();
         }
     }
@@ -320,9 +326,9 @@ public class OAuth {
         private final DeviceCodeConverterModel model;
 
         public XBLUserModel call() throws Exception {
-            XBLUserModel model1 = fetchXBLToken(model);
-            fetchXSTSToken(model1);
-            return model1;
+            XBLUserModel xblToken = fetchXBLToken(model);
+            XBLUserModel xstsToken = fetchXSTSToken(xblToken);
+            return xstsToken;
         }
     }
 }

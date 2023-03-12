@@ -1,10 +1,18 @@
 package com.mcreater.amclcore.concurrent;
 
+import lombok.Getter;
+
 import java.lang.reflect.Field;
+import java.util.List;
+import java.util.Vector;
 import java.util.concurrent.Callable;
 import java.util.concurrent.FutureTask;
+import java.util.function.Consumer;
 
 public abstract class AbstractTask<T> extends FutureTask<T> {
+    @Getter
+    private final List<Consumer<T>> resultConsumers = new Vector<>();
+
     public AbstractTask() {
         super(() -> null);
         setCallable();
@@ -26,7 +34,7 @@ public abstract class AbstractTask<T> extends FutureTask<T> {
     /**
      * Get internal callable
      */
-    public Callable<T> getCallable() {
+    private Callable<T> getCallable() {
         try {
             Field field = FutureTask.class.getDeclaredField("callable");
             field.setAccessible(true);
@@ -35,6 +43,10 @@ public abstract class AbstractTask<T> extends FutureTask<T> {
             e.printStackTrace();
         }
         return () -> null;
+    }
+
+    public T callableCall() throws Exception {
+        return getCallable().call();
     }
 
     /**
