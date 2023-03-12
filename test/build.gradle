@@ -1,0 +1,60 @@
+buildscript {
+    repositories {
+        maven { url = "https://maven.aliyun.com/repository/public" }
+        maven { url = "https://maven.aliyun.com/repository/jcenter" }
+        maven { url = "https://maven.aliyun.com/repository/google" }
+        maven { url = "https://maven.aliyun.com/repository/central" }
+        mavenCentral()
+    }
+}
+
+plugins {
+    id 'java'
+    id 'application'
+}
+
+group 'com.mcreater'
+version '0.1-SNAPSHOT'
+
+compileJava {
+    sourceCompatibility = JavaVersion.VERSION_1_8
+    targetCompatibility = JavaVersion.VERSION_1_8
+    options.verbose = false
+    options.listFiles = true
+    options.annotationProcessorPath = files(new File(projectDir.getAbsolutePath(), "lombok.jar").getAbsolutePath())
+}
+
+compileTestJava {
+    sourceCompatibility = JavaVersion.VERSION_1_8
+    targetCompatibility = JavaVersion.VERSION_1_8
+    options.verbose = false
+    options.listFiles = true
+    options.annotationProcessorPath = files(new File(projectDir.getAbsolutePath(), "lombok.jar").getAbsolutePath())
+}
+
+repositories {
+    maven { url = "https://maven.aliyun.com/repository/public" }
+    maven { url = "https://maven.aliyun.com/repository/jcenter" }
+    maven { url = "https://maven.aliyun.com/repository/google" }
+    maven { url = "https://maven.aliyun.com/repository/central" }
+    mavenCentral()
+}
+
+dependencies {
+    implementation project(path: ':core')
+    testImplementation 'org.junit.jupiter:junit-jupiter-api:5.8.1'
+    testRuntimeOnly 'org.junit.jupiter:junit-jupiter-engine:5.8.1'
+
+}
+
+test {
+    useJUnitPlatform()
+}
+
+ext {
+    javaMainClass = "com.mcreater.amclcore.Main"
+}
+
+application {
+    mainClassName = javaMainClass
+}
