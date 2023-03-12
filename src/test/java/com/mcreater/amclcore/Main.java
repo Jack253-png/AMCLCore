@@ -6,7 +6,7 @@ import com.mcreater.amclcore.model.oauth.XBLUserModel;
 
 public class Main {
     public static void main(String[] args) throws Exception {
-        XBLUserModel model = ConcurrentExecutors.fastSubmit(ConcurrentExecutors.EVENT_QUEUE_EXECUTOR, OAuth.MICROSOFT.fetchDeviceTokenAsync(OAuth.getDefaultDevHandler())).get();
+        XBLUserModel model = ConcurrentExecutors.submit(ConcurrentExecutors.EVENT_QUEUE_EXECUTOR, OAuth.MICROSOFT.fetchDeviceTokenAsync(OAuth.getDefaultDevHandler())).get();
         System.out.println(model.getHash());
     }
 }

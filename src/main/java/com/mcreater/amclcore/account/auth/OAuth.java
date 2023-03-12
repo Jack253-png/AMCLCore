@@ -18,19 +18,19 @@ import com.mcreater.amclcore.util.HttpClientWrapper;
 import com.mcreater.amclcore.util.SwingUtil;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
-import org.apache.http.message.BasicNameValuePair;
 
 import java.io.IOException;
 import java.net.URISyntaxException;
 import java.util.Arrays;
 import java.util.Objects;
 import java.util.Optional;
-import java.util.Vector;
 import java.util.concurrent.TimeUnit;
 import java.util.function.Consumer;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
+import static com.mcreater.amclcore.util.JsonUtil.createList;
+import static com.mcreater.amclcore.util.JsonUtil.createPair;
 import static com.mcreater.amclcore.util.PropertyUtil.readProperty;
 
 @AllArgsConstructor
@@ -52,49 +52,54 @@ public class OAuth {
      * AMCL/AMCLCore azure application id
      */
     @Getter
-    private static final String CLIENT_ID = "1a969022-f24f-4492-a91c-6f4a6fcb373c";
+    private static final String defaultClientId = "1a969022-f24f-4492-a91c-6f4a6fcb373c";
     /**
      * client id override, using command line {@code -Damclcore.oauth.clientid.override=YOUR_CLIENTID}
      */
     @Getter
-    public static final String CLIENT_ID_PROPERTY_NAME = "amclcore.oauth.clientid.override";
+    public static final String clientIdPropertyName = "amclcore.oauth.clientid.override";
     /**
      * Minecraft azure application id
      */
     @Getter
     @Deprecated
-    private static final String MINECRAFT_AZURE_CLIENT_ID = "00000000402b5328";
+    private static final String minecraftAzureApplicationId = "00000000402b5328";
     /**
      * Minecraft azure login url
      */
     @Getter
-    private static final String MINECRAFT_AZURE_LOGIN_URL = "https://login.live.com/oauth20_authorize.srf?client_id=00000000402b5328&response_type=code&scope=service%3A%3Auser.auth.xboxlive.com%3A%3AMBI_SSL&redirect_uri=https%3A%2F%2Flogin.live.com%2Foauth20_desktop.srf";
+    private static final String minecraftAzureLoginUrl = "https://login.live.com/oauth20_authorize.srf?client_id=00000000402b5328&response_type=code&scope=service%3A%3Auser.auth.xboxlive.com%3A%3AMBI_SSL&redirect_uri=https%3A%2F%2Flogin.live.com%2Foauth20_desktop.srf";
     /**
      * Azure direct login url pattern.
      */
     @Getter
-    private static final Pattern MINECRAFT_AZURE_URL_PATTERN = Pattern.compile("https://login\\.live\\.com/oauth20_desktop\\.srf\\?code=(?<code>.*)&lc=(?<lc>.*)");
+    private static final Pattern minecraftAzureUrlPattern = Pattern.compile("https://login\\.live\\.com/oauth20_desktop\\.srf\\?code=(?<code>.*)&lc=(?<lc>.*)");
 
     /**
      * XBox token api url
      */
     @Getter
-    private static final String XBL_TOKEN_URL = "user.auth.xboxlive.com/user/authenticate";
+    private static final String xblTokenUrl = "user.auth.xboxlive.com/user/authenticate";
     /**
      * XSTS validation url
      */
     @Getter
-    private static final String XSTS_TOKEN_URL = "xsts.auth.xboxlive.com/xsts/authorize";
+    private static final String xstsTokenUrl = "xsts.auth.xboxlive.com/xsts/authorize";
 
     /**
      * Default device code handler, copy the user code {@link DeviceCodeModel#getUserCode()} and open browser {@link DeviceCodeModel#getVerificationUri()}
      */
     @Getter
-    private static final Consumer<DeviceCodeModel> defaultDevHandler = model2 -> ConcurrentExecutors.fastSubmitEx(
+    private static final Consumer<DeviceCodeModel> defaultDevHandler = model2 -> ConcurrentExecutors.submitEx(
             ConcurrentExecutors.AWT_EVENT_EXECUTOR,
             SwingUtil.copyContentAsync(model2.getUserCode()),
             SwingUtil.openBrowserAsync(model2.getVerificationUri())
     );
+    /**
+     * the login url for XBox XSTS to Minecraft
+     */
+    @Getter
+    private static final String mcLoginUrl = "api.minecraftservices.com/authentication/login_with_xbox";
 
     /**
      * Fetch device code model for auth
@@ -105,15 +110,15 @@ public class OAuth {
      * @throws IOException        If an I/O exception occurred
      */
     protected DeviceCodeModel fetchDeviceToken(Consumer<DeviceCodeModel> requestHandler) throws URISyntaxException, IOException {
-        DeviceCodeModel model = HttpClientWrapper.createNew(HttpClientWrapper.Method.GET)
-                .requestURI(deviceCodeUrl)
-                .requestURIParam("client_id", createClientID())
-                .requestURIParam("scope", buildScopeString("XboxLive.signin", "offline_access"))
-                .connectTimeout(5000)
-                .connectionRequestTimeout(5000)
-                .sendRequestAndReadJson(DeviceCodeModel.class);
+        DeviceCodeModel model = HttpClientWrapper.create(HttpClientWrapper.Method.GET)
+                .uri(deviceCodeUrl)
+                .uriParam("client_id", createClientID())
+                .uriParam("scope", buildScopeString("XboxLive.signin", "offline_access"))
+                .timeout(5000)
+                .reqTimeout(5000)
+                .sendAndReadJson(DeviceCodeModel.class);
 
-        Optional.of(requestHandler).ifPresent(deviceCodeModelConsumer -> deviceCodeModelConsumer.accept(model));
+        Optional.of(requestHandler).ifPresent(c -> c.accept(model));
         return model;
     }
 
@@ -126,40 +131,40 @@ public class OAuth {
      * @throws IOException        If an I/O exception occurred
      */
     protected TokenResponseModel checkToken(String deviceCode) throws URISyntaxException, IOException {
-        return HttpClientWrapper.createNew(HttpClientWrapper.Method.POST)
-                .requestURI(tokenUrl)
-                .requestEntityEncodedURL(
-                        new BasicNameValuePair("grant_type", buildScopeString2("urn", "ietf", "params", "oauth", "grant-type", "device_code")),
-                        new BasicNameValuePair("client_id", createClientID()),
-                        new BasicNameValuePair("code", deviceCode)
+        return HttpClientWrapper.create(HttpClientWrapper.Method.POST)
+                .uri(tokenUrl)
+                .entityEncodedUrl(
+                        createPair("grant_type", buildScopeString2("urn", "ietf", "params", "oauth", "grant-type", "device_code")),
+                        createPair("client_id", createClientID()),
+                        createPair("code", deviceCode)
                 )
-                .connectTimeout(5000)
-                .connectionRequestTimeout(5000)
-                .sendRequestAndReadJson(TokenResponseModel.class);
+                .timeout(5000)
+                .reqTimeout(5000)
+                .sendAndReadJson(TokenResponseModel.class);
     }
 
     /**
      * create token from auth code
      *
-     * @param authCode the auth code from {@link OAuth#authTokenUrl}
+     * @param url the url from {@link OAuth#authTokenUrl}
      * @return the convert result
      * @throws URISyntaxException If the auth code api url is malformed
      * @throws IOException        If an I/O exception occurred
      */
     @Deprecated
-    protected DeviceCodeConverterModel acquireAccessToken(String authCode) throws URISyntaxException, IOException {
-        AuthCodeModel model = HttpClientWrapper.createNew(HttpClientWrapper.Method.GET)
-                .requestURI(authTokenUrl)
-                .requestEntityEncodedURL(
-                        new BasicNameValuePair("client_id", MINECRAFT_AZURE_CLIENT_ID),
-                        new BasicNameValuePair("code", authCode),
-                        new BasicNameValuePair("grant_type", "authorization_code"),
-                        new BasicNameValuePair("redirect_uri", "https://login.live.com/oauth20_desktop.srf"),
-                        new BasicNameValuePair("scope", "service::user.auth.xboxlive.com::MBI_SSL")
+    protected DeviceCodeConverterModel acquireAccessToken(String url) throws URISyntaxException, IOException {
+        AuthCodeModel model = HttpClientWrapper.create(HttpClientWrapper.Method.GET)
+                .uri(authTokenUrl)
+                .entityEncodedUrl(
+                        createPair("client_id", getMinecraftAzureApplicationId()),
+                        createPair("code", parseRedirectUrl(url)),
+                        createPair("grant_type", "authorization_code"),
+                        createPair("redirect_uri", "https://login.live.com/oauth20_desktop.srf"),
+                        createPair("scope", "service::user.auth.xboxlive.com::MBI_SSL")
                 )
-                .connectTimeout(5000)
-                .connectionRequestTimeout(5000)
-                .sendRequestAndReadJson(AuthCodeModel.class);
+                .timeout(5000)
+                .reqTimeout(5000)
+                .sendAndReadJson(AuthCodeModel.class);
 
         return DeviceCodeConverterModel.builder()
                 .model(
@@ -173,13 +178,13 @@ public class OAuth {
     }
 
     /**
-     * parse url from {@link OAuth#MINECRAFT_AZURE_URL_PATTERN} login
+     * parse url from {@link OAuth#minecraftAzureUrlPattern} login
      *
      * @param s the redirect url
      * @return the parsed code
      */
-    public String parseRedirUrl(String s) {
-        Matcher matcher = getMINECRAFT_AZURE_URL_PATTERN().matcher(s);
+    public String parseRedirectUrl(String s) {
+        Matcher matcher = getMinecraftAzureUrlPattern().matcher(s);
         return matcher.find() ? matcher.group("code") : null;
     }
 
@@ -230,9 +235,9 @@ public class OAuth {
      * @throws IOException        If an I/O Exception occurred
      */
     public XBLUserModel fetchXBLToken(DeviceCodeConverterModel model) throws IOException, URISyntaxException {
-        XBLTokenRequestModel requestModel = HttpClientWrapper.createNew(HttpClientWrapper.Method.POST)
-                .requestURI(getXBL_TOKEN_URL())
-                .requestEntityJson(
+        XBLTokenRequestModel requestModel = HttpClientWrapper.create(HttpClientWrapper.Method.POST)
+                .uri(getXblTokenUrl())
+                .entityJson(
                         XBLTokenResponseModel.builder()
                                 .Properties(
                                         XBLTokenResponseModel.XBLTokenResponsePropertiesModel.builder()
@@ -244,7 +249,7 @@ public class OAuth {
                                 .RelyingParty("http://auth.xboxlive.com")
                                 .TokenType("JWT")
                 )
-                .sendRequestAndReadJson(XBLTokenRequestModel.class);
+                .sendAndReadJson(XBLTokenRequestModel.class);
 
         Optional<String> userHash = requestModel.getDisplayClaims().getXui().stream()
                 .map(XBLTokenRequestModel.XBLTokenUserHashModel::getUhs)
@@ -258,22 +263,20 @@ public class OAuth {
     }
 
     public XBLUserModel fetchXSTSToken(XBLUserModel model) throws IOException, URISyntaxException {
-        XBLTokenRequestModel requestModel = HttpClientWrapper.createNew(HttpClientWrapper.Method.POST)
-                .requestURI(getXSTS_TOKEN_URL())
-                .requestEntityJson(XSTSTokenResponseModel.builder()
+        XBLTokenRequestModel requestModel = HttpClientWrapper.create(HttpClientWrapper.Method.POST)
+                .uri(getXstsTokenUrl())
+                .entityJson(XSTSTokenResponseModel.builder()
                         .Properties(
                                 XSTSTokenResponseModel.XSTSTokenResponsePropertiesModel.builder()
                                         .SandboxId("RETAIL")
-                                        .UserTokens(new Vector<String>() {{
-                                            add(model.getToken());
-                                        }})
+                                        .UserTokens(createList(model.getToken()))
                                         .build()
                         )
                         .RelyingParty("rp://api.minecraftservices.com/")
                         .TokenType("JWT")
                         .build()
                 )
-                .sendRequestAndReadJson(XBLTokenRequestModel.class);
+                .sendAndReadJson(XBLTokenRequestModel.class);
 
         Optional<String> userHash = requestModel.getDisplayClaims().getXui().stream()
                 .map(XBLTokenRequestModel.XBLTokenUserHashModel::getUhs)
@@ -305,7 +308,7 @@ public class OAuth {
     }
 
     private static String createClientID() {
-        return readProperty(CLIENT_ID_PROPERTY_NAME, CLIENT_ID);
+        return readProperty(getClientIdPropertyName(), getDefaultClientId());
     }
 
     @AllArgsConstructor
@@ -314,7 +317,7 @@ public class OAuth {
 
         public XBLUserModel call() throws Exception {
             DeviceCodeConverterModel deviceCode = detectUserCodeLoop(requestHandler);
-            return ConcurrentExecutors.fastSubmit(
+            return ConcurrentExecutors.submit(
                     ConcurrentExecutors.OAUTH_LOGIN_EXECUTOR,
                     new OAuthLoginPartTask(deviceCode)
             ).get();

@@ -74,79 +74,80 @@ public class HttpClientWrapper {
         request = createUriRequest(method);
     }
 
-    public static HttpClientWrapper createNew(Method method) {
+    public static HttpClientWrapper create(Method method) {
         return new HttpClientWrapper(method);
     }
 
-    public HttpClientWrapper connectTimeout(int timeout) {
+    public HttpClientWrapper timeout(int timeout) {
         config.setConnectTimeout(timeout);
         return this;
     }
 
-    public HttpClientWrapper socketTimeout(int timeout) {
+    public HttpClientWrapper socTimeout(int timeout) {
         config.setSocketTimeout(timeout);
         return this;
     }
 
-    public HttpClientWrapper connectionRequestTimeout(int timeout) {
+    public HttpClientWrapper reqTimeout(int timeout) {
         config.setConnectionRequestTimeout(timeout);
         return this;
     }
 
-    public HttpClientWrapper requestURIScheme(Scheme scheme) {
+    public HttpClientWrapper uriScheme(Scheme scheme) {
         requestURI.setScheme(scheme.getScheme());
         return this;
     }
 
-    public HttpClientWrapper requestURI(String host, String path) {
+    public HttpClientWrapper uri(String host, String path) {
         requestURI.setHost(host).setPath(path);
         return this;
     }
 
-    public HttpClientWrapper requestURI(String url) {
+    public HttpClientWrapper uri(String url) {
         Pair<String, String> parsed = NetUtil.parseToPair(url);
-        return requestURI(parsed.getKey(), parsed.getValue());
+        return uri(parsed.getKey(), parsed.getValue());
     }
 
-    public HttpClientWrapper requestURIPort(int port) {
+    public HttpClientWrapper uriPort(int port) {
         requestURI.setPort(port);
         return this;
     }
 
-    public HttpClientWrapper requestURICharset(Charset charset) {
+    public HttpClientWrapper uriCharset(Charset charset) {
         requestURI.setCharset(charset);
         return this;
     }
 
-    public HttpClientWrapper requestURIParam(String key, String value) {
+    public HttpClientWrapper uriParam(String key, String value) {
         requestURI.addParameter(key, value);
         return this;
     }
 
-    public HttpClientWrapper requestHeader(String key, String value) {
+    public HttpClientWrapper header(String key, String value) {
         request.addHeader(key, value);
         return this;
     }
 
-    public HttpClientWrapper requestEntity(HttpEntity entity) {
-        if (request instanceof HttpEntityEnclosingRequestBase) ((HttpEntityEnclosingRequestBase) request).setEntity(entity);
+    public HttpClientWrapper entity(HttpEntity entity) {
+        if (request instanceof HttpEntityEnclosingRequestBase)
+            ((HttpEntityEnclosingRequestBase) request).setEntity(entity);
         return this;
     }
 
-    public HttpClientWrapper requestEntityJson(String data) throws UnsupportedEncodingException {
-        return requestEntity(
+    public HttpClientWrapper entityJson(String data) throws UnsupportedEncodingException {
+        return entity(
                 HttpStringEntityWrapper.builder()
                         .content(data)
                         .build().toEntity()
         );
     }
 
-    public <T> HttpClientWrapper requestEntityJson(T data) throws UnsupportedEncodingException {
-        return requestEntityJson(GSON_PARSER.toJson(data));
+    public <T> HttpClientWrapper entityJson(T data) throws UnsupportedEncodingException {
+        return entityJson(GSON_PARSER.toJson(data));
     }
 
-    public HttpClientWrapper requestEntityEncodedURL(String data) throws UnsupportedEncodingException {
-        return requestEntity(
+    public HttpClientWrapper entityEncodedUrl(String data) throws UnsupportedEncodingException {
+        return entity(
                 HttpStringEntityWrapper.builder()
                         .contentType("application/x-www-form-urlencoded")
                         .content(data)
@@ -154,8 +155,8 @@ public class HttpClientWrapper {
         );
     }
 
-    public HttpClientWrapper requestEntityEncodedURL(NameValuePair... pairs) throws UnsupportedEncodingException {
-        return requestEntityEncodedURL(
+    public HttpClientWrapper entityEncodedUrl(NameValuePair... pairs) throws UnsupportedEncodingException {
+        return entityEncodedUrl(
                 URLEncodedUtils.format(
                         Arrays.stream(pairs).collect(Collectors.toList()),
                         StandardCharsets.UTF_8
@@ -163,8 +164,8 @@ public class HttpClientWrapper {
         );
     }
 
-    public HttpClientWrapper requestEntityEncodedURL(List<NameValuePair> pairs) throws UnsupportedEncodingException {
-        return requestEntityEncodedURL(
+    public HttpClientWrapper entityEncodedUrl(List<NameValuePair> pairs) throws UnsupportedEncodingException {
+        return entityEncodedUrl(
                 URLEncodedUtils.format(
                         pairs,
                         StandardCharsets.UTF_8
@@ -173,33 +174,33 @@ public class HttpClientWrapper {
     }
 
     @SafeVarargs
-    public final HttpClientWrapper requestEntityEncodedURLEntry(Map.Entry<String, String>... pairs) throws UnsupportedEncodingException {
-        return requestEntityEncodedURLEntry(
+    public final HttpClientWrapper entityEncodedURLEntry(Map.Entry<String, String>... pairs) throws UnsupportedEncodingException {
+        return entityEncodedURLEntry(
                 Arrays.stream(pairs).collect(Collectors.toList())
         );
     }
 
-    public HttpClientWrapper requestEntityEncodedURLEntry(List<Map.Entry<String, String>> pairs) throws UnsupportedEncodingException {
-        return requestEntityEncodedURL(
+    public HttpClientWrapper entityEncodedURLEntry(List<Map.Entry<String, String>> pairs) throws UnsupportedEncodingException {
+        return entityEncodedUrl(
                 pairs.stream()
                         .map((Function<Map.Entry<String, String>, NameValuePair>) entry -> new BasicNameValuePair(entry.getKey(), entry.getValue()))
                         .collect(Collectors.toList())
         );
     }
 
-    public HttpClientWrapper requestEntityEncodedURLEntry(Map<String, String> pairs) throws UnsupportedEncodingException {
-        return requestEntityEncodedURLEntry(
+    public HttpClientWrapper entityEncodedURLEntry(Map<String, String> pairs) throws UnsupportedEncodingException {
+        return entityEncodedURLEntry(
                 new Vector<>(pairs.entrySet())
         );
     }
 
-    public HttpClientWrapper requestOnCancelled(Cancellable cancellable) {
+    public HttpClientWrapper cancel(Cancellable cancellable) {
         request.setCancellable(cancellable);
         return this;
     }
 
-    public HttpClientWrapper requestCancel(boolean b) {
-        return requestOnCancelled(() -> b);
+    public HttpClientWrapper cancel(boolean b) {
+        return cancel(() -> b);
     }
 
     public HttpClientWrapper catchHttpExc(boolean catchHttpError) {
@@ -207,16 +208,17 @@ public class HttpClientWrapper {
         return this;
     }
 
-    public HttpEntity sendRequest() throws URISyntaxException, IOException {
+    public HttpEntity send() throws URISyntaxException, IOException {
         request.setURI(requestURI.build());
         request.setConfig(config.build());
         HttpResponse req = client.execute(request);
-        if (req.getStatusLine().getStatusCode() > 399 && catchHttpError) throw new RequestException(req.getStatusLine(), req.getEntity());
+        if (req.getStatusLine().getStatusCode() > 399 && catchHttpError)
+            throw new RequestException(req.getStatusLine(), req.getEntity());
         return req.getEntity();
     }
 
-    public <T> T sendRequestAndReadJson(Class<T> clazz) throws URISyntaxException, IOException {
-        return GSON_PARSER.fromJson(IOStreamUtil.readStream(sendRequest().getContent()), clazz);
+    public <T> T sendAndReadJson(Class<T> clazz) throws URISyntaxException, IOException {
+        return GSON_PARSER.fromJson(IOStreamUtil.readStream(send().getContent()), clazz);
     }
 
     private HttpRequestBase createUriRequest(Method method) {
