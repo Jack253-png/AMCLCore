@@ -12,6 +12,8 @@ import java.util.function.Consumer;
 public abstract class AbstractTask<T> extends FutureTask<T> {
     @Getter
     private final List<Consumer<T>> resultConsumers = new Vector<>();
+    @Getter
+    private final List<Consumer<Exception>> errorConsumers = new Vector<>();
 
     public AbstractTask() {
         super(() -> null);

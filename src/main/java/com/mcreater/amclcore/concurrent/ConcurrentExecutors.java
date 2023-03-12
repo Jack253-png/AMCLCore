@@ -88,10 +88,15 @@ public class ConcurrentExecutors {
     public static <T> Future<T> fastSubmit(ExecutorService executor, AbstractTask<T> task) {
         EVENT_LOGGER.info(String.format("Task %s submitted to executor %s", task, executor));
         return executor.submit(() -> {
-            T result = task.callableCall();
-            EVENT_LOGGER.info(String.format("Task %s finished", task));
-            task.getResultConsumers().forEach(tConsumer -> tConsumer.accept(result));
-            return result;
+            try {
+                T result = task.callableCall();
+                EVENT_LOGGER.info(String.format("Task %s finished", task));
+                task.getResultConsumers().forEach(tConsumer -> tConsumer.accept(result));
+                return result;
+            } catch (Exception e) {
+                task.getErrorConsumers().forEach(tConsumer -> tConsumer.accept(e));
+            }
+            return null;
         });
     }
 
