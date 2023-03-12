@@ -5,22 +5,65 @@ import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
 import java.lang.reflect.Field;
+import java.util.Arrays;
 import java.util.List;
 import java.util.Vector;
 import java.util.concurrent.Callable;
 import java.util.concurrent.FutureTask;
 import java.util.function.Consumer;
 
-public abstract class AbstractTask<T> extends FutureTask<T> {
+public abstract class AbstractTask<T, V> extends FutureTask<T> {
     private static final Logger EVENT_LOGGER = LogManager.getLogger(AbstractTask.class);
     @Getter
     private final List<Consumer<T>> resultConsumers = new Vector<>();
     @Getter
     private final List<Consumer<Exception>> errorConsumers = new Vector<>();
+    @Getter
+    private final List<Consumer<V>> stateConsumers = new Vector<>();
+    @Getter
+    private V state;
 
     public AbstractTask() {
         super(() -> null);
         setCallable();
+    }
+
+    protected void setState(V state) {
+        this.state = state;
+        stateConsumers.forEach(c -> c.accept(state));
+    }
+
+    public final AbstractTask<T, V> addResultHandler(Consumer<T> result) {
+        getResultConsumers().add(result);
+        return this;
+    }
+
+    @SafeVarargs
+    public final AbstractTask<T, V> addResultHandlers(Consumer<T>... error) {
+        Arrays.asList(error).forEach(this::addResultHandler);
+        return this;
+    }
+
+    public final AbstractTask<T, V> addErrorHandler(Consumer<Exception> error) {
+        getErrorConsumers().add(error);
+        return this;
+    }
+
+    @SafeVarargs
+    public final AbstractTask<T, V> addErrorHandlers(Consumer<Exception>... result) {
+        Arrays.asList(result).forEach(this::addErrorHandler);
+        return this;
+    }
+
+    public final AbstractTask<T, V> addStateHandler(Consumer<V> state) {
+        getStateConsumers().add(state);
+        return this;
+    }
+
+    @SafeVarargs
+    public final AbstractTask<T, V> addStateHandlers(Consumer<V>... state) {
+        Arrays.asList(state).forEach(this::addStateHandler);
+        return this;
     }
 
     /**

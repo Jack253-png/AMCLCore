@@ -312,7 +312,7 @@ public class OAuth {
     }
 
     @AllArgsConstructor
-    public class OAuthLoginTask extends AbstractTask<XBLUserModel> {
+    public class OAuthLoginTask extends AbstractTask<XBLUserModel, Void> {
         private final Consumer<DeviceCodeModel> requestHandler;
 
         public XBLUserModel call() throws Exception {
@@ -325,7 +325,7 @@ public class OAuth {
     }
 
     @AllArgsConstructor
-    public class OAuthLoginPartTask extends AbstractTask<XBLUserModel> {
+    public class OAuthLoginPartTask extends AbstractTask<XBLUserModel, Void> {
         private final DeviceCodeConverterModel model;
 
         public XBLUserModel call() throws Exception {

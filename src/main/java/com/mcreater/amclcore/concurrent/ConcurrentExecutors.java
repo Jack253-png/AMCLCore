@@ -85,7 +85,7 @@ public class ConcurrentExecutors {
      *
      * @return the executed future task
      */
-    public static <T> AbstractTask<T> submit(ExecutorService executor, AbstractTask<T> task) {
+    public static <T, V> AbstractTask<T, V> submit(ExecutorService executor, AbstractTask<T, V> task) {
         EVENT_LOGGER.info(String.format("Task %s submitted to executor %s", task, executor));
         executor.execute(task);
         return task;
@@ -97,7 +97,7 @@ public class ConcurrentExecutors {
      * @return the executed future tasks
      */
     @SafeVarargs
-    public static <T> List<AbstractTask<T>> submit(ExecutorService executor, AbstractTask<T>... tasks) {
+    public static <T, V> List<AbstractTask<T, V>> submit(ExecutorService executor, AbstractTask<T, V>... tasks) {
         return Arrays.stream(tasks)
                 .map(task -> submit(executor, task))
                 .collect(Collectors.toList());
@@ -108,7 +108,7 @@ public class ConcurrentExecutors {
      *
      * @return the executed future tasks
      */
-    public static List<AbstractTask<?>> submitEx(ExecutorService executor, AbstractTask<?>... tasks) {
+    public static List<AbstractTask<?, ?>> submitEx(ExecutorService executor, AbstractTask<?, ?>... tasks) {
         return Arrays.stream(tasks)
                 .map(task -> submit(executor, task))
                 .collect(Collectors.toList());

@@ -25,9 +25,11 @@ public class SwingUtil {
         NOT_FOUND,
         INTERNAL_EXCEPTION
     }
+
     @AllArgsConstructor
-    public static class BrowserOpenTask extends AbstractTask<BrowserState> {
+    public static class BrowserOpenTask extends AbstractTask<BrowserState, Void> {
         private final String url;
+
         public BrowserState call() {
             try {
                 if (supportAction(Desktop.Action.BROWSE)) {
@@ -60,12 +62,14 @@ public class SwingUtil {
     }
 
     @AllArgsConstructor
-    public static class CopyContentTask extends AbstractTask<Void> {
+    public static class CopyContentTask extends AbstractTask<Void, Void> {
         private final String content;
+
         public Void call() {
             Toolkit.getDefaultToolkit()
                     .getSystemClipboard()
-                    .setContents(new StringSelection(content), (clipboard1, transferable) -> {});
+                    .setContents(new StringSelection(content), (clipboard1, transferable) -> {
+                    });
             return null;
         }
     }
