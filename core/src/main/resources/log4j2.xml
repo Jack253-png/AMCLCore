@@ -18,7 +18,7 @@
     <Loggers>
         <Root level="info">
             <AppenderRef ref="SysOut"/>
-            <AppenderRef ref="LogFile"/>
+<!--            <AppenderRef ref="LogFile"/>-->
         </Root>
     </Loggers>
 </Configuration>

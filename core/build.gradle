@@ -21,7 +21,7 @@ compileJava {
     targetCompatibility = JavaVersion.VERSION_1_8
     options.verbose = false
     options.listFiles = true
-    options.annotationProcessorPath = files(new File(projectDir.getAbsolutePath(), "lombok.jar").getAbsolutePath())
+    options.annotationProcessorPath = files(new File(rootProject.getRootDir().getAbsolutePath(), "lombok.jar").getAbsolutePath())
 }
 
 compileTestJava {
@@ -29,7 +29,7 @@ compileTestJava {
     targetCompatibility = JavaVersion.VERSION_1_8
     options.verbose = false
     options.listFiles = true
-    options.annotationProcessorPath = files(new File(projectDir.getAbsolutePath(), "lombok.jar").getAbsolutePath())
+    options.annotationProcessorPath = files(new File(rootProject.getRootDir().getAbsolutePath(), "lombok.jar").getAbsolutePath())
 }
 
 repositories {
@@ -54,12 +54,4 @@ dependencies {
 
 test {
     useJUnitPlatform()
-}
-
-ext {
-    javaMainClass = "com.mcreater.amclcore.Main"
-}
-
-application {
-    mainClassName = javaMainClass
 }
