@@ -1,5 +1,6 @@
 package com.mcreater.amclcore.i18n;
 
+import com.google.gson.reflect.TypeToken;
 import com.mcreater.amclcore.exceptions.report.ExceptionReporter;
 import com.mcreater.amclcore.model.i18n.LangIndexModel;
 import com.mcreater.amclcore.util.IOStreamUtil;
@@ -14,6 +15,7 @@ import java.util.Locale;
 import java.util.Map;
 import java.util.Objects;
 import java.util.Vector;
+import java.util.function.Function;
 import java.util.stream.Collectors;
 
 import static com.mcreater.amclcore.util.JsonUtil.GSON_PARSER;
@@ -41,9 +43,11 @@ public class I18NManager {
                     I18NManager::parseI18N
             ));
     private static final Map<Locale, Map<String, String>> transitionMap = new HashMap<>();
+    private static final Map<Locale, List<String>> transitionFiles = new HashMap<>();
 
     static {
         reloadIndex();
+        reloadTransition();
     }
 
     private static void reloadIndex() {
@@ -58,6 +62,36 @@ public class I18NManager {
         } catch (IOException e) {
             ExceptionReporter.report(e, ExceptionReporter.ExceptionType.NATIVE);
         }
+    }
+
+    private static void reloadTransition() {
+        transitionMap.clear();
+        localeRemap.keySet().forEach(locale -> transitionMap.put(locale, new HashMap<>()));
+        localeRemap.keySet().forEach(locale -> transitionFiles.put(locale, new Vector<>()));
+        parsedIndexes.parallelStream()
+                .map(LangIndexModel::getResources)
+                .forEach(m -> m.forEach((s, s2) -> transitionFiles.get(Locale.forLanguageTag(s)).add(s2)));
+        transitionFiles.forEach((locale, strings) -> transitionMap.put(locale, strings.parallelStream()
+                .map((Function<String, Map<String, String>>) s -> {
+                    try {
+                        return GSON_PARSER.fromJson(
+                                new InputStreamReader(
+                                        Objects.requireNonNull(
+                                                I18NManager.class.getClassLoader().getResource(s)
+                                        ).openStream()
+                                ), TypeToken.getParameterized(
+                                        Map.class,
+                                        String.class,
+                                        String.class).getType()
+                        );
+                    } catch (Exception e) {
+                        ExceptionReporter.report(e, ExceptionReporter.ExceptionType.IO);
+                        return new HashMap<>();
+                    }
+                })
+                .flatMap(m -> m.entrySet().parallelStream())
+                .collect(Collectors.toMap(Map.Entry::getKey, Map.Entry::getValue))
+        ));
     }
 
     private static String parseI18N(Locale locale) {
