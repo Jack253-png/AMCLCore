@@ -4,6 +4,7 @@ import com.google.gson.reflect.TypeToken;
 import com.mcreater.amclcore.exceptions.report.ExceptionReporter;
 import com.mcreater.amclcore.model.i18n.LangIndexModel;
 import com.mcreater.amclcore.util.IOStreamUtil;
+import lombok.Getter;
 
 import java.io.IOException;
 import java.io.InputStreamReader;
@@ -21,27 +22,25 @@ import java.util.stream.Collectors;
 import static com.mcreater.amclcore.util.JsonUtil.GSON_PARSER;
 import static java.util.Locale.CANADA;
 import static java.util.Locale.CANADA_FRENCH;
-import static java.util.Locale.CHINA;
 import static java.util.Locale.FRANCE;
 import static java.util.Locale.GERMANY;
 import static java.util.Locale.ITALY;
 import static java.util.Locale.JAPAN;
 import static java.util.Locale.KOREA;
-import static java.util.Locale.PRC;
 import static java.util.Locale.SIMPLIFIED_CHINESE;
-import static java.util.Locale.TAIWAN;
 import static java.util.Locale.TRADITIONAL_CHINESE;
 import static java.util.Locale.UK;
 import static java.util.Locale.US;
 
 public class I18NManager {
     private static List<LangIndexModel> parsedIndexes = new Vector<>();
-    private static final Map<Locale, String> localeRemap = Arrays.asList(SIMPLIFIED_CHINESE, TRADITIONAL_CHINESE, FRANCE, GERMANY, ITALY, JAPAN, KOREA, CHINA, PRC, TAIWAN, UK, US, CANADA, CANADA_FRENCH)
-            .parallelStream()
+    private static final Map<Locale, String> localeRemap = Arrays.asList(SIMPLIFIED_CHINESE, TRADITIONAL_CHINESE, FRANCE, GERMANY, ITALY, JAPAN, KOREA, UK, US, CANADA, CANADA_FRENCH)
+            .stream()
             .collect(Collectors.toMap(
                     locale -> locale,
                     I18NManager::parseI18N
             ));
+    @Getter
     private static final Map<Locale, Map<String, String>> transitionMap = new HashMap<>();
     private static final Map<Locale, List<String>> transitionFiles = new HashMap<>();
 
@@ -53,7 +52,7 @@ public class I18NManager {
     private static void reloadIndex() {
         try {
             parsedIndexes = Collections.list(I18NManager.class.getClassLoader().getResources("lang-index.json"))
-                    .parallelStream()
+                    .stream()
                     .map(IOStreamUtil::tryOpenStream)
                     .filter(Objects::nonNull)
                     .map(InputStreamReader::new)
@@ -68,10 +67,10 @@ public class I18NManager {
         transitionMap.clear();
         localeRemap.keySet().forEach(locale -> transitionMap.put(locale, new HashMap<>()));
         localeRemap.keySet().forEach(locale -> transitionFiles.put(locale, new Vector<>()));
-        parsedIndexes.parallelStream()
+        parsedIndexes.stream()
                 .map(LangIndexModel::getResources)
                 .forEach(m -> m.forEach((s, s2) -> transitionFiles.get(Locale.forLanguageTag(s)).add(s2)));
-        transitionFiles.forEach((locale, strings) -> transitionMap.put(locale, strings.parallelStream()
+        transitionFiles.forEach((locale, strings) -> transitionMap.put(locale, strings.stream()
                 .map((Function<String, Map<String, String>>) s -> {
                     try {
                         return GSON_PARSER.fromJson(
@@ -89,7 +88,7 @@ public class I18NManager {
                         return new HashMap<>();
                     }
                 })
-                .flatMap(m -> m.entrySet().parallelStream())
+                .flatMap(m -> m.entrySet().stream())
                 .collect(Collectors.toMap(Map.Entry::getKey, Map.Entry::getValue))
         ));
     }

@@ -5,9 +5,11 @@ import com.mcreater.amclcore.concurrent.ConcurrentExecutors;
 import com.mcreater.amclcore.i18n.I18NManager;
 import com.mcreater.amclcore.model.oauth.XBLUserModel;
 
+import static java.util.Locale.SIMPLIFIED_CHINESE;
+
 public class Main {
     public static void main(String[] args) throws Exception {
-        I18NManager.test();
+        System.out.println(I18NManager.getTransitionMap().get(SIMPLIFIED_CHINESE));
         System.setProperty("log4j.skipJansi", "false");
     }
 

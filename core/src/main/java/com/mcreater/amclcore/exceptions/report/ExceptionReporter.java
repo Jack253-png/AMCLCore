@@ -19,7 +19,7 @@ public class ExceptionReporter {
     private static final List<BiConsumer<Throwable, ExceptionType>> reporters = new Vector<>();
 
     public static void report(Throwable throwable, ExceptionType type) {
-        throwable.printStackTrace();
+        throwable.printStackTrace(System.out);
         reporters.parallelStream().forEach(c -> c.accept(throwable, type));
     }
 
