@@ -17,6 +17,8 @@
  */
 package com.mcreater.amclcore.util.platform;
 
+import com.mcreater.amclcore.exceptions.report.ExceptionReporter;
+
 import java.io.BufferedReader;
 import java.io.InputStreamReader;
 import java.util.Locale;
@@ -211,7 +213,7 @@ public enum Architecture {
                     try (BufferedReader reader = new BufferedReader(new InputStreamReader(process.getInputStream(), OperatingSystem.NATIVE_CHARSET))) {
                         sysArchName = reader.readLine().trim();
                     } catch (Exception e) {
-                        e.printStackTrace();
+                        ExceptionReporter.report(e, ExceptionReporter.ExceptionType.NATIVE);
                     }
                 }
             } catch (Throwable ignored) {

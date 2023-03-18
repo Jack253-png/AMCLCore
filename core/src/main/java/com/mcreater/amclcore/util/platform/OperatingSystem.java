@@ -17,6 +17,8 @@
  */
 package com.mcreater.amclcore.util.platform;
 
+import com.mcreater.amclcore.exceptions.report.ExceptionReporter;
+
 import java.io.BufferedReader;
 import java.io.File;
 import java.io.IOException;
@@ -109,12 +111,12 @@ public enum OperatingSystem {
 
     static {
         String nativeEncoding = System.getProperty("native.encoding");
-        String hmclNativeEncoding = System.getProperty("hmcl.native.encoding");
+        String amclNativeEncoding = System.getProperty("amcl.native.encoding.override");
         Charset nativeCharset = Charset.defaultCharset();
 
         try {
-            if (hmclNativeEncoding != null) {
-                nativeCharset = Charset.forName(hmclNativeEncoding);
+            if (amclNativeEncoding != null) {
+                nativeCharset = Charset.forName(amclNativeEncoding);
             } else {
                 if (nativeEncoding != null && !nativeEncoding.equalsIgnoreCase(nativeCharset.name())) {
                     nativeCharset = Charset.forName(nativeEncoding);
@@ -127,7 +129,7 @@ public enum OperatingSystem {
                 }
             }
         } catch (UnsupportedCharsetException e) {
-            e.printStackTrace();
+            ExceptionReporter.report(e, ExceptionReporter.ExceptionType.NATIVE);
         }
         NATIVE_CHARSET = nativeCharset;
 

@@ -1,0 +1,9 @@
+{
+  "name": {
+    "key": "core.transitions.name"
+  },
+  "resources": {
+    "en-us": "assets/amclcore/lang/en-us.json",
+    "zh-cn": "assets/amclcore/lang/zh-cn.json"
+  }
+}

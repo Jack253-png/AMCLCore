@@ -1,5 +1,6 @@
 package com.mcreater.amclcore.concurrent;
 
+import com.mcreater.amclcore.exceptions.report.ExceptionReporter;
 import lombok.Getter;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
@@ -75,7 +76,7 @@ public abstract class AbstractTask<T, V> extends FutureTask<T> {
             field.setAccessible(true);
             field.set(this, (Callable<T>) AbstractTask.this::callInternal);
         } catch (Exception e) {
-            e.printStackTrace();
+            ExceptionReporter.report(e, ExceptionReporter.ExceptionType.REFLECT);
         }
     }
 
@@ -94,8 +95,8 @@ public abstract class AbstractTask<T, V> extends FutureTask<T> {
             getResultConsumers().forEach(c -> c.accept(result));
             return result;
         } catch (Exception e) {
-            e.printStackTrace();
-            getErrorConsumers().forEach(tConsumer -> tConsumer.accept(e));
+            ExceptionReporter.report(e, ExceptionReporter.ExceptionType.CONCURRENT);
+            getErrorConsumers().forEach(c -> c.accept(e));
         }
         return null;
     }
