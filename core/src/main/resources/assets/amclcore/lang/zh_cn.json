@@ -1,0 +1,4 @@
+{
+  "core.transitions.name": "AMCL 核心翻译包",
+  "test": "测试:%s %s"
+}

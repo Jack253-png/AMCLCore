@@ -2,22 +2,21 @@ package com.mcreater.amclcore;
 
 import com.mcreater.amclcore.account.auth.OAuth;
 import com.mcreater.amclcore.concurrent.ConcurrentExecutors;
-import com.mcreater.amclcore.i18n.I18NManager;
 import com.mcreater.amclcore.model.oauth.XBLUserModel;
 
-import static java.util.Locale.SIMPLIFIED_CHINESE;
+import java.util.Optional;
 
 public class Main {
     public static void main(String[] args) throws Exception {
-        System.out.println(I18NManager.getTransitionMap().get(SIMPLIFIED_CHINESE));
         System.setProperty("log4j.skipJansi", "false");
+        loginTest();
     }
 
     public static void loginTest() throws Exception {
-        XBLUserModel model = ConcurrentExecutors.submit(
+        Optional<XBLUserModel> model = ConcurrentExecutors.submit(
                 ConcurrentExecutors.EVENT_QUEUE_EXECUTOR,
                 OAuth.MICROSOFT.fetchDeviceTokenAsync(OAuth.getDefaultDevHandler())
         ).get();
-        System.out.println(model.getHash());
+        System.out.println(model.orElse(null));
     }
 }

@@ -4,7 +4,10 @@ import com.google.gson.reflect.TypeToken;
 import com.mcreater.amclcore.exceptions.report.ExceptionReporter;
 import com.mcreater.amclcore.model.i18n.LangIndexModel;
 import com.mcreater.amclcore.util.IOStreamUtil;
+import lombok.Builder;
+import lombok.Data;
 import lombok.Getter;
+import org.apache.commons.lang3.tuple.ImmutablePair;
 
 import java.io.IOException;
 import java.io.InputStreamReader;
@@ -14,10 +17,12 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
+import java.util.MissingFormatArgumentException;
 import java.util.Objects;
 import java.util.Vector;
 import java.util.function.Function;
 import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 import static com.mcreater.amclcore.util.JsonUtil.GSON_PARSER;
 import static java.util.Locale.CANADA;
@@ -31,11 +36,11 @@ import static java.util.Locale.SIMPLIFIED_CHINESE;
 import static java.util.Locale.TRADITIONAL_CHINESE;
 import static java.util.Locale.UK;
 import static java.util.Locale.US;
+import static java.util.Objects.requireNonNull;
 
 public class I18NManager {
     private static List<LangIndexModel> parsedIndexes = new Vector<>();
-    private static final Map<Locale, String> localeRemap = Arrays.asList(SIMPLIFIED_CHINESE, TRADITIONAL_CHINESE, FRANCE, GERMANY, ITALY, JAPAN, KOREA, UK, US, CANADA, CANADA_FRENCH)
-            .stream()
+    private static final Map<Locale, String> localeRemap = Stream.of(SIMPLIFIED_CHINESE, TRADITIONAL_CHINESE, FRANCE, GERMANY, ITALY, JAPAN, KOREA, UK, US, CANADA, CANADA_FRENCH)
             .collect(Collectors.toMap(
                     locale -> locale,
                     I18NManager::parseI18N
@@ -69,13 +74,15 @@ public class I18NManager {
         localeRemap.keySet().forEach(locale -> transitionFiles.put(locale, new Vector<>()));
         parsedIndexes.stream()
                 .map(LangIndexModel::getResources)
-                .forEach(m -> m.forEach((s, s2) -> transitionFiles.get(Locale.forLanguageTag(s)).add(s2)));
+                .flatMap(m -> m.entrySet().stream())
+                .map(e -> new ImmutablePair<>(e.getKey().replace("_", "-"), e.getValue()))
+                .forEach(e -> transitionFiles.get(Locale.forLanguageTag(e.getKey())).add(e.getValue()));
         transitionFiles.forEach((locale, strings) -> transitionMap.put(locale, strings.stream()
                 .map((Function<String, Map<String, String>>) s -> {
                     try {
                         return GSON_PARSER.fromJson(
                                 new InputStreamReader(
-                                        Objects.requireNonNull(
+                                        requireNonNull(
                                                 I18NManager.class.getClassLoader().getResource(s)
                                         ).openStream()
                                 ), TypeToken.getParameterized(
@@ -94,14 +101,79 @@ public class I18NManager {
     }
 
     private static String parseI18N(Locale locale) {
-        return new StringBuilder()
-                .append(locale.getLanguage())
-                .append("-")
-                .append(locale.getCountry())
-                .toString();
+        return locale.getLanguage() +
+                "_" +
+                locale.getCountry();
     }
 
-    public static void test() {
-        System.out.println(parseI18N(Locale.CHINA));
+    private static String getNotNull(Locale locale, String key, Object... args) throws NullPointerException {
+        try {
+            return requireNonNull(String.format(getTransitionMap().get(locale).get(key), args));
+        } catch (MissingFormatArgumentException e) {
+            return requireNonNull(getTransitionMap().get(locale).get(key));
+        }
+    }
+
+    /**
+     * get string from transition files
+     *
+     * @param locale the target locale
+     * @param key    the string key
+     * @param args   format args
+     * @return the fetched string
+     */
+    private static String get(Locale locale, String key, Object... args) {
+        // TODO when string exists in the "locale" field
+        try {
+            return getNotNull(locale, key, args);
+        } catch (Exception ignored) {
+        }
+        // TODO if not exists, find the string in the default locale (Locale.US)
+        try {
+            return getNotNull(US, key, args);
+        } catch (Exception ignored) {
+        }
+        // TODO if the string don't exists at all, return the original key and format args
+        return key + (args.length > 0 ? Arrays.toString(args) : "");
+    }
+
+    /**
+     * get string without locale
+     *
+     * @param key  the string key
+     * @param args format args
+     * @return the fetched string
+     */
+    public static TranslatableText get(String key, Object... args) {
+        return TranslatableText.builder()
+                .key(key)
+                .args(Arrays.asList(args))
+                .build();
+    }
+
+    @Data
+    @Builder
+    public static class TranslatableText {
+        private String key;
+        private List<Object> args;
+
+        /**
+         * get string with locale
+         *
+         * @param locale the target locale
+         * @return the fetched string
+         */
+        public String getText(Locale locale) {
+            return get(locale, getKey(), args.toArray());
+        }
+
+        /**
+         * get text with default locale {@link Locale#getDefault()}
+         *
+         * @return the fetched string
+         */
+        public String getText() {
+            return getText(Locale.getDefault());
+        }
     }
 }

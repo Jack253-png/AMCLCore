@@ -320,7 +320,7 @@ public class OAuth {
             return ConcurrentExecutors.submit(
                     ConcurrentExecutors.OAUTH_LOGIN_EXECUTOR,
                     new OAuthLoginPartTask(deviceCode)
-            ).get();
+            ).get().orElse(null);
         }
     }
 
