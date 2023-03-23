@@ -13,23 +13,25 @@ import java.util.concurrent.Callable;
 import java.util.concurrent.FutureTask;
 import java.util.function.Consumer;
 
+import static com.mcreater.amclcore.concurrent.ConcurrentExecutors.INTERFACE_EVENT_EXECUTOR;
+
 public abstract class AbstractTask<T, V> extends FutureTask<Optional<T>> {
     private static final Logger EVENT_LOGGER = LogManager.getLogger(AbstractTask.class);
     @Getter
     private final List<Consumer<T>> resultConsumers = new Vector<>();
     @Getter
-    private final List<Consumer<TaskState<V>>> stateConsumers = new Vector<>();
+    private final List<Consumer<TaskState<V, T>>> stateConsumers = new Vector<>();
     @Getter
-    private TaskState<V> state;
+    private TaskState<V, T> state;
 
     public AbstractTask() {
         super(Optional::empty);
         setCallable();
     }
 
-    protected void setState(TaskState<V> state) {
+    protected void setState(TaskState<V, T> state) {
         this.state = state;
-        getStateConsumers().forEach(c -> c.accept(state));
+        getStateConsumers().forEach(c -> INTERFACE_EVENT_EXECUTOR.execute(() -> c.accept(state)));
     }
 
     /**
@@ -57,12 +59,17 @@ public abstract class AbstractTask<T, V> extends FutureTask<Optional<T>> {
         try {
             T result = call();
             EVENT_LOGGER.info(String.format("Task %s finished", this));
-            getResultConsumers().forEach(c -> c.accept(result));
+            setState(TaskState.<V, T>builder()
+                    .taskType(TaskState.Type.FINISHED)
+                    .result(result)
+                    .build()
+            );
             return Optional.ofNullable(result);
         } catch (Exception e) {
             ExceptionReporter.report(e, ExceptionReporter.ExceptionType.CONCURRENT);
-            setState(TaskState.<V>builder()
+            setState(TaskState.<V, T>builder()
                     .throwable(e)
+                    .taskType(TaskState.Type.ERROR)
                     .build()
             );
         }

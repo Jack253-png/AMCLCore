@@ -79,6 +79,18 @@ public class ConcurrentExecutors {
             new SimpleThreadFactory(),
             new ThreadPoolExecutor.DiscardOldestPolicy()
     );
+    /**
+     * interface event queue
+     */
+    public static final ThreadPoolExecutor INTERFACE_EVENT_EXECUTOR = new ThreadPoolExecutor(
+            512,
+            512,
+            1,
+            TimeUnit.SECONDS,
+            new ArrayBlockingQueue<>(512),
+            new SimpleThreadFactory(),
+            new ThreadPoolExecutor.DiscardOldestPolicy()
+    );
 
     /**
      * submit a task to executor

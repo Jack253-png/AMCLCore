@@ -11,10 +11,11 @@ buildscript {
 plugins {
     id 'java'
     id 'application'
+    id 'maven-publish'
 }
 
 group 'com.mcreater'
-version '0.1-SNAPSHOT'
+version '0.1'
 
 compileJava {
     sourceCompatibility = JavaVersion.VERSION_1_8
@@ -57,4 +58,42 @@ ext {
 
 application {
     mainClassName = javaMainClass
+}
+
+task sourcesJar(type: Jar, dependsOn: classes) {
+    classifier = 'sources'
+    from sourceSets.main.allSource
+}
+
+task javadocJar(type: Jar, dependsOn: javadoc) {
+    classifier = 'javadoc'
+//    from javadoc.destinationDir
+}
+
+javadoc {
+    options {
+        encoding "UTF-8"
+        charSet 'UTF-8'
+        author true
+        version true
+        title "Javadoc root"
+    }
+}
+
+publishing {
+    publications {
+        amclcore_shell(MavenPublication) {
+            groupId group
+            artifactId name
+            version version
+
+            artifact sourcesJar
+            artifact jar
+            // artifact javadocJar
+        }
+    }
+
+    repositories {
+        maven { url uri(new File(rootProject.projectDir.getAbsolutePath(), "maven").getAbsolutePath()) }
+    }
 }

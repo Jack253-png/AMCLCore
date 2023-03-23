@@ -3,6 +3,7 @@ package com.mcreater.amclcore.i18n;
 import com.google.gson.reflect.TypeToken;
 import com.mcreater.amclcore.exceptions.report.ExceptionReporter;
 import com.mcreater.amclcore.model.i18n.LangIndexModel;
+import com.mcreater.amclcore.model.i18n.LangIndexNameModel;
 import com.mcreater.amclcore.util.IOStreamUtil;
 import lombok.Builder;
 import lombok.Data;
@@ -19,6 +20,7 @@ import java.util.Locale;
 import java.util.Map;
 import java.util.MissingFormatArgumentException;
 import java.util.Objects;
+import java.util.Optional;
 import java.util.Vector;
 import java.util.function.Function;
 import java.util.stream.Collectors;
@@ -45,9 +47,10 @@ public class I18NManager {
                     locale -> locale,
                     I18NManager::parseI18N
             ));
-    @Getter
     private static final Map<Locale, Map<String, String>> transitionMap = new HashMap<>();
     private static final Map<Locale, List<String>> transitionFiles = new HashMap<>();
+    @Getter
+    private static final List<TranslatableText> packNames = new Vector<>();
 
     static {
         reloadIndex();
@@ -56,6 +59,7 @@ public class I18NManager {
 
     private static void reloadIndex() {
         try {
+            packNames.clear();
             parsedIndexes = Collections.list(I18NManager.class.getClassLoader().getResources("lang-index.json"))
                     .stream()
                     .map(IOStreamUtil::tryOpenStream)
@@ -98,6 +102,19 @@ public class I18NManager {
                 .flatMap(m -> m.entrySet().stream())
                 .collect(Collectors.toMap(Map.Entry::getKey, Map.Entry::getValue))
         ));
+        try {
+            packNames.addAll(
+                    parsedIndexes.stream()
+                            .map(model -> Optional.ofNullable(model)
+                                    .map(LangIndexModel::getName)
+                                    .map(LangIndexNameModel::getKey)
+                                    .orElse("<unnamed language pack>"))
+                            .map(I18NManager::get)
+                            .collect(Collectors.toList())
+            );
+        } catch (Exception e) {
+            ExceptionReporter.report(e, ExceptionReporter.ExceptionType.IO);
+        }
     }
 
     private static String parseI18N(Locale locale) {
@@ -108,9 +125,9 @@ public class I18NManager {
 
     private static String getNotNull(Locale locale, String key, Object... args) throws NullPointerException {
         try {
-            return requireNonNull(String.format(getTransitionMap().get(locale).get(key), args));
+            return requireNonNull(String.format(transitionMap.get(locale).get(key), args));
         } catch (MissingFormatArgumentException e) {
-            return requireNonNull(getTransitionMap().get(locale).get(key));
+            return requireNonNull(transitionMap.get(locale).get(key));
         }
     }
 
