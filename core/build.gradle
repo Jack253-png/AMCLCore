@@ -64,7 +64,7 @@ task sourcesJar(type: Jar, dependsOn: classes) {
 
 task javadocJar(type: Jar, dependsOn: javadoc) {
     classifier = 'javadoc'
-//    from javadoc.destinationDir
+    from javadoc.destinationDir
 }
 
 javadoc {
@@ -86,7 +86,7 @@ publishing {
 
             artifact sourcesJar
             artifact jar
-            // artifact javadocJar
+            artifact javadocJar
         }
     }
 

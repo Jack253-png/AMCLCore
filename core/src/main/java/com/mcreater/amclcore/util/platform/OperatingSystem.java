@@ -283,6 +283,9 @@ public enum OperatingSystem {
     /**
      * Returns true if the given name is a valid file name on this operating system,
      * and false otherwise.
+     *
+     * @param name the name to be validated
+     * @return the validate result
      */
     public static boolean isNameValid(String name) {
         // empty filename is not allowed

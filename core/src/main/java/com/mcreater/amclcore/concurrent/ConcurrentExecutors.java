@@ -95,6 +95,10 @@ public class ConcurrentExecutors {
     /**
      * submit a task to executor
      *
+     * @param executor the target executor
+     * @param task     the task to be executed
+     * @param <T>      the return type of task
+     * @param <V>      the task state type of task
      * @return the executed future task
      */
     public static <T, V> AbstractTask<T, V> submit(ExecutorService executor, AbstractTask<T, V> task) {
@@ -105,7 +109,10 @@ public class ConcurrentExecutors {
 
     /**
      * submit some tasks to executor
-     *
+     * @param executor the target executor
+     * @param tasks the tasks to be executed
+     * @param <T> the return type of task
+     * @param <V> the task state type of task
      * @return the executed future tasks
      */
     @SafeVarargs
@@ -117,7 +124,8 @@ public class ConcurrentExecutors {
 
     /**
      * submit some non-type tasks to executor
-     *
+     * @param executor the target executor
+     * @param tasks the tasks to be executed
      * @return the executed future tasks
      */
     public static List<AbstractTask<?, ?>> submitEx(ExecutorService executor, AbstractTask<?, ?>... tasks) {

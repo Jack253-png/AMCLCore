@@ -36,7 +36,7 @@ import static com.mcreater.amclcore.util.PropertyUtil.readProperty;
 @AllArgsConstructor
 public class OAuth {
     /**
-     * The microsoft oauth instance for {@link OAuth}<br/>
+     * The microsoft oauth instance for {@link OAuth}<br>
      * Microsoft <a href="https://learn.microsoft.com/zh-cn/azure/active-directory/develop/v2-oauth2-auth-code-flow">documentation</a>
      */
     public static final OAuth MICROSOFT = new OAuth(
@@ -190,6 +190,11 @@ public class OAuth {
 
     /**
      * a wrapper for {@link OAuth#fetchDeviceToken(Consumer)}
+     *
+     * @param requestHandler the handler for device token
+     * @return the fetched device code
+     * @throws URISyntaxException If the xbox live api url is malformed
+     * @throws IOException        If an I/O Exception occurred
      */
     protected DeviceCodeConverterModel detectUserCodeLoop(Consumer<DeviceCodeModel> requestHandler) throws URISyntaxException, IOException {
         DeviceCodeModel model = fetchDeviceToken(requestHandler);
@@ -233,6 +238,7 @@ public class OAuth {
      * @param model the verified access token
      * @throws URISyntaxException If the xbox live api url is malformed
      * @throws IOException        If an I/O Exception occurred
+     * @return the fetched XBox Live token
      */
     public XBLUserModel fetchXBLToken(DeviceCodeConverterModel model) throws IOException, URISyntaxException {
         XBLTokenRequestModel requestModel = HttpClientWrapper.create(HttpClientWrapper.Method.POST)
@@ -292,7 +298,7 @@ public class OAuth {
 
     /**
      * create a task for device token login
-     *
+     * @param requestHandler the handler for device token
      * @return created task
      */
     public OAuthLoginTask fetchDeviceTokenAsync(Consumer<DeviceCodeModel> requestHandler) {
