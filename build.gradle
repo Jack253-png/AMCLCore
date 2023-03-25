@@ -22,7 +22,6 @@ compileJava {
     targetCompatibility = JavaVersion.VERSION_1_8
     options.verbose = false
     options.listFiles = true
-    options.annotationProcessorPath = files(new File(rootProject.getRootDir().getAbsolutePath(), "lombok.jar").getAbsolutePath())
 }
 
 compileTestJava {
@@ -30,7 +29,6 @@ compileTestJava {
     targetCompatibility = JavaVersion.VERSION_1_8
     options.verbose = false
     options.listFiles = true
-    options.annotationProcessorPath = files(new File(rootProject.getRootDir().getAbsolutePath(), "lombok.jar").getAbsolutePath())
 }
 
 allprojects {
@@ -39,7 +37,6 @@ allprojects {
         targetCompatibility = JavaVersion.VERSION_1_8
         options.verbose = false
         options.listFiles = true
-        options.annotationProcessorPath = files(new File(rootProject.getRootDir().getAbsolutePath(), "lombok.jar").getAbsolutePath())
     }
 
     compileTestJava {
@@ -47,7 +44,6 @@ allprojects {
         targetCompatibility = JavaVersion.VERSION_1_8
         options.verbose = false
         options.listFiles = true
-        options.annotationProcessorPath = files(new File(rootProject.getRootDir().getAbsolutePath(), "lombok.jar").getAbsolutePath())
     }
 
     repositories {
@@ -72,6 +68,7 @@ allprojects {
 dependencies {
     implementation project(":core")
     implementation project(":shell")
+    annotationProcessor 'org.projectlombok:lombok:1.18.22'
 }
 
 ext {
@@ -112,6 +109,14 @@ publishing {
             artifact sourcesJar
             artifact jar
             artifact javadocJar
+
+            pom.withXml {
+                Node root = asNode().appendNode("dependencies", new HashMap())
+                Node dependencyNode = root.appendNode("dependency")
+                dependencyNode.appendNode('groupId', "com.mcreater")
+                dependencyNode.appendNode('artifactId', "amclcore_shell")
+                dependencyNode.appendNode('version', version)
+            }
         }
     }
 

@@ -22,7 +22,6 @@ compileJava {
     targetCompatibility = JavaVersion.VERSION_1_8
     options.verbose = false
     options.listFiles = true
-    options.annotationProcessorPath = files(new File(rootProject.getRootDir().getAbsolutePath(), "lombok.jar").getAbsolutePath())
 }
 
 compileTestJava {
@@ -30,7 +29,6 @@ compileTestJava {
     targetCompatibility = JavaVersion.VERSION_1_8
     options.verbose = false
     options.listFiles = true
-    options.annotationProcessorPath = files(new File(rootProject.getRootDir().getAbsolutePath(), "lombok.jar").getAbsolutePath())
 }
 
 repositories {
@@ -45,7 +43,7 @@ dependencies {
     implementation project(path: ':core')
     testImplementation 'org.junit.jupiter:junit-jupiter-api:5.8.1'
     testRuntimeOnly 'org.junit.jupiter:junit-jupiter-engine:5.8.1'
-
+    annotationProcessor 'org.projectlombok:lombok:1.18.22'
 }
 
 test {
@@ -90,6 +88,14 @@ publishing {
             artifact sourcesJar
             artifact jar
             artifact javadocJar
+
+            pom.withXml {
+                Node root = asNode().appendNode("dependencies", new HashMap())
+                Node dependencyNode = root.appendNode("dependency")
+                dependencyNode.appendNode('groupId', "com.mcreater")
+                dependencyNode.appendNode('artifactId', "amclcore_core")
+                dependencyNode.appendNode('version', version)
+            }
         }
     }
 

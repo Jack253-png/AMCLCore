@@ -37,7 +37,7 @@ import static com.mcreater.amclcore.util.PropertyUtil.readProperty;
 public class OAuth {
     /**
      * The microsoft oauth instance for {@link OAuth}<br>
-     * Microsoft <a href="https://learn.microsoft.com/zh-cn/azure/active-directory/develop/v2-oauth2-auth-code-flow">documentation</a>
+     * Microsoft official <a href="https://learn.microsoft.com/zh-cn/azure/active-directory/develop/v2-oauth2-auth-code-flow">documentation</a>
      */
     public static final OAuth MICROSOFT = new OAuth(
             "login.microsoftonline.com/consumers/oauth2/v2.0/devicecode",
