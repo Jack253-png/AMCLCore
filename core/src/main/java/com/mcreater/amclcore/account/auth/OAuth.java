@@ -3,12 +3,16 @@ package com.mcreater.amclcore.account.auth;
 import com.mcreater.amclcore.concurrent.AbstractTask;
 import com.mcreater.amclcore.concurrent.ConcurrentExecutors;
 import com.mcreater.amclcore.concurrent.ConcurrentUtil;
+import com.mcreater.amclcore.concurrent.TaskState;
+import com.mcreater.amclcore.concurrent.TaskStates;
 import com.mcreater.amclcore.exceptions.OAuthTimeOutException;
 import com.mcreater.amclcore.exceptions.OAuthUserHashException;
 import com.mcreater.amclcore.exceptions.OAuthXBLNotFoundException;
+import com.mcreater.amclcore.i18n.I18NManager;
 import com.mcreater.amclcore.model.oauth.AuthCodeModel;
 import com.mcreater.amclcore.model.oauth.DeviceCodeConverterModel;
 import com.mcreater.amclcore.model.oauth.DeviceCodeModel;
+import com.mcreater.amclcore.model.oauth.LoginDeviceCodeErrorType;
 import com.mcreater.amclcore.model.oauth.TokenResponseModel;
 import com.mcreater.amclcore.model.oauth.XBLTokenRequestModel;
 import com.mcreater.amclcore.model.oauth.XBLTokenResponseModel;
@@ -218,14 +222,14 @@ public class OAuth {
                     .model(checkIn)
                     .build();
 
-            switch (checkIn.getError()) {
-                case "authorization_pending":
+            switch (LoginDeviceCodeErrorType.valueOf(checkIn.getError().toUpperCase())) {
+                case AUTHORIZATION_PENDING:
                     continue;
-                case "slow_down":
+                case SLOW_DOWN:
                     interval += 5;
                     continue;
-                case "expired_token":
-                case "invalid_grant":
+                case EXPIRED_TOKEN:
+                case INVALID_GRANT:
                 default:
                     throw new OAuthTimeOutException();
             }
@@ -257,14 +261,14 @@ public class OAuth {
                 )
                 .sendAndReadJson(XBLTokenRequestModel.class);
 
-        Optional<String> userHash = requestModel.getDisplayClaims().getXui().stream()
+        String userHash = requestModel.getDisplayClaims().getXui().stream()
                 .map(XBLTokenRequestModel.XBLTokenUserHashModel::getUhs)
-                .findAny();
+                .findAny()
+                .orElseThrow(OAuthXBLNotFoundException::new);
 
-        if (!userHash.isPresent()) throw new OAuthXBLNotFoundException();
-        else return XBLUserModel.builder()
+        return XBLUserModel.builder()
                 .token(requestModel.getToken())
-                .hash(userHash.get())
+                .hash(userHash)
                 .build();
     }
 
@@ -284,15 +288,15 @@ public class OAuth {
                 )
                 .sendAndReadJson(XBLTokenRequestModel.class);
 
-        Optional<String> userHash = requestModel.getDisplayClaims().getXui().stream()
+        String userHash = requestModel.getDisplayClaims().getXui().stream()
                 .map(XBLTokenRequestModel.XBLTokenUserHashModel::getUhs)
-                .findAny();
+                .findAny()
+                .orElseThrow(OAuthUserHashException::new);
 
-        if (!userHash.isPresent()) throw new OAuthXBLNotFoundException();
-        if (!Objects.equals(userHash.get(), model.getHash())) throw new OAuthUserHashException();
+        if (!Objects.equals(userHash, model.getHash())) throw new OAuthUserHashException();
         else return XBLUserModel.builder()
                 .token(requestModel.getToken())
-                .hash(userHash.get())
+                .hash(userHash)
                 .build();
     }
 
@@ -318,14 +322,32 @@ public class OAuth {
     }
 
     @AllArgsConstructor
-    public class OAuthLoginTask extends AbstractTask<XBLUserModel, Void> {
+    public class OAuthLoginTask extends AbstractTask<XBLUserModel, TaskStates.SimpleTaskStateWithArg<Integer>> {
         private final Consumer<DeviceCodeModel> requestHandler;
 
         public XBLUserModel call() throws Exception {
+            setState(TaskState.<TaskStates.SimpleTaskStateWithArg<Integer>, XBLUserModel>builder()
+                    .data(
+                            TaskStates.SimpleTaskStateWithArg.<Integer>builder()
+                                    .text(I18NManager.get("core.oauth.deviceCode.pre.text"))
+                                    .arg(5)
+                                    .build()
+                    )
+                    .build());
             DeviceCodeConverterModel deviceCode = detectUserCodeLoop(requestHandler);
+            setState(TaskState.<TaskStates.SimpleTaskStateWithArg<Integer>, XBLUserModel>builder()
+                    .data(
+                            TaskStates.SimpleTaskStateWithArg.<Integer>builder()
+                                    .text(I18NManager.get("core.oauth.xbl.pre.text"))
+                                    .arg(10)
+                                    .build()
+                    )
+                    .build());
             return ConcurrentExecutors.submit(
                     ConcurrentExecutors.OAUTH_LOGIN_EXECUTOR,
-                    new OAuthLoginPartTask(deviceCode)
+                    new OAuthLoginPartTask(deviceCode, s -> setState(TaskState.<TaskStates.SimpleTaskStateWithArg<Integer>, XBLUserModel>builder()
+                            .data(s)
+                            .build()))
             ).get().orElse(null);
         }
     }
@@ -333,6 +355,7 @@ public class OAuth {
     @AllArgsConstructor
     public class OAuthLoginPartTask extends AbstractTask<XBLUserModel, Void> {
         private final DeviceCodeConverterModel model;
+        private final Consumer<TaskStates.SimpleTaskStateWithArg<Integer>> stateConsumer;
 
         public XBLUserModel call() throws Exception {
             XBLUserModel xblToken = fetchXBLToken(model);

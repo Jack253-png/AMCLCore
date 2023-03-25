@@ -18,11 +18,19 @@ import static com.mcreater.amclcore.concurrent.ConcurrentExecutors.INTERFACE_EVE
 public abstract class AbstractTask<T, V> extends FutureTask<Optional<T>> {
     private static final Logger EVENT_LOGGER = LogManager.getLogger(AbstractTask.class);
     @Getter
-    private final List<Consumer<T>> resultConsumers = new Vector<>();
-    @Getter
     private final List<Consumer<TaskState<V, T>>> stateConsumers = new Vector<>();
     @Getter
     private TaskState<V, T> state;
+
+    public AbstractTask<T, V> addStateConsumers(List<Consumer<TaskState<V, T>>> c) {
+        c.forEach(this::addStateConsumer);
+        return this;
+    }
+
+    public AbstractTask<T, V> addStateConsumer(Consumer<TaskState<V, T>> c) {
+        stateConsumers.add(c);
+        return this;
+    }
 
     public AbstractTask() {
         super(Optional::empty);
