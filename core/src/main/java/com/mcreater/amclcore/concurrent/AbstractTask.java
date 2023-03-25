@@ -83,4 +83,10 @@ public abstract class AbstractTask<T, V> extends FutureTask<Optional<T>> {
         }
         return Optional.empty();
     }
+
+    public static <T, V> TaskState<T, V> createTaskState(T value) {
+        return TaskState.<T, V>builder()
+                .data(value)
+                .build();
+    }
 }

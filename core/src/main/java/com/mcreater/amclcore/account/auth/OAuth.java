@@ -326,15 +326,20 @@ public class OAuth {
         private final Consumer<DeviceCodeModel> requestHandler;
 
         public XBLUserModel call() throws Exception {
-            setState(TaskState.<TaskStates.SimpleTaskStateWithArg<Integer>, XBLUserModel>builder()
-                    .data(TaskStates.SimpleTaskStateWithArg.create(
-                            I18NManager.get("core.oauth.deviceCode.pre.text"),
-                            5)
-                    )
-                    .build());
-
-            DeviceCodeConverterModel deviceCode = detectUserCodeLoop(requestHandler);
-
+            DeviceCodeConverterModel deviceCode;
+            // TODO fetch device code and login
+            {
+                setState(createTaskState(TaskStates.SimpleTaskStateWithArg.create(
+                        I18NManager.get("core.oauth.deviceCode.pre.text"),
+                        5
+                )));
+                deviceCode = detectUserCodeLoop(requestHandler);
+                setState(createTaskState(TaskStates.SimpleTaskStateWithArg.create(
+                        I18NManager.get("core.oauth.deviceCode.after.text"),
+                        10
+                )));
+            }
+            // TODO delegate task to login minecraft
             return ConcurrentExecutors.submit(
                     ConcurrentExecutors.OAUTH_LOGIN_EXECUTOR,
                     new OAuthLoginPartTask(deviceCode)
@@ -352,21 +357,38 @@ public class OAuth {
         private final DeviceCodeConverterModel model;
 
         public XBLUserModel call() throws Exception {
-            setState(TaskState.<TaskStates.SimpleTaskStateWithArg<Integer>, XBLUserModel>builder()
-                    .data(TaskStates.SimpleTaskStateWithArg.create(
-                            I18NManager.get("core.oauth.xbl.pre.text"),
-                            20)
-                    )
-                    .build());
-
-            XBLUserModel xblToken = fetchXBLToken(model);
-            setState(TaskState.<TaskStates.SimpleTaskStateWithArg<Integer>, XBLUserModel>builder()
-                    .data(TaskStates.SimpleTaskStateWithArg.create(
-                            I18NManager.get("core.oauth.xsts.pre.text"),
-                            40)
-                    )
-                    .build());
-            XBLUserModel xstsToken = fetchXSTSToken(xblToken);
+            XBLUserModel xblToken, xstsToken;
+            // TODO login XBox Live
+            {
+                setState(createTaskState(TaskStates.SimpleTaskStateWithArg.create(
+                        I18NManager.get("core.oauth.xbl.pre.text"),
+                        20
+                )));
+                xblToken = fetchXBLToken(model);
+                setState(createTaskState(TaskStates.SimpleTaskStateWithArg.create(
+                        I18NManager.get("core.oauth.xbl.after.text"),
+                        30
+                )));
+            }
+            // TODO login XBox XSTS
+            {
+                setState(createTaskState(TaskStates.SimpleTaskStateWithArg.create(
+                        I18NManager.get("core.oauth.xsts.pre.text"),
+                        40
+                )));
+                xstsToken = fetchXSTSToken(xblToken);
+                setState(createTaskState(TaskStates.SimpleTaskStateWithArg.create(
+                        I18NManager.get("core.oauth.xsts.after.text"),
+                        50
+                )));
+            }
+            // TODO login minecraft (to be done)
+            {
+                setState(createTaskState(TaskStates.SimpleTaskStateWithArg.create(
+                        I18NManager.get("core.oauth.minecraftAuth.pre.text"),
+                        60)
+                ));
+            }
             return xstsToken;
         }
     }

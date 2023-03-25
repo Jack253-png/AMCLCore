@@ -1,6 +1,10 @@
 {
   "core.transitions.name": "AMCL 核心翻译包",
   "core.oauth.deviceCode.pre.text": "等待用户登录...",
+  "core.oauth.deviceCode.after.text": "用户登录完成",
   "core.oauth.xbl.pre.text": "准备登录 XBox Live...",
-  "core.oauth.xsts.pre.text": "准备登录 XBox XSTS..."
+  "core.oauth.xbl.after.text": "XBox Live 登录完成",
+  "core.oauth.xsts.pre.text": "准备登录 XBox XSTS...",
+  "core.oauth.xsts.after.text": "XBox XSTS 登录完成",
+  "core.oauth.minecraftAuth.pre.text": "准备登录 Minecraft..."
 }
