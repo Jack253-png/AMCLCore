@@ -1,11 +1,12 @@
 package com.mcreater.amclcore.model.config;
 
-import com.mcreater.amclcore.model.ConfigModel;
+import com.mcreater.amclcore.annotations.ConfigModel;
 import lombok.Builder;
 import lombok.Data;
 
 @Data
 @Builder
-public class ConfigMainModel implements ConfigModel {
+@ConfigModel
+public class ConfigMainModel {
     private ConfigLaunchModel launchConfig;
 }
