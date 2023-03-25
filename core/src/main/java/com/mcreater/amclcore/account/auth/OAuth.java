@@ -5,9 +5,9 @@ import com.mcreater.amclcore.concurrent.ConcurrentExecutors;
 import com.mcreater.amclcore.concurrent.ConcurrentUtil;
 import com.mcreater.amclcore.concurrent.TaskState;
 import com.mcreater.amclcore.concurrent.TaskStates;
-import com.mcreater.amclcore.exceptions.OAuthTimeOutException;
-import com.mcreater.amclcore.exceptions.OAuthUserHashException;
-import com.mcreater.amclcore.exceptions.OAuthXBLNotFoundException;
+import com.mcreater.amclcore.exceptions.oauth.OAuthTimeOutException;
+import com.mcreater.amclcore.exceptions.oauth.OAuthUserHashException;
+import com.mcreater.amclcore.exceptions.oauth.OAuthXBLNotFoundException;
 import com.mcreater.amclcore.i18n.I18NManager;
 import com.mcreater.amclcore.model.oauth.AuthCodeModel;
 import com.mcreater.amclcore.model.oauth.DeviceCodeConverterModel;
@@ -327,38 +327,45 @@ public class OAuth {
 
         public XBLUserModel call() throws Exception {
             setState(TaskState.<TaskStates.SimpleTaskStateWithArg<Integer>, XBLUserModel>builder()
-                    .data(
-                            TaskStates.SimpleTaskStateWithArg.<Integer>builder()
-                                    .text(I18NManager.get("core.oauth.deviceCode.pre.text"))
-                                    .arg(5)
-                                    .build()
+                    .data(TaskStates.SimpleTaskStateWithArg.create(
+                            I18NManager.get("core.oauth.deviceCode.pre.text"),
+                            5)
                     )
                     .build());
+
             DeviceCodeConverterModel deviceCode = detectUserCodeLoop(requestHandler);
-            setState(TaskState.<TaskStates.SimpleTaskStateWithArg<Integer>, XBLUserModel>builder()
-                    .data(
-                            TaskStates.SimpleTaskStateWithArg.<Integer>builder()
-                                    .text(I18NManager.get("core.oauth.xbl.pre.text"))
-                                    .arg(10)
-                                    .build()
-                    )
-                    .build());
+
             return ConcurrentExecutors.submit(
                     ConcurrentExecutors.OAUTH_LOGIN_EXECUTOR,
-                    new OAuthLoginPartTask(deviceCode, s -> setState(TaskState.<TaskStates.SimpleTaskStateWithArg<Integer>, XBLUserModel>builder()
-                            .data(s)
-                            .build()))
-            ).get().orElse(null);
+                    new OAuthLoginPartTask(deviceCode)
+                            .addStateConsumer(t -> setState(
+                                    TaskState.<TaskStates.SimpleTaskStateWithArg<Integer>, XBLUserModel>builder()
+                                            .data(t.getData())
+                                            .build()
+                            ))
+            ).get().orElseThrow(OAuthXBLNotFoundException::new);
         }
     }
 
     @AllArgsConstructor
-    public class OAuthLoginPartTask extends AbstractTask<XBLUserModel, Void> {
+    public class OAuthLoginPartTask extends AbstractTask<XBLUserModel, TaskStates.SimpleTaskStateWithArg<Integer>> {
         private final DeviceCodeConverterModel model;
-        private final Consumer<TaskStates.SimpleTaskStateWithArg<Integer>> stateConsumer;
 
         public XBLUserModel call() throws Exception {
+            setState(TaskState.<TaskStates.SimpleTaskStateWithArg<Integer>, XBLUserModel>builder()
+                    .data(TaskStates.SimpleTaskStateWithArg.create(
+                            I18NManager.get("core.oauth.xbl.pre.text"),
+                            20)
+                    )
+                    .build());
+
             XBLUserModel xblToken = fetchXBLToken(model);
+            setState(TaskState.<TaskStates.SimpleTaskStateWithArg<Integer>, XBLUserModel>builder()
+                    .data(TaskStates.SimpleTaskStateWithArg.create(
+                            I18NManager.get("core.oauth.xsts.pre.text"),
+                            40)
+                    )
+                    .build());
             XBLUserModel xstsToken = fetchXSTSToken(xblToken);
             return xstsToken;
         }

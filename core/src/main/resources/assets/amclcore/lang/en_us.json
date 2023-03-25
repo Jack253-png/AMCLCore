@@ -1,5 +1,6 @@
 {
   "core.transitions.name": "AMCL Core transitions pack",
   "core.oauth.deviceCode.pre.text": "Waiting user logging...",
-  "core.oauth.xbl.pre.text": "Preparing for XBox Live logging..."
+  "core.oauth.xbl.pre.text": "Preparing for XBox Live logging...",
+  "core.oauth.xsts.pre.text": "Preparing for XBox XSTS logging..."
 }

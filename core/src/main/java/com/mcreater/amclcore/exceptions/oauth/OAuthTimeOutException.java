@@ -1,4 +1,4 @@
-package com.mcreater.amclcore.exceptions;
+package com.mcreater.amclcore.exceptions.oauth;
 
 import java.io.IOException;
 

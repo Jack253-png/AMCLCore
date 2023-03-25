@@ -1,6 +1,6 @@
 package com.mcreater.amclcore.util;
 
-import com.mcreater.amclcore.exceptions.RequestException;
+import com.mcreater.amclcore.exceptions.io.RequestException;
 import lombok.Builder;
 import org.apache.commons.lang3.tuple.Pair;
 import org.apache.http.HttpEntity;
