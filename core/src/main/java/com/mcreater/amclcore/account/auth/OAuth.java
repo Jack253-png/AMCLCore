@@ -391,6 +391,10 @@ public class OAuth {
             // TODO login minecraft (to be done)
             {
                 minecraftUser = fetchMinecraftToken(xstsToken);
+                setState(createTaskState(TaskStates.SimpleTaskStateWithArg.create(
+                        I18NManager.get("core.oauth.mclogin.after.text"),
+                        70
+                )));
             }
             return xstsToken;
         }

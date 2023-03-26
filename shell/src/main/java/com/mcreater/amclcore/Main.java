@@ -22,15 +22,12 @@ public class Main {
         Optional<XBLUserModel> model = ConcurrentExecutors.submit(
                 ConcurrentExecutors.EVENT_QUEUE_EXECUTOR,
                 OAuth.MICROSOFT.fetchDeviceTokenAsync(OAuth.getDefaultDevHandler())
-                        .addStateConsumer(c -> {
-                            // logger.info(c.getData().getText().getText());
-                            logger.info(Optional.ofNullable(c)
-                                    .map(TaskState::getData)
-                                    .map(TaskStates.SimpleTaskStateWithArg::getText)
-                                    .map(I18NManager.TranslatableText::getText)
-                                    .orElse("")
-                            );
-                        })
+                        .addStateConsumer(c -> logger.info(Optional.ofNullable(c)
+                                .map(TaskState::getData)
+                                .map(TaskStates.SimpleTaskStateWithArg::getText)
+                                .map(I18NManager.TranslatableText::getText)
+                                .orElse("")
+                        ))
         ).get();
         System.out.println(model.orElse(null));
     }
