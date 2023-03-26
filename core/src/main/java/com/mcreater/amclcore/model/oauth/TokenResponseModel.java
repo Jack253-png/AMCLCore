@@ -1,11 +1,13 @@
 package com.mcreater.amclcore.model.oauth;
 
 import com.google.gson.annotations.SerializedName;
+import com.mcreater.amclcore.annotations.OAuthLoginModel;
 import lombok.Builder;
 import lombok.Data;
 
 @Data
 @Builder
+@OAuthLoginModel
 public class TokenResponseModel {
     @SerializedName("token_type")
     private String tokenType;

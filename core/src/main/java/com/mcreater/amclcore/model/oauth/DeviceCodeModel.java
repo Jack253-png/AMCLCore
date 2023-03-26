@@ -1,11 +1,13 @@
 package com.mcreater.amclcore.model.oauth;
 
 import com.google.gson.annotations.SerializedName;
+import com.mcreater.amclcore.annotations.OAuthLoginModel;
 import lombok.Builder;
 import lombok.Data;
 
 @Data
 @Builder
+@OAuthLoginModel
 public class DeviceCodeModel {
     @SerializedName("user_code")
     private String userCode;

@@ -10,7 +10,6 @@ buildscript {
 
 plugins {
     id 'java'
-    id 'application'
     id 'maven-publish'
 }
 
@@ -44,18 +43,15 @@ dependencies {
     testImplementation 'org.junit.jupiter:junit-jupiter-api:5.8.1'
     testRuntimeOnly 'org.junit.jupiter:junit-jupiter-engine:5.8.1'
     annotationProcessor 'org.projectlombok:lombok:1.18.22'
+    rootProject.getSubprojects().stream()
+            .filter { return it.name == "core" }
+            .findFirst()
+            .orElse(rootProject).configurations.implementation.dependencies
+            .forEach { implementation(it) }
 }
 
 test {
     useJUnitPlatform()
-}
-
-ext {
-    javaMainClass = "com.mcreater.amclcore.Main"
-}
-
-application {
-    mainClassName = javaMainClass
 }
 
 task sourcesJar(type: Jar, dependsOn: classes) {
@@ -90,7 +86,7 @@ publishing {
             artifact javadocJar
 
             pom.withXml {
-                Node root = asNode().appendNode("dependencies", new HashMap())
+                Node root = asNode(null).appendNode("dependencies", new HashMap())
                 Node dependencyNode = root.appendNode("dependency")
                 dependencyNode.appendNode('groupId', "com.mcreater")
                 dependencyNode.appendNode('artifactId', "amclcore_core")

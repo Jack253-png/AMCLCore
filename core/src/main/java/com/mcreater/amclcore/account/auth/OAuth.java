@@ -2,7 +2,6 @@ package com.mcreater.amclcore.account.auth;
 
 import com.mcreater.amclcore.concurrent.AbstractTask;
 import com.mcreater.amclcore.concurrent.ConcurrentExecutors;
-import com.mcreater.amclcore.concurrent.ConcurrentUtil;
 import com.mcreater.amclcore.concurrent.TaskState;
 import com.mcreater.amclcore.concurrent.TaskStates;
 import com.mcreater.amclcore.exceptions.oauth.OAuthTimeOutException;
@@ -13,6 +12,8 @@ import com.mcreater.amclcore.model.oauth.AuthCodeModel;
 import com.mcreater.amclcore.model.oauth.DeviceCodeConverterModel;
 import com.mcreater.amclcore.model.oauth.DeviceCodeModel;
 import com.mcreater.amclcore.model.oauth.LoginDeviceCodeErrorType;
+import com.mcreater.amclcore.model.oauth.MinecraftRequestModel;
+import com.mcreater.amclcore.model.oauth.MinecraftResponseModel;
 import com.mcreater.amclcore.model.oauth.TokenResponseModel;
 import com.mcreater.amclcore.model.oauth.XBLTokenRequestModel;
 import com.mcreater.amclcore.model.oauth.XBLTokenResponseModel;
@@ -33,15 +34,19 @@ import java.util.function.Consumer;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
+import static com.mcreater.amclcore.concurrent.ConcurrentUtil.sleepTime;
 import static com.mcreater.amclcore.util.JsonUtil.createList;
 import static com.mcreater.amclcore.util.JsonUtil.createPair;
 import static com.mcreater.amclcore.util.PropertyUtil.readProperty;
 
+/**
+ * OAuth Microsoft official <a href="https://learn.microsoft.com/zh-cn/azure/active-directory/develop/v2-oauth2-auth-code-flow">documentation</a><br>
+ * Mojang minecraft auth <a href="https://wiki.vg/Mojang_API">API</a>
+ */
 @AllArgsConstructor
 public class OAuth {
     /**
-     * The microsoft oauth instance for {@link OAuth}<br>
-     * Microsoft official <a href="https://learn.microsoft.com/zh-cn/azure/active-directory/develop/v2-oauth2-auth-code-flow">documentation</a>
+     * The microsoft oauth instance for {@link OAuth}
      */
     public static final OAuth MICROSOFT = new OAuth(
             "login.microsoftonline.com/consumers/oauth2/v2.0/devicecode",
@@ -184,11 +189,11 @@ public class OAuth {
     /**
      * parse url from {@link OAuth#minecraftAzureUrlPattern} login
      *
-     * @param s the redirect url
+     * @param rawUrl the redirect url
      * @return the parsed code
      */
-    public String parseRedirectUrl(String s) {
-        Matcher matcher = getMinecraftAzureUrlPattern().matcher(s);
+    public String parseRedirectUrl(String rawUrl) {
+        Matcher matcher = getMinecraftAzureUrlPattern().matcher(rawUrl);
         return matcher.find() ? matcher.group("code") : null;
     }
 
@@ -207,7 +212,7 @@ public class OAuth {
         int interval = model.getInterval();
 
         while (true) {
-            ConcurrentUtil.sleepTime(Math.max(interval, 1));
+            sleepTime(Math.max(interval, 1));
 
             long estimatedTime = System.nanoTime() - startTime;
             if (TimeUnit.SECONDS.convert(estimatedTime, TimeUnit.NANOSECONDS) >= Math.min(model.getExpiresIn(), 900)) {
@@ -239,12 +244,12 @@ public class OAuth {
     /**
      * convert from access token to Xbox Live token
      *
-     * @param model the verified access token
+     * @param parsedDeviceCode the verified access token
+     * @return the fetched XBox Live token
      * @throws URISyntaxException If the xbox live api url is malformed
      * @throws IOException        If an I/O Exception occurred
-     * @return the fetched XBox Live token
      */
-    public XBLUserModel fetchXBLToken(DeviceCodeConverterModel model) throws IOException, URISyntaxException {
+    protected XBLUserModel fetchXBLToken(DeviceCodeConverterModel parsedDeviceCode) throws IOException, URISyntaxException {
         XBLTokenRequestModel requestModel = HttpClientWrapper.create(HttpClientWrapper.Method.POST)
                 .uri(getXblTokenUrl())
                 .entityJson(
@@ -253,7 +258,7 @@ public class OAuth {
                                         XBLTokenResponseModel.XBLTokenResponsePropertiesModel.builder()
                                                 .AuthMethod("RPS")
                                                 .SiteName("user.auth.xboxlive.com")
-                                                .RpsTicket(model.createAccessToken())
+                                                .RpsTicket(parsedDeviceCode.createAccessToken())
                                                 .build()
                                 )
                                 .RelyingParty("http://auth.xboxlive.com")
@@ -272,14 +277,14 @@ public class OAuth {
                 .build();
     }
 
-    public XBLUserModel fetchXSTSToken(XBLUserModel model) throws IOException, URISyntaxException {
+    protected XBLUserModel fetchXSTSToken(XBLUserModel xblUser) throws IOException, URISyntaxException {
         XBLTokenRequestModel requestModel = HttpClientWrapper.create(HttpClientWrapper.Method.POST)
                 .uri(getXstsTokenUrl())
                 .entityJson(XSTSTokenResponseModel.builder()
                         .Properties(
                                 XSTSTokenResponseModel.XSTSTokenResponsePropertiesModel.builder()
                                         .SandboxId("RETAIL")
-                                        .UserTokens(createList(model.getToken()))
+                                        .UserTokens(createList(xblUser.getToken()))
                                         .build()
                         )
                         .RelyingParty("rp://api.minecraftservices.com/")
@@ -293,15 +298,23 @@ public class OAuth {
                 .findAny()
                 .orElseThrow(OAuthUserHashException::new);
 
-        if (!Objects.equals(userHash, model.getHash())) throw new OAuthUserHashException();
+        if (!Objects.equals(userHash, xblUser.getHash())) throw new OAuthUserHashException();
         else return XBLUserModel.builder()
                 .token(requestModel.getToken())
                 .hash(userHash)
                 .build();
     }
 
+    protected MinecraftRequestModel fetchMinecraftToken(XBLUserModel xblUser) throws IOException, URISyntaxException {
+        return HttpClientWrapper.create(HttpClientWrapper.Method.POST)
+                .uri(getMcLoginUrl())
+                .entityJson(MinecraftResponseModel.builder().identityToken(String.format("XBL3.0 x=%s;%s", xblUser.getHash(), xblUser.getToken())).build())
+                .sendAndReadJson(MinecraftRequestModel.class);
+    }
+
     /**
      * create a task for device token login
+     *
      * @param requestHandler the handler for device token
      * @return created task
      */
@@ -358,12 +371,9 @@ public class OAuth {
 
         public XBLUserModel call() throws Exception {
             XBLUserModel xblToken, xstsToken;
+            MinecraftRequestModel minecraftUser;
             // TODO login XBox Live
             {
-                setState(createTaskState(TaskStates.SimpleTaskStateWithArg.create(
-                        I18NManager.get("core.oauth.xbl.pre.text"),
-                        20
-                )));
                 xblToken = fetchXBLToken(model);
                 setState(createTaskState(TaskStates.SimpleTaskStateWithArg.create(
                         I18NManager.get("core.oauth.xbl.after.text"),
@@ -372,10 +382,6 @@ public class OAuth {
             }
             // TODO login XBox XSTS
             {
-                setState(createTaskState(TaskStates.SimpleTaskStateWithArg.create(
-                        I18NManager.get("core.oauth.xsts.pre.text"),
-                        40
-                )));
                 xstsToken = fetchXSTSToken(xblToken);
                 setState(createTaskState(TaskStates.SimpleTaskStateWithArg.create(
                         I18NManager.get("core.oauth.xsts.after.text"),
@@ -384,10 +390,7 @@ public class OAuth {
             }
             // TODO login minecraft (to be done)
             {
-                setState(createTaskState(TaskStates.SimpleTaskStateWithArg.create(
-                        I18NManager.get("core.oauth.minecraftAuth.pre.text"),
-                        60)
-                ));
+                minecraftUser = fetchMinecraftToken(xstsToken);
             }
             return xstsToken;
         }

@@ -4,7 +4,9 @@ import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
 import java.util.Arrays;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.concurrent.ArrayBlockingQueue;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.ThreadFactory;
@@ -53,7 +55,7 @@ public class ConcurrentExecutors {
             TimeUnit.MINUTES,
             new ArrayBlockingQueue<>(64),
             new SimpleThreadFactory(),
-            new ThreadPoolExecutor.DiscardOldestPolicy()
+            new ThreadPoolExecutor.AbortPolicy()
     );
     /**
      * OAuth login queue
@@ -65,7 +67,7 @@ public class ConcurrentExecutors {
             TimeUnit.SECONDS,
             new ArrayBlockingQueue<>(64),
             new SimpleThreadFactory(),
-            new ThreadPoolExecutor.DiscardOldestPolicy()
+            new ThreadPoolExecutor.AbortPolicy()
     );
     /**
      * Swing event queue(clipboard, desktop api...)
@@ -77,20 +79,24 @@ public class ConcurrentExecutors {
             TimeUnit.SECONDS,
             new ArrayBlockingQueue<>(64),
             new SimpleThreadFactory(),
-            new ThreadPoolExecutor.DiscardOldestPolicy()
+            new ThreadPoolExecutor.AbortPolicy()
     );
     /**
      * interface event queue
      */
-    public static final ThreadPoolExecutor INTERFACE_EVENT_EXECUTOR = new ThreadPoolExecutor(
-            512,
-            512,
-            1,
-            TimeUnit.SECONDS,
-            new ArrayBlockingQueue<>(512),
-            new SimpleThreadFactory(),
-            new ThreadPoolExecutor.DiscardOldestPolicy()
-    );
+    public static final Map<AbstractTask<?, ?>, ThreadPoolExecutor> INTERFACE_EVENT_EXECUTORS = new HashMap<>();
+
+    public static ThreadPoolExecutor createInterfaceEventExecutor() {
+        return new ThreadPoolExecutor(
+                1,
+                1,
+                1,
+                TimeUnit.MINUTES,
+                new ArrayBlockingQueue<>(1),
+                new SimpleThreadFactory(),
+                new ThreadPoolExecutor.CallerRunsPolicy()
+        );
+    }
 
     /**
      * submit a task to executor

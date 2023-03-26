@@ -13,7 +13,8 @@ import java.util.concurrent.Callable;
 import java.util.concurrent.FutureTask;
 import java.util.function.Consumer;
 
-import static com.mcreater.amclcore.concurrent.ConcurrentExecutors.INTERFACE_EVENT_EXECUTOR;
+import static com.mcreater.amclcore.concurrent.ConcurrentExecutors.INTERFACE_EVENT_EXECUTORS;
+import static com.mcreater.amclcore.concurrent.ConcurrentExecutors.createInterfaceEventExecutor;
 
 public abstract class AbstractTask<T, V> extends FutureTask<Optional<T>> {
     private static final Logger EVENT_LOGGER = LogManager.getLogger(AbstractTask.class);
@@ -35,11 +36,12 @@ public abstract class AbstractTask<T, V> extends FutureTask<Optional<T>> {
     public AbstractTask() {
         super(Optional::empty);
         setCallable();
+        INTERFACE_EVENT_EXECUTORS.put(this, createInterfaceEventExecutor());
     }
 
     protected void setState(TaskState<V, T> state) {
         this.state = state;
-        getStateConsumers().forEach(c -> INTERFACE_EVENT_EXECUTOR.execute(() -> c.accept(state)));
+        INTERFACE_EVENT_EXECUTORS.get(this).execute(() -> getStateConsumers().forEach(c -> c.accept(state)));
     }
 
     /**

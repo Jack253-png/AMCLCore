@@ -1,10 +1,7 @@
 {
   "core.transitions.name": "AMCL Core transitions pack",
   "core.oauth.deviceCode.pre.text": "Waiting user logging...",
-  "core.oauth.deviceCode.after.text": "User login finished",
-  "core.oauth.xbl.pre.text": "Preparing for XBox Live logging...",
-  "core.oauth.xbl.after.text": "XBox Live login finished",
-  "core.oauth.xsts.pre.text": "Preparing for XBox XSTS logging...",
-  "core.oauth.xsts.after.text": "XBox XSTS login finished",
-  "core.oauth.minecraftAuth.pre.text": "Preparing for Minecraft logging..."
+  "core.oauth.deviceCode.after.text": "User login finished, preparing for XBox Live logging...",
+  "core.oauth.xbl.after.text": "XBox Live login finished, preparing for XBox XSTS logging...",
+  "core.oauth.xsts.after.text": "XBox XSTS login finished, preparing for Minecraft logging..."
 }

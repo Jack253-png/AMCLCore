@@ -4,10 +4,9 @@ import com.mcreater.amclcore.annotations.OAuthLoginModel;
 import lombok.Builder;
 import lombok.Data;
 
-@Builder
 @Data
+@Builder
 @OAuthLoginModel
-public class XBLUserModel {
-    private String token;
-    private String hash;
+public class MinecraftResponseModel {
+    private String identityToken;
 }
