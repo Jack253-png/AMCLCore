@@ -16,7 +16,7 @@ import java.util.function.Consumer;
 import static com.mcreater.amclcore.concurrent.ConcurrentExecutors.INTERFACE_EVENT_EXECUTORS;
 import static com.mcreater.amclcore.concurrent.ConcurrentExecutors.createInterfaceEventExecutor;
 
-public abstract class AbstractTask<T, V> extends FutureTask<Optional<T>> {
+public abstract class AbstractTask<T, V> extends FutureTask<Optional<T>> implements Callable<T> {
     private static final Logger EVENT_LOGGER = LogManager.getLogger(AbstractTask.class);
     @Getter
     private final List<Consumer<TaskState<V, T>>> stateConsumers = new Vector<>();
@@ -35,7 +35,7 @@ public abstract class AbstractTask<T, V> extends FutureTask<Optional<T>> {
 
     public AbstractTask() {
         super(Optional::empty);
-        setCallable();
+//        setCallable();
         INTERFACE_EVENT_EXECUTORS.put(this, createInterfaceEventExecutor());
     }
 
@@ -90,5 +90,37 @@ public abstract class AbstractTask<T, V> extends FutureTask<Optional<T>> {
         return TaskState.<T, V>builder()
                 .data(value)
                 .build();
+    }
+
+    @Override
+    public void run() {
+        if (isDone()) return;
+        try {
+            if (!isDone()) {
+                Optional<T> result;
+                boolean ran;
+                try {
+                    result = callInternal();
+                    ran = true;
+                } catch (Throwable ex) {
+                    result = Optional.empty();
+                    ran = false;
+                    setException(ex);
+                }
+                if (ran)
+                    set(result);
+            }
+        } finally {
+            // runner must be non-null until state is settled to
+            // prevent concurrent calls to run()
+//            runner = null;
+
+            // state must be re-read after nulling runner to prevent
+            // leaked interrupts
+//            if (state >= INTERRUPTING)
+//                handlePossibleCancellationInterrupt(s);
+            // call super
+            super.run();
+        }
     }
 }

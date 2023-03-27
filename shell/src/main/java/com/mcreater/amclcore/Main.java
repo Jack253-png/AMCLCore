@@ -12,9 +12,13 @@ import org.apache.logging.log4j.Logger;
 import java.util.Optional;
 
 public class Main {
-    private static final Logger logger = LogManager.getLogger(Main.class);
-    public static void main(String[] args) throws Exception {
+    static {
         System.setProperty("log4j.skipJansi", "false");
+    }
+
+    private static final Logger logger = LogManager.getLogger(Main.class);
+
+    public static void main(String[] args) throws Exception {
         loginTest();
     }
 
