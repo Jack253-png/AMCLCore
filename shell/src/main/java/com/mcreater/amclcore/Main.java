@@ -15,7 +15,6 @@ public class Main {
     static {
         System.setProperty("log4j.skipJansi", "false");
     }
-
     private static final Logger logger = LogManager.getLogger(Main.class);
 
     public static void main(String[] args) throws Exception {
