@@ -87,7 +87,7 @@ publishing {
             artifact javadocJar
 
             pom.withXml {
-                Node root = asNode(null).appendNode("dependencies", new HashMap())
+                Node root = asNode().appendNode("dependencies", new HashMap())
                 Node dependencyNode = root.appendNode("dependency")
                 dependencyNode.appendNode('groupId', "com.mcreater")
                 dependencyNode.appendNode('artifactId', "amclcore_core")
