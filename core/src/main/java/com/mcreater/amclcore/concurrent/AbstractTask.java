@@ -22,6 +22,7 @@ public abstract class AbstractTask<T, V> extends FutureTask<Optional<T>> impleme
     private final List<Consumer<TaskState<V, T>>> stateConsumers = new Vector<>();
     @Getter
     private TaskState<V, T> state;
+    private Thread runThread;
 
     public AbstractTask<T, V> addStateConsumers(List<Consumer<TaskState<V, T>>> c) {
         c.forEach(this::addStateConsumer);
@@ -35,7 +36,6 @@ public abstract class AbstractTask<T, V> extends FutureTask<Optional<T>> impleme
 
     public AbstractTask() {
         super(Optional::empty);
-//        setCallable();
         INTERFACE_EVENT_EXECUTORS.put(this, createInterfaceEventExecutor());
     }
 
@@ -46,7 +46,10 @@ public abstract class AbstractTask<T, V> extends FutureTask<Optional<T>> impleme
 
     /**
      * Set internal callable after task instanced
+     *
+     * @deprecated implemented by method {@link AbstractTask#run()}, deprecated the method
      */
+    @Deprecated
     private void setCallable() {
         try {
             Field field = FutureTask.class.getDeclaredField("callable");
@@ -92,9 +95,9 @@ public abstract class AbstractTask<T, V> extends FutureTask<Optional<T>> impleme
                 .build();
     }
 
-    @Override
     public void run() {
-        if (isDone()) return;
+        if (isDone() || runThread != null) return;
+        runThread = Thread.currentThread();
         try {
             if (!isDone()) {
                 Optional<T> result;
