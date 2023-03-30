@@ -5,24 +5,22 @@ import lombok.Getter;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
-import java.lang.reflect.Field;
 import java.util.List;
 import java.util.Optional;
 import java.util.Vector;
 import java.util.concurrent.Callable;
-import java.util.concurrent.FutureTask;
+import java.util.concurrent.RecursiveTask;
 import java.util.function.Consumer;
 
 import static com.mcreater.amclcore.concurrent.ConcurrentExecutors.INTERFACE_EVENT_EXECUTORS;
 import static com.mcreater.amclcore.concurrent.ConcurrentExecutors.createInterfaceEventExecutor;
 
-public abstract class AbstractTask<T, V> extends FutureTask<Optional<T>> implements Callable<T> {
+public abstract class AbstractTask<T, V> extends RecursiveTask<Optional<T>> implements Callable<T> {
     private static final Logger EVENT_LOGGER = LogManager.getLogger(AbstractTask.class);
     @Getter
     private final List<Consumer<TaskState<V, T>>> stateConsumers = new Vector<>();
     @Getter
     private TaskState<V, T> state;
-    private Thread runThread;
 
     public AbstractTask<T, V> addStateConsumers(List<Consumer<TaskState<V, T>>> c) {
         c.forEach(this::addStateConsumer);
@@ -35,29 +33,13 @@ public abstract class AbstractTask<T, V> extends FutureTask<Optional<T>> impleme
     }
 
     public AbstractTask() {
-        super(Optional::empty);
+        super();
         INTERFACE_EVENT_EXECUTORS.put(this, createInterfaceEventExecutor());
     }
 
     protected void setState(TaskState<V, T> state) {
         this.state = state;
         INTERFACE_EVENT_EXECUTORS.get(this).execute(() -> getStateConsumers().forEach(c -> c.accept(state)));
-    }
-
-    /**
-     * Set internal callable after task instanced
-     *
-     * @deprecated implemented by method {@link AbstractTask#run()}, deprecated the method
-     */
-    @Deprecated
-    private void setCallable() {
-        try {
-            Field field = FutureTask.class.getDeclaredField("callable");
-            field.setAccessible(true);
-            field.set(this, (Callable<Optional<T>>) AbstractTask.this::callInternal);
-        } catch (Exception e) {
-            ExceptionReporter.report(e, ExceptionReporter.ExceptionType.REFLECT);
-        }
     }
 
     /**
@@ -68,7 +50,7 @@ public abstract class AbstractTask<T, V> extends FutureTask<Optional<T>> impleme
      */
     public abstract T call() throws Exception;
 
-    private Optional<T> callInternal() {
+    protected Optional<T> compute() {
         try {
             T result = call();
             EVENT_LOGGER.info(String.format("Task %s finished", this));
@@ -93,37 +75,5 @@ public abstract class AbstractTask<T, V> extends FutureTask<Optional<T>> impleme
         return TaskState.<T, V>builder()
                 .data(value)
                 .build();
-    }
-
-    public void run() {
-        if (isDone() || runThread != null) return;
-        runThread = Thread.currentThread();
-        try {
-            if (!isDone()) {
-                Optional<T> result;
-                boolean ran;
-                try {
-                    result = callInternal();
-                    ran = true;
-                } catch (Throwable ex) {
-                    result = Optional.empty();
-                    ran = false;
-                    setException(ex);
-                }
-                if (ran)
-                    set(result);
-            }
-        } finally {
-            // runner must be non-null until state is settled to
-            // prevent concurrent calls to run()
-//            runner = null;
-
-            // state must be re-read after nulling runner to prevent
-            // leaked interrupts
-//            if (state >= INTERRUPTING)
-//                handlePossibleCancellationInterrupt(s);
-            // call super
-            super.run();
-        }
     }
 }
