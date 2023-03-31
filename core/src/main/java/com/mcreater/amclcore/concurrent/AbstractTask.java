@@ -8,14 +8,13 @@ import org.apache.logging.log4j.Logger;
 import java.util.List;
 import java.util.Optional;
 import java.util.Vector;
-import java.util.concurrent.Callable;
 import java.util.concurrent.RecursiveTask;
 import java.util.function.Consumer;
 
 import static com.mcreater.amclcore.concurrent.ConcurrentExecutors.INTERFACE_EVENT_EXECUTORS;
 import static com.mcreater.amclcore.concurrent.ConcurrentExecutors.createInterfaceEventExecutor;
 
-public abstract class AbstractTask<T, V> extends RecursiveTask<Optional<T>> implements Callable<T> {
+public abstract class AbstractTask<T, V> extends RecursiveTask<Optional<T>> {
     private static final Logger EVENT_LOGGER = LogManager.getLogger(AbstractTask.class);
     @Getter
     private final List<Consumer<TaskState<V, T>>> stateConsumers = new Vector<>();

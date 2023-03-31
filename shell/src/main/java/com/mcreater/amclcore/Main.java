@@ -22,8 +22,7 @@ public class Main {
     }
 
     public static void loginTest() throws Exception {
-        Optional<XBLUserModel> model = ConcurrentExecutors.submit(
-                ConcurrentExecutors.EVENT_QUEUE_EXECUTOR,
+        Optional<XBLUserModel> model = ConcurrentExecutors.OAUTH_LOGIN_EXECUTOR.submit(
                 OAuth.MICROSOFT.fetchDeviceTokenAsync(OAuth.getDefaultDevHandler())
                         .addStateConsumer(c -> logger.info(Optional.ofNullable(c)
                                 .map(TaskState::getData)

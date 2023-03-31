@@ -4,15 +4,12 @@ import com.mcreater.amclcore.exceptions.report.ExceptionReporter;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
-import java.util.Arrays;
 import java.util.HashMap;
-import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ForkJoinPool;
 import java.util.concurrent.ForkJoinWorkerThread;
 import java.util.concurrent.ThreadFactory;
 import java.util.concurrent.atomic.AtomicInteger;
-import java.util.stream.Collectors;
 
 import static com.mcreater.amclcore.exceptions.report.ExceptionReporter.report;
 
@@ -92,49 +89,5 @@ public class ConcurrentExecutors {
                 (t, e) -> report(e, ExceptionReporter.ExceptionType.CONCURRENT),
                 true
         );
-    }
-
-    /**
-     * submit a task to executor
-     *
-     * @param executor the target executor
-     * @param task     the task to be executed
-     * @param <T>      the return type of task
-     * @param <V>      the task state type of task
-     * @return the executed future task
-     */
-    public static <T, V> AbstractTask<T, V> submit(ForkJoinPool executor, AbstractTask<T, V> task) {
-        EVENT_LOGGER.info(String.format("Task %s submitted to executor %s", task, executor));
-        executor.execute(task);
-        return task;
-    }
-
-    /**
-     * submit some tasks to executor
-     *
-     * @param executor the target executor
-     * @param tasks    the tasks to be executed
-     * @param <T>      the return type of task
-     * @param <V>      the task state type of task
-     * @return the executed future tasks
-     */
-    @SafeVarargs
-    public static <T, V> List<AbstractTask<T, V>> submit(ForkJoinPool executor, AbstractTask<T, V>... tasks) {
-        return Arrays.stream(tasks)
-                .map(task -> submit(executor, task))
-                .collect(Collectors.toList());
-    }
-
-    /**
-     * submit some non-type tasks to executor
-     *
-     * @param executor the target executor
-     * @param tasks    the tasks to be executed
-     * @return the executed future tasks
-     */
-    public static List<AbstractTask<?, ?>> submitEx(ForkJoinPool executor, AbstractTask<?, ?>... tasks) {
-        return Arrays.stream(tasks)
-                .map(task -> submit(executor, task))
-                .collect(Collectors.toList());
     }
 }

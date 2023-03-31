@@ -8,19 +8,8 @@ import com.mcreater.amclcore.exceptions.oauth.OAuthTimeOutException;
 import com.mcreater.amclcore.exceptions.oauth.OAuthUserHashException;
 import com.mcreater.amclcore.exceptions.oauth.OAuthXBLNotFoundException;
 import com.mcreater.amclcore.i18n.I18NManager;
-import com.mcreater.amclcore.model.oauth.AuthCodeModel;
-import com.mcreater.amclcore.model.oauth.DeviceCodeConverterModel;
-import com.mcreater.amclcore.model.oauth.DeviceCodeModel;
-import com.mcreater.amclcore.model.oauth.LoginDeviceCodeErrorType;
-import com.mcreater.amclcore.model.oauth.MinecraftRequestModel;
-import com.mcreater.amclcore.model.oauth.MinecraftResponseModel;
-import com.mcreater.amclcore.model.oauth.TokenResponseModel;
-import com.mcreater.amclcore.model.oauth.XBLTokenRequestModel;
-import com.mcreater.amclcore.model.oauth.XBLTokenResponseModel;
-import com.mcreater.amclcore.model.oauth.XBLUserModel;
-import com.mcreater.amclcore.model.oauth.XSTSTokenResponseModel;
+import com.mcreater.amclcore.model.oauth.*;
 import com.mcreater.amclcore.util.HttpClientWrapper;
-import com.mcreater.amclcore.util.SwingUtil;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 
@@ -38,6 +27,8 @@ import static com.mcreater.amclcore.concurrent.ConcurrentUtil.sleepTime;
 import static com.mcreater.amclcore.util.JsonUtil.createList;
 import static com.mcreater.amclcore.util.JsonUtil.createPair;
 import static com.mcreater.amclcore.util.PropertyUtil.readProperty;
+import static com.mcreater.amclcore.util.SwingUtil.copyContentAsync;
+import static com.mcreater.amclcore.util.SwingUtil.openBrowserAsync;
 
 /**
  * OAuth Microsoft official <a href="https://learn.microsoft.com/zh-cn/azure/active-directory/develop/v2-oauth2-auth-code-flow">documentation</a><br>
@@ -99,11 +90,11 @@ public class OAuth {
      * Default device code handler, copy the user code {@link DeviceCodeModel#getUserCode()} and open browser {@link DeviceCodeModel#getVerificationUri()}
      */
     @Getter
-    private static final Consumer<DeviceCodeModel> defaultDevHandler = model2 -> ConcurrentExecutors.submitEx(
-            ConcurrentExecutors.AWT_EVENT_EXECUTOR,
-            SwingUtil.copyContentAsync(model2.getUserCode()),
-            SwingUtil.openBrowserAsync(model2.getVerificationUri())
-    );
+    private static final Consumer<DeviceCodeModel> defaultDevHandler =
+            model2 -> Arrays.asList(
+                    copyContentAsync(model2.getUserCode()),
+                    openBrowserAsync(model2.getVerificationUri())
+            ).forEach(ConcurrentExecutors.AWT_EVENT_EXECUTOR::execute);
     /**
      * the login url for XBox XSTS to Minecraft
      */
@@ -347,26 +338,29 @@ public class OAuth {
                         5
                 )));
                 deviceCode = detectUserCodeLoop(requestHandler);
+            }
+            // TODO fork & delegate internal task to login minecraft
+            {
                 setState(createTaskState(TaskStates.SimpleTaskStateWithArg.create(
                         I18NManager.get("core.oauth.deviceCode.after.text"),
                         10
                 )));
+                return new OAuthLoginPartTask(deviceCode)
+                        // TODO sync internal task state to shell task
+                        .addStateConsumer(t -> setState(
+                                TaskState.<TaskStates.SimpleTaskStateWithArg<Integer>, XBLUserModel>builder()
+                                        .data(t.getData())
+                                        .build()
+                        ))
+                        .fork()
+                        .get()
+                        .orElseThrow(OAuthXBLNotFoundException::new);
             }
-            // TODO delegate task to login minecraft
-            return ConcurrentExecutors.submit(
-                    ConcurrentExecutors.OAUTH_LOGIN_EXECUTOR,
-                    new OAuthLoginPartTask(deviceCode)
-                            .addStateConsumer(t -> setState(
-                                    TaskState.<TaskStates.SimpleTaskStateWithArg<Integer>, XBLUserModel>builder()
-                                            .data(t.getData())
-                                            .build()
-                            ))
-            ).get().orElseThrow(OAuthXBLNotFoundException::new);
         }
     }
 
     @AllArgsConstructor
-    public class OAuthLoginPartTask extends AbstractTask<XBLUserModel, TaskStates.SimpleTaskStateWithArg<Integer>> {
+    protected class OAuthLoginPartTask extends AbstractTask<XBLUserModel, TaskStates.SimpleTaskStateWithArg<Integer>> {
         private final DeviceCodeConverterModel model;
 
         public XBLUserModel call() throws Exception {
