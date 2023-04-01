@@ -5,7 +5,7 @@ import com.mcreater.amclcore.concurrent.ConcurrentExecutors;
 import com.mcreater.amclcore.concurrent.TaskState;
 import com.mcreater.amclcore.concurrent.TaskStates;
 import com.mcreater.amclcore.i18n.I18NManager;
-import com.mcreater.amclcore.model.oauth.XBLUserModel;
+import com.mcreater.amclcore.model.oauth.MinecraftRequestModel;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
@@ -22,14 +22,14 @@ public class Main {
     }
 
     public static void loginTest() throws Exception {
-        Optional<XBLUserModel> model = ConcurrentExecutors.OAUTH_LOGIN_EXECUTOR.submit(
+        Optional<MinecraftRequestModel> model = ConcurrentExecutors.OAUTH_LOGIN_EXECUTOR.submit(
                 OAuth.MICROSOFT.fetchDeviceTokenAsync(OAuth.getDefaultDevHandler())
-                        .addStateConsumer(c -> logger.info(Optional.ofNullable(c)
+                        .addStateConsumer(c -> Optional.ofNullable(c)
                                 .map(TaskState::getData)
                                 .map(TaskStates.SimpleTaskStateWithArg::getText)
                                 .map(I18NManager.TranslatableText::getText)
-                                .orElse("")
-                        ))
+                                .ifPresent(logger::info)
+                        )
         ).get();
 
         System.out.println(model.orElse(null));

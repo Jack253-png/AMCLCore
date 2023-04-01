@@ -12,6 +12,7 @@ import com.mcreater.amclcore.model.oauth.*;
 import com.mcreater.amclcore.util.HttpClientWrapper;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
+import org.apache.http.HttpEntity;
 
 import java.io.IOException;
 import java.net.URISyntaxException;
@@ -85,6 +86,11 @@ public class OAuth {
      */
     @Getter
     private static final String xstsTokenUrl = "xsts.auth.xboxlive.com/xsts/authorize";
+    /**
+     * Minecraft store url
+     */
+    @Getter
+    private static final String minecraftStoreUrl = "api.minecraftservices.com/entitlements/mcstore";
 
     /**
      * Default device code handler, copy the user code {@link DeviceCodeModel#getUserCode()} and open browser {@link DeviceCodeModel#getVerificationUri()}
@@ -268,6 +274,14 @@ public class OAuth {
                 .build();
     }
 
+    /**
+     * fetch XSTS user from XBox Live user
+     *
+     * @param xblUser user from XBox Live {@link OAuth#fetchXBLToken(DeviceCodeConverterModel)}
+     * @return the fetched XSTS user
+     * @throws URISyntaxException If the XSTS api url is malformed
+     * @throws IOException        If an I/O Exception occurred
+     */
     protected XBLUserModel fetchXSTSToken(XBLUserModel xblUser) throws IOException, URISyntaxException {
         XBLTokenRequestModel requestModel = HttpClientWrapper.create(HttpClientWrapper.Method.POST)
                 .uri(getXstsTokenUrl())
@@ -296,11 +310,35 @@ public class OAuth {
                 .build();
     }
 
+    /**
+     * login minecraft with XSTS user
+     *
+     * @param xblUser XSTS user from {@link OAuth#fetchXSTSToken(XBLUserModel)}
+     * @return the login minecraft user
+     * @throws URISyntaxException If the minecraft login api url is malformed
+     * @throws IOException        If an I/O Exception occurred
+     */
     protected MinecraftRequestModel fetchMinecraftToken(XBLUserModel xblUser) throws IOException, URISyntaxException {
         return HttpClientWrapper.create(HttpClientWrapper.Method.POST)
                 .uri(getMcLoginUrl())
-                .entityJson(MinecraftResponseModel.builder().identityToken(String.format("XBL3.0 x=%s;%s", xblUser.getHash(), xblUser.getToken())).build())
+                .entityJson(MinecraftResponseModel.builder()
+                        .identityToken(
+                                String.format("XBL3.0 x=%s;%s",
+                                        xblUser.getHash(),
+                                        xblUser.getToken()
+                                )
+                        )
+                        .build())
                 .sendAndReadJson(MinecraftRequestModel.class);
+    }
+
+    protected boolean checkMinecraftStore(MinecraftRequestModel user) throws URISyntaxException, IOException {
+        HttpEntity requestEntity = HttpClientWrapper.create(HttpClientWrapper.Method.GET)
+                .uri(getMinecraftStoreUrl())
+                .header("Authorization", String.format("Bearer %s", user.getAccessToken()))
+                .send();
+
+        return false;
     }
 
     /**
@@ -326,10 +364,10 @@ public class OAuth {
     }
 
     @AllArgsConstructor
-    public class OAuthLoginTask extends AbstractTask<XBLUserModel, TaskStates.SimpleTaskStateWithArg<Integer>> {
+    public class OAuthLoginTask extends AbstractTask<MinecraftRequestModel, TaskStates.SimpleTaskStateWithArg<Integer>> {
         private final Consumer<DeviceCodeModel> requestHandler;
 
-        public XBLUserModel call() throws Exception {
+        public MinecraftRequestModel call() throws Exception {
             DeviceCodeConverterModel deviceCode;
             // TODO fetch device code and login
             {
@@ -348,7 +386,7 @@ public class OAuth {
                 return new OAuthLoginPartTask(deviceCode)
                         // TODO sync internal task state to shell task
                         .addStateConsumer(t -> setState(
-                                TaskState.<TaskStates.SimpleTaskStateWithArg<Integer>, XBLUserModel>builder()
+                                TaskState.<TaskStates.SimpleTaskStateWithArg<Integer>, MinecraftRequestModel>builder()
                                         .data(t.getData())
                                         .build()
                         ))
@@ -360,10 +398,10 @@ public class OAuth {
     }
 
     @AllArgsConstructor
-    protected class OAuthLoginPartTask extends AbstractTask<XBLUserModel, TaskStates.SimpleTaskStateWithArg<Integer>> {
+    protected class OAuthLoginPartTask extends AbstractTask<MinecraftRequestModel, TaskStates.SimpleTaskStateWithArg<Integer>> {
         private final DeviceCodeConverterModel model;
 
-        public XBLUserModel call() throws Exception {
+        public MinecraftRequestModel call() throws Exception {
             XBLUserModel xblToken, xstsToken;
             MinecraftRequestModel minecraftUser;
             // TODO login XBox Live
@@ -382,7 +420,7 @@ public class OAuth {
                         50
                 )));
             }
-            // TODO login minecraft (to be done)
+            // TODO login minecraft and check account (to be done)
             {
                 minecraftUser = fetchMinecraftToken(xstsToken);
                 setState(createTaskState(TaskStates.SimpleTaskStateWithArg.create(
@@ -390,7 +428,7 @@ public class OAuth {
                         70
                 )));
             }
-            return xstsToken;
+            return minecraftUser;
         }
     }
 }
