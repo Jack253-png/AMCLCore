@@ -434,7 +434,7 @@ public class OAuth {
                 minecraftUser = fetchMinecraftToken(xstsToken);
                 setTopTaskState(TaskState.<MinecraftRequestModel>builder()
                         .totalStage(7)
-                        .currentStage(4)
+                        .currentStage(5)
                         .message(I18NManager.translatable("core.oauth.mclogin.after.text"))
                         .build());
                 setState(TaskState.<MinecraftRequestModel>builder()
