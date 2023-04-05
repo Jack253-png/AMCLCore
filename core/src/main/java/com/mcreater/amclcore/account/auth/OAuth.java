@@ -195,16 +195,13 @@ public class OAuth {
     }
 
     /**
-     * a wrapper for {@link OAuth#fetchDeviceToken(Consumer)}
+     * detect user login by the result of {@link OAuth#fetchDeviceToken(Consumer)}
      *
-     * @param requestHandler the handler for device token
-     * @return the fetched device code
+     * @return the processed device code
      * @throws URISyntaxException If the xbox live api url is malformed
      * @throws IOException        If an I/O Exception occurred
      */
-    protected DeviceCodeConverterModel detectUserCodeLoop(Consumer<DeviceCodeModel> requestHandler) throws URISyntaxException, IOException {
-        DeviceCodeModel model = fetchDeviceToken(requestHandler);
-
+    protected DeviceCodeConverterModel fetchUserLoginToken(DeviceCodeModel model) throws URISyntaxException, IOException {
         long startTime = System.nanoTime();
         int interval = model.getInterval();
 
@@ -224,7 +221,7 @@ public class OAuth {
                     .model(checkIn)
                     .build();
 
-            switch (LoginDeviceCodeErrorType.valueOf(checkIn.getError().toUpperCase())) {
+            switch (LoginDeviceCodeErrorType.parse(checkIn.getError().toUpperCase())) {
                 case AUTHORIZATION_PENDING:
                     continue;
                 case SLOW_DOWN:
@@ -368,15 +365,25 @@ public class OAuth {
         private final Consumer<DeviceCodeModel> requestHandler;
 
         public MinecraftRequestModel call() throws Exception {
+            DeviceCodeModel deviceCodeRaw;
             DeviceCodeConverterModel deviceCode;
-            // TODO fetch device code and login
+            // TODO fetch device code
+            {
+                setState(TaskState.<MinecraftRequestModel>builder()
+                        .totalStage(7)
+                        .currentStage(0)
+                        .message(I18NManager.translatable("core.oauth.login.start"))
+                        .build());
+                deviceCodeRaw = fetchDeviceToken(requestHandler);
+            }
+            // TODO let user login
             {
                 setState(TaskState.<MinecraftRequestModel>builder()
                         .totalStage(7)
                         .currentStage(1)
                         .message(I18NManager.translatable("core.oauth.deviceCode.pre.text"))
                         .build());
-                deviceCode = detectUserCodeLoop(requestHandler);
+                deviceCode = fetchUserLoginToken(deviceCodeRaw);
             }
             // TODO fork & delegate internal task to login minecraft
             {

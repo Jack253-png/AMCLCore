@@ -1,5 +1,6 @@
 {
   "core.transitions.name": "AMCL Core transitions pack",
+  "core.oauth.login.start": "Start OAuth logging service...",
   "core.oauth.deviceCode.pre.text": "Waiting user logging...",
   "core.oauth.deviceCode.after.text": "User login finished, preparing for XBox Live logging...",
   "core.oauth.xbl.after.text": "XBox Live login finished, preparing for XBox XSTS logging...",
