@@ -5,6 +5,7 @@ import com.mcreater.amclcore.concurrent.ConcurrentExecutors;
 import com.mcreater.amclcore.concurrent.TaskState;
 import com.mcreater.amclcore.i18n.I18NManager;
 import com.mcreater.amclcore.model.oauth.MinecraftRequestModel;
+import com.mcreater.amclcore.util.StringUtil;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
@@ -28,7 +29,13 @@ public class Main {
                                 .map(I18NManager.Text::getText)
                                 .ifPresent(logger::info)
                         )
+                        .addStateConsumer(c -> Optional.ofNullable(c)
+                                .map(TaskState::getStateInt)
+                                .map(StringUtil::toPercentage)
+                                .ifPresent(logger::info)
+                        )
         ).get();
+
         System.out.println(model.orElse(null));
     }
 }
