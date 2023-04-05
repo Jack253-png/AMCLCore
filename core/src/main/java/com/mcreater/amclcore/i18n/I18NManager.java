@@ -7,37 +7,17 @@ import com.mcreater.amclcore.model.i18n.LangIndexNameModel;
 import com.mcreater.amclcore.util.IOStreamUtil;
 import lombok.Builder;
 import lombok.Data;
-import lombok.Getter;
 import org.apache.commons.lang3.tuple.ImmutablePair;
 
 import java.io.IOException;
 import java.io.InputStreamReader;
-import java.util.Arrays;
-import java.util.Collections;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Locale;
-import java.util.Map;
-import java.util.MissingFormatArgumentException;
-import java.util.Objects;
-import java.util.Optional;
-import java.util.Vector;
+import java.util.*;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 import static com.mcreater.amclcore.util.JsonUtil.GSON_PARSER;
-import static java.util.Locale.CANADA;
-import static java.util.Locale.CANADA_FRENCH;
-import static java.util.Locale.FRANCE;
-import static java.util.Locale.GERMANY;
-import static java.util.Locale.ITALY;
-import static java.util.Locale.JAPAN;
-import static java.util.Locale.KOREA;
-import static java.util.Locale.SIMPLIFIED_CHINESE;
-import static java.util.Locale.TRADITIONAL_CHINESE;
-import static java.util.Locale.UK;
-import static java.util.Locale.US;
+import static java.util.Locale.*;
 import static java.util.Objects.requireNonNull;
 
 public class I18NManager {
@@ -49,12 +29,10 @@ public class I18NManager {
             ));
     private static final Map<Locale, Map<String, String>> transitionMap = new HashMap<>();
     private static final Map<Locale, List<String>> transitionFiles = new HashMap<>();
-    @Getter
-    private static final List<TranslatableText> packNames = new Vector<>();
+    private static final List<Text> packNames = new Vector<>();
 
     static {
-        reloadIndex();
-        reloadTransition();
+        reloadPacks();
     }
 
     private static void reloadIndex() {
@@ -109,12 +87,17 @@ public class I18NManager {
                                     .map(LangIndexModel::getName)
                                     .map(LangIndexNameModel::getKey)
                                     .orElse("<unnamed language pack>"))
-                            .map(I18NManager::get)
+                            .map(I18NManager::translatable)
                             .collect(Collectors.toList())
             );
         } catch (Exception e) {
             ExceptionReporter.report(e, ExceptionReporter.ExceptionType.IO);
         }
+    }
+
+    public static void reloadPacks() {
+        reloadIndex();
+        reloadTransition();
     }
 
     private static String parseI18N(Locale locale) {
@@ -132,7 +115,7 @@ public class I18NManager {
     }
 
     /**
-     * get string from transition files
+     * translatable string from transition files
      *
      * @param locale the target locale
      * @param key    the string key
@@ -161,21 +144,45 @@ public class I18NManager {
      * @param args format args
      * @return the fetched string
      */
-    public static TranslatableText get(String key, Object... args) {
+    public static Text translatable(String key, Object... args) {
         return TranslatableText.builder()
                 .key(key)
                 .args(Arrays.asList(args))
                 .build();
     }
 
+    /**
+     * create a {@link Text} shell for string
+     *
+     * @param text the internal string
+     * @return the wrapped string
+     */
+    public static Text fixed(String text) {
+        return FixedText.builder()
+                .internalText(text)
+                .build();
+    }
+
+    public static List<Text> getLoadedPackNames() {
+        return Collections.unmodifiableList(packNames);
+    }
+
+    public interface Text {
+        String getText(Locale locale);
+
+        default String getText() {
+            return getText(Locale.getDefault());
+        }
+    }
+
     @Data
     @Builder
-    public static class TranslatableText {
+    public static class TranslatableText implements Text {
         private String key;
         private List<Object> args;
 
         /**
-         * get string with locale
+         * translatable string with locale
          *
          * @param locale the target locale
          * @return the fetched string
@@ -183,14 +190,15 @@ public class I18NManager {
         public String getText(Locale locale) {
             return get(locale, getKey(), args.toArray());
         }
+    }
 
-        /**
-         * get text with default locale {@link Locale#getDefault()}
-         *
-         * @return the fetched string
-         */
-        public String getText() {
-            return getText(Locale.getDefault());
+    @Data
+    @Builder
+    public static class FixedText implements Text {
+        private String internalText;
+
+        public String getText(Locale locale) {
+            return internalText;
         }
     }
 }

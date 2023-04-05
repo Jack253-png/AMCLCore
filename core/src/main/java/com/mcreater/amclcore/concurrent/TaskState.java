@@ -1,5 +1,6 @@
 package com.mcreater.amclcore.concurrent;
 
+import com.mcreater.amclcore.i18n.I18NManager;
 import lombok.Builder;
 import lombok.Data;
 
@@ -7,12 +8,22 @@ import java.util.function.Consumer;
 
 @Data
 @Builder
-public class TaskState<T, R> {
+public class TaskState<R> {
     @Builder.Default
     private Type taskType = Type.EXECUTING;
     private Throwable throwable;
     private R result;
-    private T data;
+    private int totalStage;
+    private int currentStage;
+    private I18NManager.Text message;
+
+    public double getStageDouble() {
+        return (double) currentStage / totalStage;
+    }
+
+    public int getStateInt() {
+        return (int) (getStageDouble() * 100);
+    }
 
     public enum Type {
         ERROR,
@@ -26,14 +37,6 @@ public class TaskState<T, R> {
 
     public void executeIfExc(Consumer<Throwable> c) {
         if (isExc() && throwable != null) c.accept(throwable);
-    }
-
-    public boolean isExec() {
-        return taskType == Type.EXECUTING;
-    }
-
-    public void executeIfExec(Consumer<T> c) {
-        if (isExec() && data != null) c.accept(data);
     }
 
     public boolean isFinish() {

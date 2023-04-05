@@ -27,7 +27,7 @@ public class SwingUtil {
     }
 
     @AllArgsConstructor
-    public static class BrowserOpenTask extends AbstractTask<BrowserState, Void> {
+    public static class BrowserOpenTask extends AbstractTask<BrowserState> {
         private final String url;
 
         public BrowserState call() {
@@ -62,7 +62,7 @@ public class SwingUtil {
     }
 
     @AllArgsConstructor
-    public static class CopyContentTask extends AbstractTask<Void, Void> {
+    public static class CopyContentTask extends AbstractTask<Void> {
         private final String content;
 
         public Void call() {

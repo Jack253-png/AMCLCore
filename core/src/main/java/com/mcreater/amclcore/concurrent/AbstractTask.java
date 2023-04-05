@@ -5,6 +5,8 @@ import lombok.Getter;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
+import javax.naming.OperationNotSupportedException;
+import java.util.Collections;
 import java.util.List;
 import java.util.Optional;
 import java.util.Vector;
@@ -14,19 +16,22 @@ import java.util.function.Consumer;
 import static com.mcreater.amclcore.concurrent.ConcurrentExecutors.INTERFACE_EVENT_EXECUTORS;
 import static com.mcreater.amclcore.concurrent.ConcurrentExecutors.createInterfaceEventExecutor;
 
-public abstract class AbstractTask<T, V> extends RecursiveTask<Optional<T>> {
+public abstract class AbstractTask<T> extends RecursiveTask<Optional<T>> {
     private static final Logger EVENT_LOGGER = LogManager.getLogger(AbstractTask.class);
     @Getter
-    private final List<Consumer<TaskState<V, T>>> stateConsumers = new Vector<>();
+    private final List<Consumer<TaskState<T>>> stateConsumers = new Vector<>();
     @Getter
-    private TaskState<V, T> state;
+    private TaskState<T> state;
+    private final List<AbstractTask<?>> bindTasks = new Vector<>();
+    @Getter
+    private AbstractTask<?> topTask;
 
-    public AbstractTask<T, V> addStateConsumers(List<Consumer<TaskState<V, T>>> c) {
+    public AbstractTask<T> addStateConsumers(List<Consumer<TaskState<T>>> c) {
         c.forEach(this::addStateConsumer);
         return this;
     }
 
-    public AbstractTask<T, V> addStateConsumer(Consumer<TaskState<V, T>> c) {
+    public AbstractTask<T> addStateConsumer(Consumer<TaskState<T>> c) {
         stateConsumers.add(c);
         return this;
     }
@@ -36,9 +41,13 @@ public abstract class AbstractTask<T, V> extends RecursiveTask<Optional<T>> {
         INTERFACE_EVENT_EXECUTORS.put(this, createInterfaceEventExecutor());
     }
 
-    protected void setState(TaskState<V, T> state) {
+    protected void setState(TaskState<T> state) {
         this.state = state;
         INTERFACE_EVENT_EXECUTORS.get(this).execute(() -> getStateConsumers().forEach(c -> c.accept(state)));
+    }
+
+    protected void setTopTaskState(TaskState s) {
+        Optional.ofNullable(topTask).ifPresent(abstractTask -> abstractTask.setState(s));
     }
 
     /**
@@ -50,19 +59,25 @@ public abstract class AbstractTask<T, V> extends RecursiveTask<Optional<T>> {
     public abstract T call() throws Exception;
 
     protected Optional<T> compute() {
+        int lastTotal = Optional.ofNullable(state).map(TaskState::getTotalStage).orElse(1);
+        int lastCurr = Optional.ofNullable(state).map(TaskState::getCurrentStage).orElse(1);
         try {
             T result = call();
             EVENT_LOGGER.info(String.format("Task %s finished", this));
-            setState(TaskState.<V, T>builder()
+            setState(TaskState.<T>builder()
                     .taskType(TaskState.Type.FINISHED)
+                    .totalStage(lastTotal)
+                    .currentStage(lastTotal)
                     .result(result)
                     .build()
             );
             return Optional.ofNullable(result);
         } catch (Exception e) {
             ExceptionReporter.report(e, ExceptionReporter.ExceptionType.CONCURRENT);
-            setState(TaskState.<V, T>builder()
+            setState(TaskState.<T>builder()
                     .throwable(e)
+                    .totalStage(lastTotal)
+                    .currentStage(lastCurr)
                     .taskType(TaskState.Type.ERROR)
                     .build()
             );
@@ -70,9 +85,26 @@ public abstract class AbstractTask<T, V> extends RecursiveTask<Optional<T>> {
         return Optional.empty();
     }
 
-    public static <T, V> TaskState<T, V> createTaskState(T value) {
-        return TaskState.<T, V>builder()
-                .data(value)
-                .build();
+    private void bindTask(AbstractTask<?> task) throws OperationNotSupportedException {
+        Optional.ofNullable(task.topTask).ifPresent(task1 -> {
+            task1.bindTasks.remove(task);
+            task.topTask = null;
+        });
+        if (this.topTask != null) throw new OperationNotSupportedException("this.topTask != null");
+        bindTasks.add(task);
+        task.topTask = this;
+    }
+
+    public AbstractTask<T> bindTo(AbstractTask<?> task) {
+        try {
+            task.bindTask(this);
+        } catch (Exception e) {
+            ExceptionReporter.report(e, ExceptionReporter.ExceptionType.UNKNOWN);
+        }
+        return this;
+    }
+
+    public List<AbstractTask<?>> getSubTasks() {
+        return Collections.unmodifiableList(bindTasks);
     }
 }

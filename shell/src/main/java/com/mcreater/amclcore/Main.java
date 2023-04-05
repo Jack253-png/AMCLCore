@@ -3,7 +3,6 @@ package com.mcreater.amclcore;
 import com.mcreater.amclcore.account.auth.OAuth;
 import com.mcreater.amclcore.concurrent.ConcurrentExecutors;
 import com.mcreater.amclcore.concurrent.TaskState;
-import com.mcreater.amclcore.concurrent.TaskStates;
 import com.mcreater.amclcore.i18n.I18NManager;
 import com.mcreater.amclcore.model.oauth.MinecraftRequestModel;
 import org.apache.logging.log4j.LogManager;
@@ -25,13 +24,11 @@ public class Main {
         Optional<MinecraftRequestModel> model = ConcurrentExecutors.OAUTH_LOGIN_EXECUTOR.submit(
                 OAuth.MICROSOFT.fetchDeviceTokenAsync(OAuth.getDefaultDevHandler())
                         .addStateConsumer(c -> Optional.ofNullable(c)
-                                .map(TaskState::getData)
-                                .map(TaskStates.SimpleTaskStateWithArg::getText)
-                                .map(I18NManager.TranslatableText::getText)
+                                .map(TaskState::getMessage)
+                                .map(I18NManager.Text::getText)
                                 .ifPresent(logger::info)
                         )
         ).get();
-
         System.out.println(model.orElse(null));
     }
 }

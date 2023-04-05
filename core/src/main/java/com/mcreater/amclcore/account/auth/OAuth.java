@@ -3,7 +3,6 @@ package com.mcreater.amclcore.account.auth;
 import com.mcreater.amclcore.concurrent.AbstractTask;
 import com.mcreater.amclcore.concurrent.ConcurrentExecutors;
 import com.mcreater.amclcore.concurrent.TaskState;
-import com.mcreater.amclcore.concurrent.TaskStates;
 import com.mcreater.amclcore.exceptions.oauth.OAuthTimeOutException;
 import com.mcreater.amclcore.exceptions.oauth.OAuthUserHashException;
 import com.mcreater.amclcore.exceptions.oauth.OAuthXBLNotFoundException;
@@ -13,6 +12,7 @@ import com.mcreater.amclcore.util.HttpClientWrapper;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import org.apache.http.HttpEntity;
+import org.apache.http.util.EntityUtils;
 
 import java.io.IOException;
 import java.net.URISyntaxException;
@@ -335,9 +335,9 @@ public class OAuth {
     protected boolean checkMinecraftStore(MinecraftRequestModel user) throws URISyntaxException, IOException {
         HttpEntity requestEntity = HttpClientWrapper.create(HttpClientWrapper.Method.GET)
                 .uri(getMinecraftStoreUrl())
-                .header("Authorization", String.format("Bearer %s", user.getAccessToken()))
+                .header("Authorization", String.format("%s %s", user.getTokenType(), user.getAccessToken()))
                 .send();
-
+        System.out.println(EntityUtils.toString(requestEntity));
         return false;
     }
 
@@ -364,32 +364,29 @@ public class OAuth {
     }
 
     @AllArgsConstructor
-    public class OAuthLoginTask extends AbstractTask<MinecraftRequestModel, TaskStates.SimpleTaskStateWithArg<Integer>> {
+    public class OAuthLoginTask extends AbstractTask<MinecraftRequestModel> {
         private final Consumer<DeviceCodeModel> requestHandler;
 
         public MinecraftRequestModel call() throws Exception {
             DeviceCodeConverterModel deviceCode;
             // TODO fetch device code and login
             {
-                setState(createTaskState(TaskStates.SimpleTaskStateWithArg.create(
-                        I18NManager.get("core.oauth.deviceCode.pre.text"),
-                        5
-                )));
+                setState(TaskState.<MinecraftRequestModel>builder()
+                        .totalStage(7)
+                        .currentStage(1)
+                        .message(I18NManager.translatable("core.oauth.deviceCode.pre.text"))
+                        .build());
                 deviceCode = detectUserCodeLoop(requestHandler);
             }
             // TODO fork & delegate internal task to login minecraft
             {
-                setState(createTaskState(TaskStates.SimpleTaskStateWithArg.create(
-                        I18NManager.get("core.oauth.deviceCode.after.text"),
-                        10
-                )));
+                setState(TaskState.<MinecraftRequestModel>builder()
+                        .totalStage(7)
+                        .currentStage(2)
+                        .message(I18NManager.translatable("core.oauth.deviceCode.after.text"))
+                        .build());
                 return new OAuthLoginPartTask(deviceCode)
-                        // TODO sync internal task state to shell task
-                        .addStateConsumer(t -> setState(
-                                TaskState.<TaskStates.SimpleTaskStateWithArg<Integer>, MinecraftRequestModel>builder()
-                                        .data(t.getData())
-                                        .build()
-                        ))
+                        .bindTo(this)
                         .fork()
                         .get()
                         .orElseThrow(OAuthXBLNotFoundException::new);
@@ -398,7 +395,7 @@ public class OAuth {
     }
 
     @AllArgsConstructor
-    protected class OAuthLoginPartTask extends AbstractTask<MinecraftRequestModel, TaskStates.SimpleTaskStateWithArg<Integer>> {
+    protected class OAuthLoginPartTask extends AbstractTask<MinecraftRequestModel> {
         private final DeviceCodeConverterModel model;
 
         public MinecraftRequestModel call() throws Exception {
@@ -407,26 +404,47 @@ public class OAuth {
             // TODO login XBox Live
             {
                 xblToken = fetchXBLToken(model);
-                setState(createTaskState(TaskStates.SimpleTaskStateWithArg.create(
-                        I18NManager.get("core.oauth.xbl.after.text"),
-                        30
-                )));
+                setTopTaskState(TaskState.<MinecraftRequestModel>builder()
+                        .totalStage(7)
+                        .currentStage(3)
+                        .message(I18NManager.translatable("core.oauth.xbl.after.text"))
+                        .build());
+                setState(TaskState.<MinecraftRequestModel>builder()
+                        .totalStage(5)
+                        .currentStage(1)
+                        .message(I18NManager.translatable("core.oauth.xbl.after.text"))
+                        .build());
             }
             // TODO login XBox XSTS
             {
                 xstsToken = fetchXSTSToken(xblToken);
-                setState(createTaskState(TaskStates.SimpleTaskStateWithArg.create(
-                        I18NManager.get("core.oauth.xsts.after.text"),
-                        50
-                )));
+                setTopTaskState(TaskState.<MinecraftRequestModel>builder()
+                        .totalStage(7)
+                        .currentStage(4)
+                        .message(I18NManager.translatable("core.oauth.xsts.after.text"))
+                        .build());
+                setState(TaskState.<MinecraftRequestModel>builder()
+                        .totalStage(5)
+                        .currentStage(2)
+                        .message(I18NManager.translatable("core.oauth.xsts.after.text"))
+                        .build());
             }
             // TODO login minecraft and check account (to be done)
             {
                 minecraftUser = fetchMinecraftToken(xstsToken);
-                setState(createTaskState(TaskStates.SimpleTaskStateWithArg.create(
-                        I18NManager.get("core.oauth.mclogin.after.text"),
-                        70
-                )));
+                setTopTaskState(TaskState.<MinecraftRequestModel>builder()
+                        .totalStage(7)
+                        .currentStage(4)
+                        .message(I18NManager.translatable("core.oauth.mclogin.after.text"))
+                        .build());
+                setState(TaskState.<MinecraftRequestModel>builder()
+                        .totalStage(5)
+                        .currentStage(3)
+                        .message(I18NManager.translatable("core.oauth.mclogin.after.text"))
+                        .build());
+            }
+            {
+                checkMinecraftStore(minecraftUser);
             }
             return minecraftUser;
         }
