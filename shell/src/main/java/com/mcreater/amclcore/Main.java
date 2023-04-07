@@ -3,7 +3,7 @@ package com.mcreater.amclcore;
 import com.mcreater.amclcore.account.auth.OAuth;
 import com.mcreater.amclcore.concurrent.ConcurrentExecutors;
 import com.mcreater.amclcore.concurrent.TaskState;
-import com.mcreater.amclcore.i18n.I18NManager;
+import com.mcreater.amclcore.i18n.Text;
 import com.mcreater.amclcore.model.oauth.MinecraftRequestModel;
 import com.mcreater.amclcore.util.StringUtil;
 import org.apache.logging.log4j.LogManager;
@@ -26,7 +26,7 @@ public class Main {
                 OAuth.MICROSOFT.fetchDeviceTokenAsync(OAuth.getDefaultDevHandler())
                         .addStateConsumer(c -> Optional.ofNullable(c)
                                 .map(TaskState::getMessage)
-                                .map(I18NManager.Text::getText)
+                                .map(Text::getText)
                                 .ifPresent(logger::info)
                         )
                         .addStateConsumer(c -> Optional.ofNullable(c)

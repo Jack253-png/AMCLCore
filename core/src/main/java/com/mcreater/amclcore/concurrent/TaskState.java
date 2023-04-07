@@ -1,6 +1,6 @@
 package com.mcreater.amclcore.concurrent;
 
-import com.mcreater.amclcore.i18n.I18NManager;
+import com.mcreater.amclcore.i18n.Text;
 import lombok.Builder;
 import lombok.Data;
 
@@ -15,7 +15,7 @@ public class TaskState<R> {
     private R result;
     private int totalStage;
     private int currentStage;
-    private I18NManager.Text message;
+    private Text message;
 
     public double getStageDouble() {
         return (double) currentStage / totalStage;

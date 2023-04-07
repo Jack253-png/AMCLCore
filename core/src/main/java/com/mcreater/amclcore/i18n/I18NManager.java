@@ -5,8 +5,6 @@ import com.mcreater.amclcore.exceptions.report.ExceptionReporter;
 import com.mcreater.amclcore.model.i18n.LangIndexModel;
 import com.mcreater.amclcore.model.i18n.LangIndexNameModel;
 import com.mcreater.amclcore.util.IOStreamUtil;
-import lombok.Builder;
-import lombok.Data;
 import org.apache.commons.lang3.tuple.ImmutablePair;
 
 import java.io.IOException;
@@ -122,7 +120,7 @@ public class I18NManager {
      * @param args   format args
      * @return the fetched string
      */
-    private static String get(Locale locale, String key, Object... args) {
+    static String get(Locale locale, String key, Object... args) {
         // TODO when string exists in the "locale" field
         try {
             return getNotNull(locale, key, args);
@@ -165,40 +163,5 @@ public class I18NManager {
 
     public static List<Text> getLoadedPackNames() {
         return Collections.unmodifiableList(packNames);
-    }
-
-    public interface Text {
-        String getText(Locale locale);
-
-        default String getText() {
-            return getText(Locale.getDefault());
-        }
-    }
-
-    @Data
-    @Builder
-    public static class TranslatableText implements Text {
-        private String key;
-        private List<Object> args;
-
-        /**
-         * translatable string with locale
-         *
-         * @param locale the target locale
-         * @return the fetched string
-         */
-        public String getText(Locale locale) {
-            return get(locale, getKey(), args.toArray());
-        }
-    }
-
-    @Data
-    @Builder
-    public static class FixedText implements Text {
-        private String internalText;
-
-        public String getText(Locale locale) {
-            return internalText;
-        }
     }
 }
