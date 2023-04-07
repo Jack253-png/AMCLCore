@@ -2,15 +2,9 @@ package com.mcreater.amclcore.util;
 
 import com.mcreater.amclcore.exceptions.report.ExceptionReporter;
 
-import java.io.BufferedReader;
-import java.io.File;
-import java.io.IOException;
-import java.io.InputStream;
-import java.io.InputStreamReader;
-import java.io.OutputStreamWriter;
-import java.io.Reader;
-import java.io.Writer;
+import java.io.*;
 import java.net.URL;
+import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.util.stream.Collectors;
 
@@ -35,5 +29,9 @@ public class IOStreamUtil {
             ExceptionReporter.report(e, ExceptionReporter.ExceptionType.IO);
             return null;
         }
+    }
+
+    public static Reader newReader(InputStream s) {
+        return new InputStreamReader(s, StandardCharsets.UTF_8);
     }
 }

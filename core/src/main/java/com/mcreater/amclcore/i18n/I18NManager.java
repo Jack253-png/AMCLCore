@@ -8,7 +8,6 @@ import com.mcreater.amclcore.util.IOStreamUtil;
 import org.apache.commons.lang3.tuple.ImmutablePair;
 
 import java.io.IOException;
-import java.io.InputStreamReader;
 import java.util.*;
 import java.util.function.Function;
 import java.util.stream.Collectors;
@@ -40,7 +39,7 @@ public class I18NManager {
                     .stream()
                     .map(IOStreamUtil::tryOpenStream)
                     .filter(Objects::nonNull)
-                    .map(InputStreamReader::new)
+                    .map(IOStreamUtil::newReader)
                     .map(reader -> GSON_PARSER.fromJson(reader, LangIndexModel.class))
                     .collect(Collectors.toList());
         } catch (IOException e) {
@@ -61,7 +60,7 @@ public class I18NManager {
                 .map((Function<String, Map<String, String>>) s -> {
                     try {
                         return GSON_PARSER.fromJson(
-                                new InputStreamReader(
+                                IOStreamUtil.newReader(
                                         requireNonNull(
                                                 I18NManager.class.getClassLoader().getResource(s)
                                         ).openStream()
