@@ -5,5 +5,9 @@
   "core.oauth.deviceCode.after.text": "User login finished, preparing for XBox Live logging...",
   "core.oauth.xbl.after.text": "XBox Live login finished, preparing for XBox XSTS logging...",
   "core.oauth.xsts.after.text": "XBox XSTS login finished, preparing for Minecraft logging...",
-  "core.oauth.mclogin.after.text": "Minecraft login finished, checking minecraft account archive..."
+  "core.oauth.mclogin.after.text": "Minecraft login finished, checking minecraft account archives...",
+  "core.exceptions.req_exc": "Http/Https request failed, server returned code %d, reason %s, entity result: %s",
+  "core.exceptions.oauth.timeout": "OAuth login timeout",
+  "core.exceptions.oauth.user_hash": "User hash validation failed",
+  "core.exceptions.oauth.fail": "OAuth login failed"
 }

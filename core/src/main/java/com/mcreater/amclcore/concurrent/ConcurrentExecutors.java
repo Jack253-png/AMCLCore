@@ -26,7 +26,7 @@ public class ConcurrentExecutors {
     /**
      * Main event queue(login, launch, download, task shells...)
      */
-    public static final ForkJoinPool EVENT_QUEUE_EXECUTOR = new ForkJoinPool(
+    public static final ExtendForkJoinPool EVENT_QUEUE_EXECUTOR = new ExtendForkJoinPool(
             32,
             new ForkJoinWorkerThreadFactoryImpl(),
             (t, e) -> report(e, ExceptionReporter.ExceptionType.CONCURRENT),
@@ -35,7 +35,7 @@ public class ConcurrentExecutors {
     /**
      * OAuth login queue
      */
-    public static final ForkJoinPool OAUTH_LOGIN_EXECUTOR = new ForkJoinPool(
+    public static final ExtendForkJoinPool OAUTH_LOGIN_EXECUTOR = new ExtendForkJoinPool(
             8,
             new ForkJoinWorkerThreadFactoryImpl(),
             (t, e) -> report(e, ExceptionReporter.ExceptionType.CONCURRENT),
@@ -44,7 +44,7 @@ public class ConcurrentExecutors {
     /**
      * Swing event queue(clipboard, desktop api...)
      */
-    public static final ForkJoinPool AWT_EVENT_EXECUTOR = new ForkJoinPool(
+    public static final ExtendForkJoinPool AWT_EVENT_EXECUTOR = new ExtendForkJoinPool(
             8,
             new ForkJoinWorkerThreadFactoryImpl(),
             (t, e) -> report(e, ExceptionReporter.ExceptionType.CONCURRENT),
@@ -53,7 +53,7 @@ public class ConcurrentExecutors {
     /**
      * interface event queue
      */
-    public static final Map<AbstractTask<?>, ForkJoinPool> INTERFACE_EVENT_EXECUTORS = new HashMap<>();
+    public static final Map<Object, ForkJoinPool> INTERFACE_EVENT_EXECUTORS = new HashMap<>();
 
     public static ForkJoinPool createInterfaceEventExecutor() {
         return new ForkJoinPool(

@@ -260,14 +260,14 @@ public class OAuth {
                 )
                 .sendAndReadJson(XBLTokenRequestModel.class);
 
-        String userHash = requestModel.getDisplayClaims().getXui().stream()
-                .map(XBLTokenRequestModel.XBLTokenUserHashModel::getUhs)
-                .findAny()
-                .orElseThrow(OAuthXBLNotFoundException::new);
-
         return XBLUserModel.builder()
                 .token(requestModel.getToken())
-                .hash(userHash)
+                .hash(
+                        requestModel.getDisplayClaims().getXui().stream()
+                                .map(XBLTokenRequestModel.XBLTokenUserHashModel::getUhs)
+                                .findAny()
+                                .orElseThrow(OAuthUserHashException::new)
+                )
                 .build();
     }
 

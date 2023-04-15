@@ -22,6 +22,7 @@ public class Main {
     }
 
     public static void loginTest() throws Exception {
+        ConcurrentExecutors.OAUTH_LOGIN_EXECUTOR.getWrappedListeners().add(logger::info);
         Optional<MinecraftRequestModel> model = ConcurrentExecutors.OAUTH_LOGIN_EXECUTOR.submit(
                 OAuth.MICROSOFT.fetchDeviceTokenAsync(OAuth.getDefaultDevHandler())
                         .addStateConsumer(c -> Optional.ofNullable(c)
