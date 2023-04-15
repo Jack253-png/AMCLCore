@@ -1,5 +1,6 @@
 package com.mcreater.amclcore.account.auth;
 
+import com.mcreater.amclcore.MetaData;
 import com.mcreater.amclcore.concurrent.AbstractTask;
 import com.mcreater.amclcore.concurrent.ConcurrentExecutors;
 import com.mcreater.amclcore.concurrent.TaskState;
@@ -49,17 +50,6 @@ public class OAuth {
     private final String deviceCodeUrl;
     private final String tokenUrl;
     private final String authTokenUrl;
-
-    /**
-     * AMCL/AMCLCore azure application id
-     */
-    @Getter
-    private static final String defaultClientId = "1a969022-f24f-4492-a91c-6f4a6fcb373c";
-    /**
-     * client id override, using command line {@code -Damclcore.oauth.clientid.override=YOUR_CLIENTID}
-     */
-    @Getter
-    public static final String clientIdPropertyName = "amclcore.oauth.clientid.override";
     /**
      * Minecraft azure application id
      */
@@ -350,7 +340,7 @@ public class OAuth {
     }
 
     private static String createClientID() {
-        return readProperty(getClientIdPropertyName(), getDefaultClientId());
+        return readProperty(MetaData.getOauthClientIdOverridePropertyName(), MetaData.getOauthDefaultClientId());
     }
 
     @AllArgsConstructor

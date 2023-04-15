@@ -11,9 +11,11 @@ import org.apache.logging.log4j.Logger;
 
 import java.util.Optional;
 
+import static com.mcreater.amclcore.util.PropertyUtil.setProperty;
+
 public class Main {
     static {
-        System.setProperty("log4j.skipJansi", "false");
+        setProperty("log4j.skipJansi", false);
     }
     private static final Logger logger = LogManager.getLogger(Main.class);
 
