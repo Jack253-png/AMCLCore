@@ -1,6 +1,5 @@
 package com.mcreater.amclcore.account.auth;
 
-import com.mcreater.amclcore.MetaData;
 import com.mcreater.amclcore.concurrent.AbstractTask;
 import com.mcreater.amclcore.concurrent.ConcurrentExecutors;
 import com.mcreater.amclcore.concurrent.TaskState;
@@ -25,6 +24,8 @@ import java.util.function.Consumer;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
+import static com.mcreater.amclcore.MetaData.getOauthClientIdOverridePropertyName;
+import static com.mcreater.amclcore.MetaData.getOauthDefaultClientId;
 import static com.mcreater.amclcore.concurrent.ConcurrentUtil.sleepTime;
 import static com.mcreater.amclcore.util.JsonUtil.createList;
 import static com.mcreater.amclcore.util.JsonUtil.createPair;
@@ -340,7 +341,7 @@ public class OAuth {
     }
 
     private static String createClientID() {
-        return readProperty(MetaData.getOauthClientIdOverridePropertyName(), MetaData.getOauthDefaultClientId());
+        return readProperty(getOauthClientIdOverridePropertyName(), getOauthDefaultClientId());
     }
 
     @AllArgsConstructor
