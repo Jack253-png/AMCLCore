@@ -15,6 +15,7 @@ public class JsonUtil {
     public static final Gson GSON_PARSER = new GsonBuilder()
             .setPrettyPrinting()
             .registerTypeAdapter(UUID.class, UUIDAdapter.INSTANCE)
+            .setLenient()
             .create();
 
     @SafeVarargs

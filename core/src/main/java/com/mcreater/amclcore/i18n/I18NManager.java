@@ -40,7 +40,14 @@ public class I18NManager {
                     .map(IOStreamUtil::tryOpenStream)
                     .filter(Objects::nonNull)
                     .map(IOStreamUtil::newReader)
-                    .map(reader -> GSON_PARSER.fromJson(reader, LangIndexModel.class))
+                    .map(reader -> {
+                        try {
+                            return GSON_PARSER.fromJson(reader, LangIndexModel.class);
+                        } catch (Exception e) {
+                            return null;
+                        }
+                    })
+                    .filter(Objects::nonNull)
                     .collect(Collectors.toList());
         } catch (IOException e) {
             ExceptionReporter.report(e, ExceptionReporter.ExceptionType.NATIVE);

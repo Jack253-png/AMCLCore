@@ -27,6 +27,7 @@ import java.util.regex.Pattern;
 import static com.mcreater.amclcore.concurrent.ConcurrentUtil.sleepTime;
 import static com.mcreater.amclcore.util.JsonUtil.createList;
 import static com.mcreater.amclcore.util.JsonUtil.createPair;
+import static com.mcreater.amclcore.util.NetUtil.buildScopeString;
 import static com.mcreater.amclcore.util.PropertyUtil.readProperty;
 import static com.mcreater.amclcore.util.SwingUtil.copyContentAsync;
 import static com.mcreater.amclcore.util.SwingUtil.openBrowserAsync;
@@ -119,7 +120,7 @@ public class OAuth {
         DeviceCodeModel model = HttpClientWrapper.create(HttpClientWrapper.Method.GET)
                 .uri(deviceCodeUrl)
                 .uriParam("client_id", createClientID())
-                .uriParam("scope", buildScopeString("XboxLive.signin", "offline_access"))
+                .uriParam("scope", buildScopeString(" ", "XboxLive.signin", "offline_access"))
                 .timeout(5000)
                 .reqTimeout(5000)
                 .sendAndReadJson(DeviceCodeModel.class);
@@ -140,7 +141,7 @@ public class OAuth {
         return HttpClientWrapper.create(HttpClientWrapper.Method.POST)
                 .uri(tokenUrl)
                 .entityEncodedUrl(
-                        createPair("grant_type", buildScopeString2("urn", "ietf", "params", "oauth", "grant-type", "device_code")),
+                        createPair("grant_type", buildScopeString(":", "urn", "ietf", "params", "oauth", "grant-type", "device_code")),
                         createPair("client_id", createClientID()),
                         createPair("code", deviceCode)
                 )
@@ -346,14 +347,6 @@ public class OAuth {
      */
     public OAuthLoginTask fetchDeviceTokenAsync(Consumer<DeviceCodeModel> requestHandler) {
         return new OAuthLoginTask(requestHandler);
-    }
-
-    private static String buildScopeString(String... s) {
-        return String.join(" ", Arrays.asList(s));
-    }
-
-    private static String buildScopeString2(String... s) {
-        return String.join(":", Arrays.asList(s));
     }
 
     private static String createClientID() {

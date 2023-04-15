@@ -7,4 +7,5 @@ import lombok.Data;
 @Builder
 public class LangIndexNameModel {
     private String key;
+    private String string;
 }
