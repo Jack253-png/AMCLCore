@@ -1,8 +1,6 @@
 package com.mcreater.amclcore.concurrent;
 
 import com.mcreater.amclcore.exceptions.report.ExceptionReporter;
-import org.apache.logging.log4j.LogManager;
-import org.apache.logging.log4j.Logger;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -12,7 +10,6 @@ import java.util.concurrent.ForkJoinWorkerThread;
 import static com.mcreater.amclcore.exceptions.report.ExceptionReporter.report;
 
 public class ConcurrentExecutors {
-    private static final Logger EVENT_LOGGER = LogManager.getLogger(ConcurrentExecutors.class);
 
     public static class ForkJoinWorkerThreadFactoryImpl implements ForkJoinPool.ForkJoinWorkerThreadFactory {
 
@@ -24,7 +21,8 @@ public class ConcurrentExecutors {
     }
 
     /**
-     * Main event queue(login, launch, download, task shells...)
+     * Main event queue(launch, task shells...)<br>
+     * 主要事件队列(启动，任务外壳...)
      */
     public static final ExtendForkJoinPool EVENT_QUEUE_EXECUTOR = new ExtendForkJoinPool(
             32,
@@ -33,7 +31,18 @@ public class ConcurrentExecutors {
             true
     );
     /**
-     * OAuth login queue
+     * Download event queue<br>
+     * 下载事件队列
+     */
+    public static final ExtendForkJoinPool DOWNLOAD_QUEUE_EXECUTOR = new ExtendForkJoinPool(
+            32,
+            new ForkJoinWorkerThreadFactoryImpl(),
+            (t, e) -> report(e, ExceptionReporter.ExceptionType.CONCURRENT),
+            true
+    );
+    /**
+     * OAuth login queue<br>
+     * OAuth 登录队列
      */
     public static final ExtendForkJoinPool OAUTH_LOGIN_EXECUTOR = new ExtendForkJoinPool(
             8,
@@ -42,7 +51,8 @@ public class ConcurrentExecutors {
             true
     );
     /**
-     * Swing event queue(clipboard, desktop api...)
+     * Swing event queue(clipboard, desktop api...)<br>
+     * Swing 事件队列(剪贴板，桌面API...)
      */
     public static final ExtendForkJoinPool AWT_EVENT_EXECUTOR = new ExtendForkJoinPool(
             8,
@@ -51,7 +61,8 @@ public class ConcurrentExecutors {
             true
     );
     /**
-     * interface event queue
+     * interface event queue<br>
+     * 接口事件队列
      */
     public static final Map<Object, ForkJoinPool> INTERFACE_EVENT_EXECUTORS = new HashMap<>();
 

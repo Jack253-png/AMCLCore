@@ -51,10 +51,11 @@ public abstract class AbstractTask<T> extends RecursiveTask<Optional<T>> {
     }
 
     /**
-     * abstract task for implement
+     * abstract task for implement<br>
+     * 用于实现的抽象任务
      *
-     * @return the task result
-     * @throws Exception when task throws an exception
+     * @return the task result<br>任务结果
+     * @throws Exception when task throws an exception<br>当任务抛出一个异常
      */
     public abstract T call() throws Exception;
 
