@@ -11,8 +11,6 @@ import com.mcreater.amclcore.model.oauth.*;
 import com.mcreater.amclcore.util.HttpClientWrapper;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
-import org.apache.http.HttpEntity;
-import org.apache.http.util.EntityUtils;
 
 import java.io.IOException;
 import java.net.URISyntaxException;
@@ -335,11 +333,11 @@ public class OAuth {
     }
 
     protected boolean checkMinecraftStore(MinecraftRequestModel user) throws URISyntaxException, IOException {
-        HttpEntity requestEntity = HttpClientWrapper.create(HttpClientWrapper.Method.GET)
+        MinecraftProductRequestModel requestModel = HttpClientWrapper.create(HttpClientWrapper.Method.GET)
                 .uri(getMinecraftStoreUrl())
                 .header("Authorization", String.format("%s %s", user.getTokenType(), user.getAccessToken()))
-                .send();
-        System.out.println(EntityUtils.toString(requestEntity));
+                .sendAndReadJson(MinecraftProductRequestModel.class);
+        System.out.println(requestModel);
         return false;
     }
 

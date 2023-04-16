@@ -8,16 +8,7 @@ import org.apache.http.HttpResponse;
 import org.apache.http.NameValuePair;
 import org.apache.http.client.HttpClient;
 import org.apache.http.client.config.RequestConfig;
-import org.apache.http.client.methods.HttpDelete;
-import org.apache.http.client.methods.HttpEntityEnclosingRequestBase;
-import org.apache.http.client.methods.HttpGet;
-import org.apache.http.client.methods.HttpHead;
-import org.apache.http.client.methods.HttpOptions;
-import org.apache.http.client.methods.HttpPatch;
-import org.apache.http.client.methods.HttpPost;
-import org.apache.http.client.methods.HttpPut;
-import org.apache.http.client.methods.HttpRequestBase;
-import org.apache.http.client.methods.HttpTrace;
+import org.apache.http.client.methods.*;
 import org.apache.http.client.utils.URIBuilder;
 import org.apache.http.client.utils.URLEncodedUtils;
 import org.apache.http.concurrent.Cancellable;
@@ -27,6 +18,7 @@ import org.apache.http.message.BasicNameValuePair;
 
 import java.io.IOException;
 import java.io.UnsupportedEncodingException;
+import java.lang.reflect.Type;
 import java.net.URISyntaxException;
 import java.nio.charset.Charset;
 import java.nio.charset.StandardCharsets;
@@ -218,6 +210,10 @@ public class HttpClientWrapper {
     }
 
     public <T> T sendAndReadJson(Class<T> clazz) throws URISyntaxException, IOException {
+        return GSON_PARSER.fromJson(IOStreamUtil.readStream(send().getContent()), clazz);
+    }
+
+    public <T> T sendAndReadJson(Type clazz) throws URISyntaxException, IOException {
         return GSON_PARSER.fromJson(IOStreamUtil.readStream(send().getContent()), clazz);
     }
 
