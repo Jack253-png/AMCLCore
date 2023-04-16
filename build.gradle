@@ -68,8 +68,7 @@ allprojects {
 dependencies {
     implementation project(":core")
     implementation project(":shell")
-    compileOnly 'org.projectlombok:lombok:1.18.18'
-    annotationProcessor 'org.projectlombok:lombok:1.18.18'
+    annotationProcessor 'org.projectlombok:lombok:1.18.26'
 }
 
 ext {
