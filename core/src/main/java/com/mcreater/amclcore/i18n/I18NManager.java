@@ -119,12 +119,13 @@ public class I18NManager {
     }
 
     /**
-     * translatable string from transition files
+     * translatable string from transition files<br>
+     * 从翻译文件获取字符串
      *
-     * @param locale the target locale
-     * @param key    the string key
-     * @param args   format args
-     * @return the fetched string
+     * @param locale the target locale<br>目标低点
+     * @param key    the string key<br>字符串key
+     * @param args   format args<br>格式化参数
+     * @return the fetched string<br>获取到的字符串
      */
     static String get(Locale locale, String key, Object... args) {
         // TODO when string exists in the "locale" field
@@ -142,11 +143,11 @@ public class I18NManager {
     }
 
     /**
-     * get string without locale
-     *
-     * @param key  the string key
-     * @param args format args
-     * @return the fetched string
+     * get string without locale<br>
+     * 不指定位置获取字符串
+     * @param key  the string key<br>字符串key
+     * @param args format args<br>格式化参数
+     * @return the fetched string<br>获取到的字符串
      */
     public static Text translatable(String key, Object... args) {
         return TranslatableText.builder()
@@ -156,10 +157,10 @@ public class I18NManager {
     }
 
     /**
-     * create a {@link Text} shell for string
-     *
-     * @param text the internal string
-     * @return the wrapped string
+     * create a {@link Text} shell for string<br>
+     * 创建 {@link Text} 字符串外壳
+     * @param text the internal string<br>内部字符串
+     * @return the wrapped string<br>被包装的字符串
      */
     public static Text fixed(String text) {
         return FixedText.builder()

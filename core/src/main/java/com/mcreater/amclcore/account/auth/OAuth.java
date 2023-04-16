@@ -62,32 +62,32 @@ public class OAuth {
     @Deprecated
     private static final String minecraftAzureApplicationId = "00000000402b5328";
     /**
-     * Minecraft azure login url
+     * Minecraft azure login url<br>
      * Minecraft azure 登录URL
      */
     @Getter
     private static final String minecraftAzureLoginUrl = "https://login.live.com/oauth20_authorize.srf?client_id=00000000402b5328&response_type=code&scope=service%3A%3Auser.auth.xboxlive.com%3A%3AMBI_SSL&redirect_uri=https%3A%2F%2Flogin.live.com%2Foauth20_desktop.srf";
     /**
-     * Azure direct login url pattern.
+     * Azure direct login url pattern<br>
      * Azure 直接登录URL模板
      */
     @Getter
     private static final Pattern minecraftAzureUrlPattern = Pattern.compile("https://login\\.live\\.com/oauth20_desktop\\.srf\\?code=(?<code>.*)&lc=(?<lc>.*)");
 
     /**
-     * XBox token api url
+     * XBox token api url<br>
      * XBox 令牌API URL
      */
     @Getter
     private static final String xblTokenUrl = "user.auth.xboxlive.com/user/authenticate";
     /**
-     * XSTS validation url
+     * XSTS validation url<br>
      * XSTS 验证URL
      */
     @Getter
     private static final String xstsTokenUrl = "xsts.auth.xboxlive.com/xsts/authorize";
     /**
-     * Minecraft store url
+     * Minecraft store url<br>
      * Minecraft 商店URL
      */
     @Getter
@@ -188,10 +188,11 @@ public class OAuth {
     }
 
     /**
-     * parse url from {@link OAuth#minecraftAzureUrlPattern} login
+     * parse url from {@link OAuth#minecraftAzureUrlPattern} login<br>
+     * 解析从 {@link OAuth#minecraftAzureUrlPattern} 登录产生的URL
      *
-     * @param rawUrl the redirect url
-     * @return the parsed code
+     * @param rawUrl the redirect url<br>重定向URL
+     * @return the parsed code<br>已解析的代码
      */
     public String parseRedirectUrl(String rawUrl) {
         Matcher matcher = getMinecraftAzureUrlPattern().matcher(rawUrl);
@@ -199,11 +200,11 @@ public class OAuth {
     }
 
     /**
-     * detect user login by the result of {@link OAuth#fetchDeviceToken(Consumer)}
-     *
-     * @return the processed device code
-     * @throws URISyntaxException If the xbox live api url is malformed
-     * @throws IOException        If an I/O Exception occurred
+     * detect user login by the result of {@link OAuth#fetchDeviceToken(Consumer)}<br>
+     * 使用 {@link OAuth#fetchDeviceToken(Consumer)} 的结果检测用户登录
+     * @return the processed device code<br>被处理过的设备代码
+     * @throws URISyntaxException If the xbox live api url is malformed<br>如果XBox Live API 的 URL 错误
+     * @throws IOException        If an I/O Exception occurred<br>如果一个IO错误发生
      */
     protected DeviceCodeConverterModel fetchUserLoginToken(DeviceCodeModel model) throws URISyntaxException, IOException {
         long startTime = System.nanoTime();
@@ -240,12 +241,12 @@ public class OAuth {
     }
 
     /**
-     * convert from access token to Xbox Live token
-     *
-     * @param parsedDeviceCode the verified access token
-     * @return the fetched XBox Live token
-     * @throws URISyntaxException If the xbox live api url is malformed
-     * @throws IOException        If an I/O Exception occurred
+     * convert from access token to Xbox Live token<br>
+     * 转换 Access 令牌到 XBox Live 令牌
+     * @param parsedDeviceCode the verified access token<br>已验证的 Access 令牌
+     * @return the fetched XBox Live token<br>获取到的 XBox Live 令牌
+     * @throws URISyntaxException If the xbox live api url is malformed<br>如果 XBox Live API 的 URL 错误
+     * @throws IOException        If an I/O Exception occurred<br>如果一个IO错误发生
      */
     protected XBLUserModel fetchXBLToken(DeviceCodeConverterModel parsedDeviceCode) throws IOException, URISyntaxException {
         XBLTokenRequestModel requestModel = HttpClientWrapper.create(HttpClientWrapper.Method.POST)
@@ -276,12 +277,12 @@ public class OAuth {
     }
 
     /**
-     * fetch XSTS user from XBox Live user
-     *
-     * @param xblUser user from XBox Live {@link OAuth#fetchXBLToken(DeviceCodeConverterModel)}
-     * @return the fetched XSTS user
-     * @throws URISyntaxException If the XSTS api url is malformed
-     * @throws IOException        If an I/O Exception occurred
+     * fetch XSTS user from XBox Live user<br>
+     * 从 XBox Live 用户获取 XSTS 用户
+     * @param xblUser user from XBox Live {@link OAuth#fetchXBLToken(DeviceCodeConverterModel)}<br>从 {@link OAuth#fetchXBLToken(DeviceCodeConverterModel)} 得到的 XBox Live 用户
+     * @return the fetched XSTS user<br>获取到的 XSTS 用户
+     * @throws URISyntaxException If the XSTS api url is malformed<br>如果 XSTS API 的 URL 错误
+     * @throws IOException        If an I/O Exception occurred<br>如果一个IO错误发生
      */
     protected XBLUserModel fetchXSTSToken(XBLUserModel xblUser) throws IOException, URISyntaxException {
         XBLTokenRequestModel requestModel = HttpClientWrapper.create(HttpClientWrapper.Method.POST)
@@ -312,12 +313,12 @@ public class OAuth {
     }
 
     /**
-     * login minecraft with XSTS user
-     *
-     * @param xblUser XSTS user from {@link OAuth#fetchXSTSToken(XBLUserModel)}
-     * @return the login minecraft user
-     * @throws URISyntaxException If the minecraft login api url is malformed
-     * @throws IOException        If an I/O Exception occurred
+     * login minecraft with XSTS user<br>
+     * 从 XSTS 用户登录 Minecraft
+     * @param xblUser XSTS user from {@link OAuth#fetchXSTSToken(XBLUserModel)}<br>从 {@link OAuth#fetchXSTSToken(XBLUserModel)} 得到的 XSTS 用户
+     * @return the login minecraft user<br>已登录的 Minecraft 用户
+     * @throws URISyntaxException If the minecraft login api url is malformed<br>如果 Minecraft 登录API 的 URL 错误
+     * @throws IOException        If an I/O Exception occurred<br>如果一个IO错误发生
      */
     protected MinecraftRequestModel fetchMinecraftToken(XBLUserModel xblUser) throws IOException, URISyntaxException {
         return HttpClientWrapper.create(HttpClientWrapper.Method.POST)
@@ -343,10 +344,10 @@ public class OAuth {
     }
 
     /**
-     * create a task for device token login
-     *
-     * @param requestHandler the handler for device token
-     * @return created task
+     * create a task for device token login<br>
+     * 创建一个用于设备码登录的任务
+     * @param requestHandler the handler for device token<br>设备码的处理器
+     * @return created task<br>创建的任务
      */
     public OAuthLoginTask fetchDeviceTokenAsync(Consumer<DeviceCodeModel> requestHandler) {
         return new OAuthLoginTask(requestHandler);
