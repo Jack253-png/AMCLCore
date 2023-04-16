@@ -155,10 +155,11 @@ public class OAuth {
     /**
      * create token from auth code<br>
      * 从验证码创建令牌
-     * @param url the url from {@link OAuth#authTokenUrl}
-     * @return the convert result
-     * @throws URISyntaxException If the auth code api url is malformed
-     * @throws IOException        If an I/O exception occurred
+     *
+     * @param url the url from {@link OAuth#authTokenUrl}<br>从 {@link OAuth#authTokenUrl} 产生的URL
+     * @return the convert result<br>转换结果
+     * @throws URISyntaxException If the auth code api url is malformed<br>如果身份验证API URL 错误
+     * @throws IOException        If an I/O exception occurred<br>如果一个IO错误发生
      */
     @Deprecated
     protected DeviceCodeConverterModel acquireAccessToken(String url) throws URISyntaxException, IOException {
