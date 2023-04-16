@@ -36,12 +36,15 @@ import static com.mcreater.amclcore.util.SwingUtil.openBrowserAsync;
 
 /**
  * OAuth Microsoft official <a href="https://learn.microsoft.com/zh-cn/azure/active-directory/develop/v2-oauth2-auth-code-flow">documentation</a><br>
- * Mojang minecraft auth <a href="https://wiki.vg/Mojang_API">API</a>
+ * Mojang minecraft auth <a href="https://wiki.vg/Mojang_API">API</a><br>
+ * OAuth 微软官方 <a href="https://learn.microsoft.com/zh-cn/azure/active-directory/develop/v2-oauth2-auth-code-flow">文档</a><br>
+ * * Mojang minecraft 登录验证 <a href="https://wiki.vg/Mojang_API">API</a>
  */
 @AllArgsConstructor
 public class OAuth {
     /**
-     * The microsoft oauth instance for {@link OAuth}
+     * The microsoft oauth instance for {@link OAuth}<br>
+     * {@link OAuth} 的微软登录验证实例
      */
     public static final OAuth MICROSOFT = new OAuth(
             "login.microsoftonline.com/consumers/oauth2/v2.0/devicecode",
@@ -52,40 +55,47 @@ public class OAuth {
     private final String tokenUrl;
     private final String authTokenUrl;
     /**
-     * Minecraft azure application id
+     * Minecraft azure application id<br>
+     * Minecraft azure 应用ID
      */
     @Getter
     @Deprecated
     private static final String minecraftAzureApplicationId = "00000000402b5328";
     /**
      * Minecraft azure login url
+     * Minecraft azure 登录URL
      */
     @Getter
     private static final String minecraftAzureLoginUrl = "https://login.live.com/oauth20_authorize.srf?client_id=00000000402b5328&response_type=code&scope=service%3A%3Auser.auth.xboxlive.com%3A%3AMBI_SSL&redirect_uri=https%3A%2F%2Flogin.live.com%2Foauth20_desktop.srf";
     /**
      * Azure direct login url pattern.
+     * Azure 直接登录URL模板
      */
     @Getter
     private static final Pattern minecraftAzureUrlPattern = Pattern.compile("https://login\\.live\\.com/oauth20_desktop\\.srf\\?code=(?<code>.*)&lc=(?<lc>.*)");
 
     /**
      * XBox token api url
+     * XBox 令牌API URL
      */
     @Getter
     private static final String xblTokenUrl = "user.auth.xboxlive.com/user/authenticate";
     /**
      * XSTS validation url
+     * XSTS 验证URL
      */
     @Getter
     private static final String xstsTokenUrl = "xsts.auth.xboxlive.com/xsts/authorize";
     /**
      * Minecraft store url
+     * Minecraft 商店URL
      */
     @Getter
     private static final String minecraftStoreUrl = "api.minecraftservices.com/entitlements/mcstore";
 
     /**
-     * Default device code handler, copy the user code {@link DeviceCodeModel#getUserCode()} and open browser {@link DeviceCodeModel#getVerificationUri()}
+     * Default device code handler, copy the user code {@link DeviceCodeModel#getUserCode()} and open browser {@link DeviceCodeModel#getVerificationUri()}<br>
+     * 默认设备码处理器, 复制从 {@link DeviceCodeModel#getUserCode()} 得到的用户码并打开浏览器 {@link DeviceCodeModel#getVerificationUri()}
      */
     @Getter
     private static final Consumer<DeviceCodeModel> defaultDevHandler =
@@ -94,18 +104,19 @@ public class OAuth {
                     openBrowserAsync(model2.getVerificationUri())
             ).forEach(ConcurrentExecutors.AWT_EVENT_EXECUTOR::execute);
     /**
-     * the login url for XBox XSTS to Minecraft
+     * the login url for XBox XSTS to Minecraft<br>
+     * 从 XBox XSTS 登录至 Minecraft 的 URL
      */
     @Getter
     private static final String mcLoginUrl = "api.minecraftservices.com/authentication/login_with_xbox";
 
     /**
-     * Fetch device code model for auth
-     *
-     * @param requestHandler the handler for device token
-     * @return the fetched device code model for next step {@link OAuth#checkToken(String)}
-     * @throws URISyntaxException If the device code api url {@link OAuth#deviceCodeUrl} malformed
-     * @throws IOException        If an I/O exception occurred
+     * Fetch device code model for auth<br>
+     * 获取用于进行身份验证的设备码
+     * @param requestHandler the handler for device token<br>设备码处理器
+     * @return the fetched device code model for next step {@link OAuth#checkToken(String)}<br>已获取的设备码，用于下一步 {@link OAuth#checkToken(String)}
+     * @throws URISyntaxException If the device code api url {@link OAuth#deviceCodeUrl} malformed<br>如果设备码API URL {@link OAuth#deviceCodeUrl} 错误
+     * @throws IOException        If an I/O exception occurred<br>如果一个IO错误发生
      */
     protected DeviceCodeModel fetchDeviceToken(Consumer<DeviceCodeModel> requestHandler) throws URISyntaxException, IOException {
         DeviceCodeModel model = HttpClientWrapper.create(HttpClientWrapper.Method.GET)
@@ -121,12 +132,12 @@ public class OAuth {
     }
 
     /**
-     * check the login state
-     *
-     * @param deviceCode the device code to be checked
-     * @return the check result
-     * @throws URISyntaxException If the device check api url is malformed
-     * @throws IOException        If an I/O exception occurred
+     * check the login state<br>
+     * 检查登录状态
+     * @param deviceCode the device code to be checked<br>需要用来检查的设备码
+     * @return the check result<br>检查结果
+     * @throws URISyntaxException If the device check api url is malformed<br>如果设备码检查API URL 错误
+     * @throws IOException        If an I/O exception occurred<br>如果一个IO错误发生
      */
     protected TokenResponseModel checkToken(String deviceCode) throws URISyntaxException, IOException {
         return HttpClientWrapper.create(HttpClientWrapper.Method.POST)
@@ -142,8 +153,8 @@ public class OAuth {
     }
 
     /**
-     * create token from auth code
-     *
+     * create token from auth code<br>
+     * 从验证码创建令牌
      * @param url the url from {@link OAuth#authTokenUrl}
      * @return the convert result
      * @throws URISyntaxException If the auth code api url is malformed
