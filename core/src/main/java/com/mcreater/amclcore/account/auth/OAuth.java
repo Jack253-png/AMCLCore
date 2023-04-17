@@ -10,7 +10,6 @@ import com.mcreater.amclcore.i18n.I18NManager;
 import com.mcreater.amclcore.model.oauth.*;
 import com.mcreater.amclcore.util.HttpClientWrapper;
 import lombok.AllArgsConstructor;
-import lombok.Getter;
 
 import java.io.IOException;
 import java.net.URISyntaxException;
@@ -22,8 +21,8 @@ import java.util.function.Consumer;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
-import static com.mcreater.amclcore.MetaData.getOauthClientIdOverridePropertyName;
-import static com.mcreater.amclcore.MetaData.getOauthDefaultClientId;
+import static com.mcreater.amclcore.MetaData.oauthClientIdOverridePropertyName;
+import static com.mcreater.amclcore.MetaData.oauthDefaultClientId;
 import static com.mcreater.amclcore.concurrent.ConcurrentUtil.sleepTime;
 import static com.mcreater.amclcore.util.JsonUtil.createList;
 import static com.mcreater.amclcore.util.JsonUtil.createPair;
@@ -39,12 +38,12 @@ import static com.mcreater.amclcore.util.SwingUtil.openBrowserAsync;
  * * Mojang minecraft 登录验证 <a href="https://wiki.vg/Mojang_API">API</a>
  */
 @AllArgsConstructor
-public class OAuth {
+public enum OAuth {
     /**
      * The microsoft oauth instance for {@link OAuth}<br>
      * {@link OAuth} 的微软登录验证实例
      */
-    public static final OAuth MICROSOFT = new OAuth(
+    MICROSOFT(
             "login.microsoftonline.com/consumers/oauth2/v2.0/devicecode",
             "login.microsoftonline.com/consumers/oauth2/v2.0/token",
             "login.live.com/oauth20_token.srf"
@@ -56,47 +55,40 @@ public class OAuth {
      * Minecraft azure application id<br>
      * Minecraft azure 应用ID
      */
-    @Getter
     @Deprecated
     private static final String minecraftAzureApplicationId = "00000000402b5328";
     /**
      * Minecraft azure login url<br>
      * Minecraft azure 登录URL
      */
-    @Getter
     private static final String minecraftAzureLoginUrl = "https://login.live.com/oauth20_authorize.srf?client_id=00000000402b5328&response_type=code&scope=service%3A%3Auser.auth.xboxlive.com%3A%3AMBI_SSL&redirect_uri=https%3A%2F%2Flogin.live.com%2Foauth20_desktop.srf";
     /**
      * Azure direct login url pattern<br>
      * Azure 直接登录URL模板
      */
-    @Getter
     private static final Pattern minecraftAzureUrlPattern = Pattern.compile("https://login\\.live\\.com/oauth20_desktop\\.srf\\?code=(?<code>.*)&lc=(?<lc>.*)");
 
     /**
      * XBox token api url<br>
      * XBox 令牌API URL
      */
-    @Getter
     private static final String xblTokenUrl = "user.auth.xboxlive.com/user/authenticate";
     /**
      * XSTS validation url<br>
      * XSTS 验证URL
      */
-    @Getter
     private static final String xstsTokenUrl = "xsts.auth.xboxlive.com/xsts/authorize";
     /**
      * Minecraft store url<br>
      * Minecraft 商店URL
      */
-    @Getter
     private static final String minecraftStoreUrl = "api.minecraftservices.com/entitlements/mcstore";
 
     /**
      * Default device code handler, copy the user code {@link DeviceCodeModel#getUserCode()} and open browser {@link DeviceCodeModel#getVerificationUri()}<br>
      * 默认设备码处理器, 复制从 {@link DeviceCodeModel#getUserCode()} 得到的用户码并打开浏览器 {@link DeviceCodeModel#getVerificationUri()}
      */
-    @Getter
-    private static final Consumer<DeviceCodeModel> defaultDevHandler =
+    public static final Consumer<DeviceCodeModel> defaultDevHandler =
             model2 -> Arrays.asList(
                     copyContentAsync(model2.getUserCode()),
                     openBrowserAsync(model2.getVerificationUri())
@@ -105,18 +97,18 @@ public class OAuth {
      * the login url for XBox XSTS to Minecraft<br>
      * 从 XBox XSTS 登录至 Minecraft 的 URL
      */
-    @Getter
     private static final String mcLoginUrl = "api.minecraftservices.com/authentication/login_with_xbox";
 
     /**
      * Fetch device code model for auth<br>
      * 获取用于进行身份验证的设备码
+     *
      * @param requestHandler the handler for device token<br>设备码处理器
      * @return the fetched device code model for next step {@link OAuth#checkToken(String)}<br>已获取的设备码，用于下一步 {@link OAuth#checkToken(String)}
      * @throws URISyntaxException If the device code api url {@link OAuth#deviceCodeUrl} malformed<br>如果设备码API URL {@link OAuth#deviceCodeUrl} 错误
      * @throws IOException        If an I/O exception occurred<br>如果一个IO错误发生
      */
-    protected DeviceCodeModel fetchDeviceToken(Consumer<DeviceCodeModel> requestHandler) throws URISyntaxException, IOException {
+    private DeviceCodeModel fetchDeviceToken(Consumer<DeviceCodeModel> requestHandler) throws URISyntaxException, IOException {
         DeviceCodeModel model = HttpClientWrapper.create(HttpClientWrapper.Method.GET)
                 .uri(deviceCodeUrl)
                 .uriParam("client_id", createClientID())
@@ -132,12 +124,13 @@ public class OAuth {
     /**
      * check the login state<br>
      * 检查登录状态
+     *
      * @param deviceCode the device code to be checked<br>需要用来检查的设备码
      * @return the check result<br>检查结果
      * @throws URISyntaxException If the device check api url is malformed<br>如果设备码检查API URL 错误
      * @throws IOException        If an I/O exception occurred<br>如果一个IO错误发生
      */
-    protected TokenResponseModel checkToken(String deviceCode) throws URISyntaxException, IOException {
+    private TokenResponseModel checkToken(String deviceCode) throws URISyntaxException, IOException {
         return HttpClientWrapper.create(HttpClientWrapper.Method.POST)
                 .uri(tokenUrl)
                 .entityEncodedUrl(
@@ -160,11 +153,11 @@ public class OAuth {
      * @throws IOException        If an I/O exception occurred<br>如果一个IO错误发生
      */
     @Deprecated
-    protected DeviceCodeConverterModel acquireAccessToken(String url) throws URISyntaxException, IOException {
+    private DeviceCodeConverterModel acquireAccessToken(String url) throws URISyntaxException, IOException {
         AuthCodeModel model = HttpClientWrapper.create(HttpClientWrapper.Method.GET)
                 .uri(authTokenUrl)
                 .entityEncodedUrl(
-                        createPair("client_id", getMinecraftAzureApplicationId()),
+                        createPair("client_id", minecraftAzureApplicationId),
                         createPair("code", parseRedirectUrl(url)),
                         createPair("grant_type", "authorization_code"),
                         createPair("redirect_uri", "https://login.live.com/oauth20_desktop.srf"),
@@ -193,18 +186,19 @@ public class OAuth {
      * @return the parsed code<br>已解析的代码
      */
     public String parseRedirectUrl(String rawUrl) {
-        Matcher matcher = getMinecraftAzureUrlPattern().matcher(rawUrl);
+        Matcher matcher = minecraftAzureUrlPattern.matcher(rawUrl);
         return matcher.find() ? matcher.group("code") : null;
     }
 
     /**
      * detect user login by the result of {@link OAuth#fetchDeviceToken(Consumer)}<br>
      * 使用 {@link OAuth#fetchDeviceToken(Consumer)} 的结果检测用户登录
+     *
      * @return the processed device code<br>被处理过的设备代码
      * @throws URISyntaxException If the xbox live api url is malformed<br>如果XBox Live API 的 URL 错误
      * @throws IOException        If an I/O Exception occurred<br>如果一个IO错误发生
      */
-    protected DeviceCodeConverterModel fetchUserLoginToken(DeviceCodeModel model) throws URISyntaxException, IOException {
+    private DeviceCodeConverterModel fetchUserLoginToken(DeviceCodeModel model) throws URISyntaxException, IOException {
         long startTime = System.nanoTime();
         int interval = model.getInterval();
 
@@ -241,14 +235,15 @@ public class OAuth {
     /**
      * convert from access token to Xbox Live token<br>
      * 转换 Access 令牌到 XBox Live 令牌
+     *
      * @param parsedDeviceCode the verified access token<br>已验证的 Access 令牌
      * @return the fetched XBox Live token<br>获取到的 XBox Live 令牌
      * @throws URISyntaxException If the xbox live api url is malformed<br>如果 XBox Live API 的 URL 错误
      * @throws IOException        If an I/O Exception occurred<br>如果一个IO错误发生
      */
-    protected XBLUserModel fetchXBLToken(DeviceCodeConverterModel parsedDeviceCode) throws IOException, URISyntaxException {
+    private XBLUserModel fetchXBLToken(DeviceCodeConverterModel parsedDeviceCode) throws IOException, URISyntaxException {
         XBLTokenRequestModel requestModel = HttpClientWrapper.create(HttpClientWrapper.Method.POST)
-                .uri(getXblTokenUrl())
+                .uri(xblTokenUrl)
                 .entityJson(
                         XBLTokenResponseModel.builder()
                                 .Properties(
@@ -277,14 +272,15 @@ public class OAuth {
     /**
      * fetch XSTS user from XBox Live user<br>
      * 从 XBox Live 用户获取 XSTS 用户
+     *
      * @param xblUser user from XBox Live {@link OAuth#fetchXBLToken(DeviceCodeConverterModel)}<br>从 {@link OAuth#fetchXBLToken(DeviceCodeConverterModel)} 得到的 XBox Live 用户
      * @return the fetched XSTS user<br>获取到的 XSTS 用户
      * @throws URISyntaxException If the XSTS api url is malformed<br>如果 XSTS API 的 URL 错误
      * @throws IOException        If an I/O Exception occurred<br>如果一个IO错误发生
      */
-    protected XBLUserModel fetchXSTSToken(XBLUserModel xblUser) throws IOException, URISyntaxException {
+    private XBLUserModel fetchXSTSToken(XBLUserModel xblUser) throws IOException, URISyntaxException {
         XBLTokenRequestModel requestModel = HttpClientWrapper.create(HttpClientWrapper.Method.POST)
-                .uri(getXstsTokenUrl())
+                .uri(xstsTokenUrl)
                 .entityJson(XSTSTokenResponseModel.builder()
                         .Properties(
                                 XSTSTokenResponseModel.XSTSTokenResponsePropertiesModel.builder()
@@ -313,14 +309,15 @@ public class OAuth {
     /**
      * login minecraft with XSTS user<br>
      * 从 XSTS 用户登录 Minecraft
+     *
      * @param xblUser XSTS user from {@link OAuth#fetchXSTSToken(XBLUserModel)}<br>从 {@link OAuth#fetchXSTSToken(XBLUserModel)} 得到的 XSTS 用户
      * @return the login minecraft user<br>已登录的 Minecraft 用户
      * @throws URISyntaxException If the minecraft login api url is malformed<br>如果 Minecraft 登录API 的 URL 错误
      * @throws IOException        If an I/O Exception occurred<br>如果一个IO错误发生
      */
-    protected MinecraftRequestModel fetchMinecraftToken(XBLUserModel xblUser) throws IOException, URISyntaxException {
+    private MinecraftRequestModel fetchMinecraftToken(XBLUserModel xblUser) throws IOException, URISyntaxException {
         return HttpClientWrapper.create(HttpClientWrapper.Method.POST)
-                .uri(getMcLoginUrl())
+                .uri(mcLoginUrl)
                 .entityJson(MinecraftResponseModel.builder()
                         .identityToken(
                                 String.format("XBL3.0 x=%s;%s",
@@ -332,9 +329,9 @@ public class OAuth {
                 .sendAndReadJson(MinecraftRequestModel.class);
     }
 
-    protected boolean checkMinecraftStore(MinecraftRequestModel user) throws URISyntaxException, IOException {
+    private boolean checkMinecraftStore(MinecraftRequestModel user) throws URISyntaxException, IOException {
         MinecraftProductRequestModel requestModel = HttpClientWrapper.create(HttpClientWrapper.Method.GET)
-                .uri(getMinecraftStoreUrl())
+                .uri(minecraftStoreUrl)
                 .header("Authorization", String.format("%s %s", user.getTokenType(), user.getAccessToken()))
                 .sendAndReadJson(MinecraftProductRequestModel.class);
         System.out.println(requestModel);
@@ -352,7 +349,7 @@ public class OAuth {
     }
 
     private static String createClientID() {
-        return readProperty(getOauthClientIdOverridePropertyName(), getOauthDefaultClientId());
+        return readProperty(oauthClientIdOverridePropertyName, oauthDefaultClientId);
     }
 
     @AllArgsConstructor

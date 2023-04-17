@@ -10,8 +10,15 @@ import java.util.concurrent.ForkJoinWorkerThread;
 import static com.mcreater.amclcore.exceptions.report.ExceptionReporter.report;
 
 public class ConcurrentExecutors {
-
+    /**
+     * Re-implementation for {@link ForkJoinPool.ForkJoinWorkerThreadFactory}<br>
+     * 对 {@link ForkJoinPool.ForkJoinWorkerThreadFactory} 的重新实现
+     */
     public static class ForkJoinWorkerThreadFactoryImpl implements ForkJoinPool.ForkJoinWorkerThreadFactory {
+        public static final ForkJoinWorkerThreadFactoryImpl INSTANCE = new ForkJoinWorkerThreadFactoryImpl();
+
+        private ForkJoinWorkerThreadFactoryImpl() {
+        }
 
         public ForkJoinWorkerThread newThread(ForkJoinPool pool) {
             ForkJoinWorkerThread t = ForkJoinPool.defaultForkJoinWorkerThreadFactory.newThread(pool);
@@ -36,7 +43,7 @@ public class ConcurrentExecutors {
      */
     public static final ExtendForkJoinPool DOWNLOAD_QUEUE_EXECUTOR = new ExtendForkJoinPool(
             32,
-            new ForkJoinWorkerThreadFactoryImpl(),
+            ForkJoinWorkerThreadFactoryImpl.INSTANCE,
             (t, e) -> report(e, ExceptionReporter.ExceptionType.CONCURRENT),
             true
     );
@@ -46,7 +53,7 @@ public class ConcurrentExecutors {
      */
     public static final ExtendForkJoinPool OAUTH_LOGIN_EXECUTOR = new ExtendForkJoinPool(
             8,
-            new ForkJoinWorkerThreadFactoryImpl(),
+            ForkJoinWorkerThreadFactoryImpl.INSTANCE,
             (t, e) -> report(e, ExceptionReporter.ExceptionType.CONCURRENT),
             true
     );
@@ -56,7 +63,7 @@ public class ConcurrentExecutors {
      */
     public static final ExtendForkJoinPool AWT_EVENT_EXECUTOR = new ExtendForkJoinPool(
             8,
-            new ForkJoinWorkerThreadFactoryImpl(),
+            ForkJoinWorkerThreadFactoryImpl.INSTANCE,
             (t, e) -> report(e, ExceptionReporter.ExceptionType.CONCURRENT),
             true
     );
@@ -69,7 +76,7 @@ public class ConcurrentExecutors {
     public static ForkJoinPool createInterfaceEventExecutor() {
         return new ForkJoinPool(
                 1,
-                new ForkJoinWorkerThreadFactoryImpl(),
+                ForkJoinWorkerThreadFactoryImpl.INSTANCE,
                 (t, e) -> report(e, ExceptionReporter.ExceptionType.CONCURRENT),
                 true
         );

@@ -7,10 +7,10 @@ public class MetaData {
      * AMCL/AMCLCore azure application id
      */
     @Getter
-    private static final String oauthDefaultClientId = "1a969022-f24f-4492-a91c-6f4a6fcb373c";
+    public static final String oauthDefaultClientId = "1a969022-f24f-4492-a91c-6f4a6fcb373c";
     /**
      * client id override, using command line {@code -Damclcore.oauth.clientid.override=YOUR_CLIENTID}
      */
     @Getter
-    private static final String oauthClientIdOverridePropertyName = "amclcore.oauth.clientid.override";
+    public static final String oauthClientIdOverridePropertyName = "amclcore.oauth.clientid.override";
 }
