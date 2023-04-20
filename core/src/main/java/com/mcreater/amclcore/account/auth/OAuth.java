@@ -334,8 +334,9 @@ public enum OAuth {
                 .uri(minecraftStoreUrl)
                 .header("Authorization", String.format("%s %s", user.getTokenType(), user.getAccessToken()))
                 .sendAndReadJson(MinecraftProductRequestModel.class);
-        System.out.println(requestModel);
-        return false;
+        return requestModel.getItems().stream()
+                .filter(m -> "game_minecraft".equals(m.getName()) || "product_minecraft".equals(m.getName()))
+                .count() >= 2;
     }
 
     /**
@@ -443,7 +444,7 @@ public enum OAuth {
                         .build());
             }
             {
-                checkMinecraftStore(minecraftUser);
+                System.out.println(checkMinecraftStore(minecraftUser));
             }
             return minecraftUser;
         }
