@@ -9,5 +9,6 @@
   "core.exceptions.req_exc": "Http/Https 请求失败, 服务器返回代码 %d, 原因 %s, 返回结果: %s",
   "core.exceptions.oauth.timeout": "OAuth 登录超时",
   "core.exceptions.oauth.user_hash": "用户哈希检查失败",
-  "core.exceptions.oauth.fail": "OAuth 登录失败"
+  "core.exceptions.oauth.fail": "OAuth 登录失败",
+  "core.exceptions.oauth.store_check": "Minecraft 商店检查未通过, 此 Microsoft 账户还未购买 Minecraft"
 }

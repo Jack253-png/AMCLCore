@@ -3,11 +3,13 @@ package com.mcreater.amclcore.account.auth;
 import com.mcreater.amclcore.concurrent.AbstractTask;
 import com.mcreater.amclcore.concurrent.ConcurrentExecutors;
 import com.mcreater.amclcore.concurrent.TaskState;
+import com.mcreater.amclcore.exceptions.oauth.OAuthMinecraftStoreCheckException;
 import com.mcreater.amclcore.exceptions.oauth.OAuthTimeOutException;
 import com.mcreater.amclcore.exceptions.oauth.OAuthUserHashException;
 import com.mcreater.amclcore.exceptions.oauth.OAuthXBLNotFoundException;
 import com.mcreater.amclcore.i18n.I18NManager;
 import com.mcreater.amclcore.model.oauth.*;
+import com.mcreater.amclcore.model.oauth.session.MinecraftProfileRequestModel;
 import com.mcreater.amclcore.util.HttpClientWrapper;
 import lombok.AllArgsConstructor;
 
@@ -97,7 +99,8 @@ public enum OAuth {
      * the login url for XBox XSTS to Minecraft<br>
      * 从 XBox XSTS 登录至 Minecraft 的 URL
      */
-    private static final String mcLoginUrl = "api.minecraftservices.com/authentication/login_with_xbox";
+    private static final String minecraftLoginUrl = "api.minecraftservices.com/authentication/login_with_xbox";
+    private static final String minecraftProfileUrl = "api.minecraftservices.com/minecraft/profile";
 
     /**
      * Fetch device code model for auth<br>
@@ -241,7 +244,7 @@ public enum OAuth {
      * @throws URISyntaxException If the xbox live api url is malformed<br>如果 XBox Live API 的 URL 错误
      * @throws IOException        If an I/O Exception occurred<br>如果一个IO错误发生
      */
-    private XBLUserModel fetchXBLToken(DeviceCodeConverterModel parsedDeviceCode) throws IOException, URISyntaxException {
+    private XBLAccountModel fetchXBLUser(DeviceCodeConverterModel parsedDeviceCode) throws IOException, URISyntaxException {
         XBLTokenRequestModel requestModel = HttpClientWrapper.create(HttpClientWrapper.Method.POST)
                 .uri(xblTokenUrl)
                 .entityJson(
@@ -258,7 +261,7 @@ public enum OAuth {
                 )
                 .sendAndReadJson(XBLTokenRequestModel.class);
 
-        return XBLUserModel.builder()
+        return XBLAccountModel.builder()
                 .token(requestModel.getToken())
                 .hash(
                         requestModel.getDisplayClaims().getXui().stream()
@@ -273,12 +276,12 @@ public enum OAuth {
      * fetch XSTS user from XBox Live user<br>
      * 从 XBox Live 用户获取 XSTS 用户
      *
-     * @param xblUser user from XBox Live {@link OAuth#fetchXBLToken(DeviceCodeConverterModel)}<br>从 {@link OAuth#fetchXBLToken(DeviceCodeConverterModel)} 得到的 XBox Live 用户
+     * @param xblUser user from XBox Live {@link OAuth#fetchXBLUser(DeviceCodeConverterModel)}<br>从 {@link OAuth#fetchXBLUser(DeviceCodeConverterModel)} 得到的 XBox Live 用户
      * @return the fetched XSTS user<br>获取到的 XSTS 用户
      * @throws URISyntaxException If the XSTS api url is malformed<br>如果 XSTS API 的 URL 错误
      * @throws IOException        If an I/O Exception occurred<br>如果一个IO错误发生
      */
-    private XBLUserModel fetchXSTSToken(XBLUserModel xblUser) throws IOException, URISyntaxException {
+    private XBLAccountModel fetchXSTSUser(XBLAccountModel xblUser) throws IOException, URISyntaxException {
         XBLTokenRequestModel requestModel = HttpClientWrapper.create(HttpClientWrapper.Method.POST)
                 .uri(xstsTokenUrl)
                 .entityJson(XSTSTokenResponseModel.builder()
@@ -300,7 +303,7 @@ public enum OAuth {
                 .orElseThrow(OAuthUserHashException::new);
 
         if (!Objects.equals(userHash, xblUser.getHash())) throw new OAuthUserHashException();
-        else return XBLUserModel.builder()
+        else return XBLAccountModel.builder()
                 .token(requestModel.getToken())
                 .hash(userHash)
                 .build();
@@ -310,14 +313,14 @@ public enum OAuth {
      * login minecraft with XSTS user<br>
      * 从 XSTS 用户登录 Minecraft
      *
-     * @param xblUser XSTS user from {@link OAuth#fetchXSTSToken(XBLUserModel)}<br>从 {@link OAuth#fetchXSTSToken(XBLUserModel)} 得到的 XSTS 用户
+     * @param xblUser XSTS user from {@link OAuth#fetchXSTSUser(XBLAccountModel)}<br>从 {@link OAuth#fetchXSTSUser(XBLAccountModel)} 得到的 XSTS 用户
      * @return the login minecraft user<br>已登录的 Minecraft 用户
      * @throws URISyntaxException If the minecraft login api url is malformed<br>如果 Minecraft 登录API 的 URL 错误
      * @throws IOException        If an I/O Exception occurred<br>如果一个IO错误发生
      */
-    private MinecraftRequestModel fetchMinecraftToken(XBLUserModel xblUser) throws IOException, URISyntaxException {
+    private MinecraftRequestModel fetchMinecraftUser(XBLAccountModel xblUser) throws IOException, URISyntaxException {
         return HttpClientWrapper.create(HttpClientWrapper.Method.POST)
-                .uri(mcLoginUrl)
+                .uri(minecraftLoginUrl)
                 .entityJson(MinecraftResponseModel.builder()
                         .identityToken(
                                 String.format("XBL3.0 x=%s;%s",
@@ -329,6 +332,15 @@ public enum OAuth {
                 .sendAndReadJson(MinecraftRequestModel.class);
     }
 
+    /**
+     * check Minecraft store state with {@link MinecraftRequestModel}<br>
+     * 使用 {@link MinecraftRequestModel} 检查 Minecraft 商店状态
+     *
+     * @param user Minecraft user from {@link OAuth#fetchMinecraftUser(XBLAccountModel)}<br>从 {@link OAuth#fetchMinecraftUser(XBLAccountModel)} 得到的 Minecraft 用户
+     * @return the check result<br>检查结果
+     * @throws URISyntaxException If the minecraft store api url is malformed<br>如果 Minecraft 商店API 的 URL 错误
+     * @throws IOException        If an I/O Exception occurred<br>如果一个IO错误发生
+     */
     private boolean checkMinecraftStore(MinecraftRequestModel user) throws URISyntaxException, IOException {
         MinecraftProductRequestModel requestModel = HttpClientWrapper.create(HttpClientWrapper.Method.GET)
                 .uri(minecraftStoreUrl)
@@ -339,9 +351,18 @@ public enum OAuth {
                 .count() >= 2;
     }
 
+    private void fetchMinecraftProfile(MinecraftRequestModel user) throws URISyntaxException, IOException {
+        MinecraftProfileRequestModel requestModel = HttpClientWrapper.create(HttpClientWrapper.Method.GET)
+                .uri(minecraftProfileUrl)
+                .header("Authorization", String.format("%s %s", user.getTokenType(), user.getAccessToken()))
+                .sendAndReadJson(MinecraftProfileRequestModel.class);
+        System.out.println(requestModel);
+    }
+
     /**
      * create a task for device token login<br>
      * 创建一个用于设备码登录的任务
+     *
      * @param requestHandler the handler for device token<br>设备码的处理器
      * @return created task<br>创建的任务
      */
@@ -357,7 +378,7 @@ public enum OAuth {
     public class OAuthLoginTask extends AbstractTask<MinecraftRequestModel> {
         private final Consumer<DeviceCodeModel> requestHandler;
 
-        public MinecraftRequestModel call() throws Exception {
+        protected MinecraftRequestModel call() throws Exception {
             DeviceCodeModel deviceCodeRaw;
             DeviceCodeConverterModel deviceCode;
             // TODO fetch device code
@@ -398,12 +419,12 @@ public enum OAuth {
     protected class OAuthLoginPartTask extends AbstractTask<MinecraftRequestModel> {
         private final DeviceCodeConverterModel model;
 
-        public MinecraftRequestModel call() throws Exception {
-            XBLUserModel xblToken, xstsToken;
+        protected MinecraftRequestModel call() throws Exception {
+            XBLAccountModel xblToken, xstsToken;
             MinecraftRequestModel minecraftUser;
             // TODO login XBox Live
             {
-                xblToken = fetchXBLToken(model);
+                xblToken = fetchXBLUser(model);
                 setTopTaskState(TaskState.<MinecraftRequestModel>builder()
                         .totalStage(7)
                         .currentStage(3)
@@ -417,7 +438,7 @@ public enum OAuth {
             }
             // TODO login XBox XSTS
             {
-                xstsToken = fetchXSTSToken(xblToken);
+                xstsToken = fetchXSTSUser(xblToken);
                 setTopTaskState(TaskState.<MinecraftRequestModel>builder()
                         .totalStage(7)
                         .currentStage(4)
@@ -431,7 +452,7 @@ public enum OAuth {
             }
             // TODO login minecraft and check account (to be done)
             {
-                minecraftUser = fetchMinecraftToken(xstsToken);
+                minecraftUser = fetchMinecraftUser(xstsToken);
                 setTopTaskState(TaskState.<MinecraftRequestModel>builder()
                         .totalStage(7)
                         .currentStage(5)
@@ -443,8 +464,10 @@ public enum OAuth {
                         .message(I18NManager.translatable("core.oauth.mclogin.after.text"))
                         .build());
             }
+            // TODO check minecraft store and fetch Minecraft profile
             {
-                System.out.println(checkMinecraftStore(minecraftUser));
+                if (!checkMinecraftStore(minecraftUser)) throw new OAuthMinecraftStoreCheckException();
+                fetchMinecraftProfile(minecraftUser);
             }
             return minecraftUser;
         }

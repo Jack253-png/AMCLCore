@@ -2,6 +2,7 @@ package com.mcreater.amclcore.model.oauth;
 
 import com.google.gson.annotations.SerializedName;
 import com.mcreater.amclcore.annotations.OAuthLoginModel;
+import com.mcreater.amclcore.annotations.RequestModel;
 import lombok.Builder;
 import lombok.Data;
 
@@ -12,6 +13,7 @@ import java.util.UUID;
 @Data
 @Builder
 @OAuthLoginModel
+@RequestModel
 public class MinecraftRequestModel {
     private UUID username;
     private List<Object> roles;

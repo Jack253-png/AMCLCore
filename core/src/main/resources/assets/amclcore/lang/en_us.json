@@ -9,5 +9,6 @@
   "core.exceptions.req_exc": "Http/Https request failed, server returned code %d, reason %s, entity result: %s",
   "core.exceptions.oauth.timeout": "OAuth login timeout",
   "core.exceptions.oauth.user_hash": "User hash validation failed",
-  "core.exceptions.oauth.fail": "OAuth login failed"
+  "core.exceptions.oauth.fail": "OAuth login failed",
+  "core.exceptions.oauth.store_check": "Minecraft store check not passed, this Microsoft account haven't bought Minecraft yet"
 }

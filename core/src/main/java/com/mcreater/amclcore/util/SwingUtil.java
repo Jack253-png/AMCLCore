@@ -1,5 +1,6 @@
 package com.mcreater.amclcore.util;
 
+import com.mcreater.amclcore.concurrent.AbstractAction;
 import com.mcreater.amclcore.concurrent.AbstractTask;
 import com.mcreater.amclcore.util.platform.OperatingSystem;
 import lombok.AllArgsConstructor;
@@ -30,7 +31,7 @@ public class SwingUtil {
     public static class BrowserOpenTask extends AbstractTask<BrowserState> {
         private final String url;
 
-        public BrowserState call() {
+        protected BrowserState call() {
             try {
                 if (supportAction(Desktop.Action.BROWSE)) {
                     getDesktop().browse(URI.create(url));
@@ -62,10 +63,10 @@ public class SwingUtil {
     }
 
     @AllArgsConstructor
-    public static class CopyContentTask extends AbstractTask<Void> {
+    public static class CopyContentTask extends AbstractAction {
         private final String content;
 
-        public Void call() {
+        protected Void call() {
             Toolkit.getDefaultToolkit()
                     .getSystemClipboard()
                     .setContents(new StringSelection(content), (clipboard1, transferable) -> {

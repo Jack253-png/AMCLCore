@@ -57,7 +57,7 @@ public abstract class AbstractTask<T> extends RecursiveTask<Optional<T>> {
      * @return the task result<br>任务结果
      * @throws Exception when task throws an exception<br>当任务抛出一个异常
      */
-    public abstract T call() throws Exception;
+    protected abstract T call() throws Exception;
 
     protected Optional<T> compute() {
         int lastTotal = Optional.ofNullable(state).map(TaskState::getTotalStage).orElse(1);

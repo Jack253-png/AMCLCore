@@ -7,6 +7,8 @@ import com.google.gson.stream.JsonWriter;
 import java.io.IOException;
 import java.util.UUID;
 
+import static com.mcreater.amclcore.util.StringUtil.*;
+
 public class UUIDAdapter extends TypeAdapter<UUID> {
     public static UUIDAdapter INSTANCE = new UUIDAdapter();
 
@@ -18,6 +20,10 @@ public class UUIDAdapter extends TypeAdapter<UUID> {
     }
 
     public UUID read(JsonReader in) throws IOException {
-        return UUID.fromString(in.nextString());
+        String uuid = in.nextString();
+        if (checkUUID(uuid)) {
+            if (isLineUUID(uuid)) return UUID.fromString(uuid);
+            else return toLineUUID(uuid);
+        } else return null;
     }
 }

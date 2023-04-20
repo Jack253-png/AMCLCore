@@ -7,7 +7,7 @@ import lombok.Data;
 @Builder
 @Data
 @OAuthLoginModel
-public class XBLUserModel {
+public class XBLAccountModel {
     private String token;
     private String hash;
 }

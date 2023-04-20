@@ -1,5 +1,6 @@
 package com.mcreater.amclcore.util;
 
+import com.mcreater.amclcore.annotations.RequestModel;
 import com.mcreater.amclcore.exceptions.io.RequestException;
 import lombok.Builder;
 import org.apache.commons.lang3.tuple.Pair;
@@ -18,7 +19,6 @@ import org.apache.http.message.BasicNameValuePair;
 
 import java.io.IOException;
 import java.io.UnsupportedEncodingException;
-import java.lang.reflect.Type;
 import java.net.URISyntaxException;
 import java.nio.charset.Charset;
 import java.nio.charset.StandardCharsets;
@@ -210,10 +210,8 @@ public class HttpClientWrapper {
     }
 
     public <T> T sendAndReadJson(Class<T> clazz) throws URISyntaxException, IOException {
-        return GSON_PARSER.fromJson(IOStreamUtil.readStream(send().getContent()), clazz);
-    }
-
-    public <T> T sendAndReadJson(Type clazz) throws URISyntaxException, IOException {
+        if (clazz.getAnnotation(RequestModel.class) == null)
+            throw new UnsupportedOperationException("class " + clazz + " not an RequestModel class");
         return GSON_PARSER.fromJson(IOStreamUtil.readStream(send().getContent()), clazz);
     }
 
