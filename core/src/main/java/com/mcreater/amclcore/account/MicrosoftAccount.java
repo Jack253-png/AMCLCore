@@ -14,6 +14,7 @@ import java.util.UUID;
 import static com.mcreater.amclcore.account.auth.OAuth.minecraftProfileUrl;
 import static com.mcreater.amclcore.i18n.I18NManager.translatable;
 import static com.mcreater.amclcore.util.FunctionUtil.genSelfFunction;
+import static java.util.Objects.requireNonNull;
 
 public class MicrosoftAccount extends AbstractAccount {
     private String refreshToken;
@@ -61,11 +62,11 @@ public class MicrosoftAccount extends AbstractAccount {
         }
 
         protected void execute() throws Exception {
-            profile = HttpClientWrapper.create(HttpClientWrapper.Method.GET)
+            profile = requireNonNull(HttpClientWrapper.create(HttpClientWrapper.Method.GET)
                     .uri(minecraftProfileUrl)
                     .header("Authorization", String.format("%s %s", internalToken.getTokenType(), getAccessToken()))
                     .setRetry(5)
-                    .sendAndReadJson(MinecraftProfileRequestModel.class);
+                    .sendAndReadJson(MinecraftProfileRequestModel.class));
         }
     }
 }

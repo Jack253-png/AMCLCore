@@ -22,7 +22,8 @@ public class RequestException extends IOException {
 
     public String getMessage() {
         try {
-            return translatable("core.exceptions.req_exc", line.getStatusCode(), line.getReasonPhrase(), EntityUtils.toString(entity)).getText();
+            String entityString = EntityUtils.toString(entity);
+            return translatable("core.exceptions.req_exc", line.getStatusCode(), line.getReasonPhrase(), "".equals(entityString) ? "<null>" : entityString).getText();
         } catch (IOException e) {
             return translatable("core.exceptions.req_exc", line.getStatusCode(), line.getReasonPhrase(), "<unknown entity>").getText();
         }

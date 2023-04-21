@@ -81,6 +81,7 @@ public abstract class AbstractTask<T> extends RecursiveTask<Optional<T>> {
         } catch (Exception e) {
             ExceptionReporter.report(e, ExceptionReporter.ExceptionType.CONCURRENT);
             setState(TaskState.<T>builder()
+                    .message(translatable("core.concurrent.base.event.exception.text", e))
                     .throwable(e)
                     .totalStage(lastTotal)
                     .currentStage(lastCurr)

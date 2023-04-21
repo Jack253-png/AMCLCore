@@ -123,7 +123,7 @@ public enum OAuth {
                 .reqTimeout(5000)
                 .setRetry(5)
                 .sendAndReadJson(DeviceCodeModel.class);
-
+        requireNonNull(model);
         Optional.of(requestHandler).ifPresent(c -> c.accept(model));
         return model;
     }
@@ -138,7 +138,7 @@ public enum OAuth {
      * @throws IOException        If an I/O exception occurred<br>如果一个IO错误发生
      */
     private TokenResponseModel checkToken(String deviceCode) throws URISyntaxException, IOException {
-        return HttpClientWrapper.create(HttpClientWrapper.Method.POST)
+        return requireNonNull(HttpClientWrapper.create(HttpClientWrapper.Method.POST)
                 .uri(tokenUrl)
                 .entityEncodedUrl(
                         createPair("grant_type", buildScopeString(":", "urn", "ietf", "params", "oauth", "grant-type", "device_code")),
@@ -147,7 +147,7 @@ public enum OAuth {
                 )
                 .timeout(5000)
                 .reqTimeout(5000)
-                .sendAndReadJson(TokenResponseModel.class);
+                .sendAndReadJson(TokenResponseModel.class));
     }
 
     /**
@@ -174,7 +174,7 @@ public enum OAuth {
                 .reqTimeout(5000)
                 .setRetry(5)
                 .sendAndReadJson(AuthCodeModel.class);
-
+        requireNonNull(model);
         return DeviceCodeConverterModel.builder()
                 .model(
                         TokenResponseModel.builder()
@@ -266,7 +266,7 @@ public enum OAuth {
                 )
                 .setRetry(5)
                 .sendAndReadJson(XBLTokenRequestModel.class);
-
+        requireNonNull(requestModel);
         return XBLAccountModel.builder()
                 .token(requestModel.getToken())
                 .hash(
@@ -303,7 +303,7 @@ public enum OAuth {
                 )
                 .setRetry(5)
                 .sendAndReadJson(XBLTokenRequestModel.class);
-
+        requireNonNull(requestModel);
         String userHash = requestModel.getDisplayClaims().getXui().stream()
                 .map(XBLTokenRequestModel.XBLTokenUserHashModel::getUhs)
                 .findAny()
@@ -326,7 +326,7 @@ public enum OAuth {
      * @throws IOException        If an I/O Exception occurred<br>如果一个IO错误发生
      */
     private MinecraftRequestModel fetchMinecraftUser(XBLAccountModel xblUser) throws IOException, URISyntaxException {
-        return HttpClientWrapper.create(HttpClientWrapper.Method.POST)
+        return requireNonNull(HttpClientWrapper.create(HttpClientWrapper.Method.POST)
                 .uri(minecraftLoginUrl)
                 .entityJson(MinecraftResponseModel.builder()
                         .identityToken(
@@ -337,7 +337,7 @@ public enum OAuth {
                         )
                         .build())
                 .setRetry(5)
-                .sendAndReadJson(MinecraftRequestModel.class);
+                .sendAndReadJson(MinecraftRequestModel.class));
     }
 
     /**
@@ -355,6 +355,7 @@ public enum OAuth {
                 .header("Authorization", String.format("%s %s", user.getTokenType(), user.getAccessToken()))
                 .setRetry(5)
                 .sendAndReadJson(MinecraftProductRequestModel.class);
+        requireNonNull(requestModel);
         return requestModel.getItems().stream()
                 .filter(m -> "game_minecraft".equals(m.getName()) || "product_minecraft".equals(m.getName()))
                 .count() >= 2;
