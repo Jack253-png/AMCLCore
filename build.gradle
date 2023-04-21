@@ -1,3 +1,9 @@
+import java.nio.file.FileVisitResult
+import java.nio.file.Files
+import java.nio.file.Paths
+import java.nio.file.SimpleFileVisitor
+import java.nio.file.attribute.BasicFileAttributes
+
 buildscript {
     repositories {
         maven { url = "https://maven.aliyun.com/repository/public" }
@@ -61,6 +67,28 @@ allprojects {
     tasks.withType(JavaCompile).tap {
         configureEach {
             options.encoding = "UTF-8"
+        }
+    }
+}
+
+tasks.register("cleanLogs").configure {
+    it.doFirst {
+        if (new File(rootProject.projectDir.getAbsolutePath(), "logs").exists()) {
+            Files.walkFileTree(Paths.get(rootProject.projectDir.getAbsolutePath(), "logs"),
+                    new SimpleFileVisitor<java.nio.file.Path>() {
+                        FileVisitResult visitFile(java.nio.file.Path file,
+                                                  BasicFileAttributes attrs) throws IOException {
+                            Files.delete(file);
+                            return FileVisitResult.CONTINUE;
+                        }
+
+                        FileVisitResult postVisitDirectory(java.nio.file.Path dir,
+                                                           IOException exc) throws IOException {
+                            Files.delete(dir);
+                            return FileVisitResult.CONTINUE;
+                        }
+                    }
+            )
         }
     }
 }
