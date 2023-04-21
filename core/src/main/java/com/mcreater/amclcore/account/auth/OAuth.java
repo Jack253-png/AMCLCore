@@ -1,5 +1,6 @@
 package com.mcreater.amclcore.account.auth;
 
+import com.mcreater.amclcore.account.MicrosoftAccount;
 import com.mcreater.amclcore.concurrent.AbstractTask;
 import com.mcreater.amclcore.concurrent.ConcurrentExecutors;
 import com.mcreater.amclcore.concurrent.TaskState;
@@ -7,11 +8,11 @@ import com.mcreater.amclcore.exceptions.oauth.OAuthMinecraftStoreCheckException;
 import com.mcreater.amclcore.exceptions.oauth.OAuthTimeOutException;
 import com.mcreater.amclcore.exceptions.oauth.OAuthUserHashException;
 import com.mcreater.amclcore.exceptions.oauth.OAuthXBLNotFoundException;
-import com.mcreater.amclcore.i18n.I18NManager;
+import com.mcreater.amclcore.i18n.Text;
 import com.mcreater.amclcore.model.oauth.*;
-import com.mcreater.amclcore.model.oauth.session.MinecraftProfileRequestModel;
 import com.mcreater.amclcore.util.HttpClientWrapper;
 import lombok.AllArgsConstructor;
+import org.jetbrains.annotations.NotNull;
 
 import java.io.IOException;
 import java.net.URISyntaxException;
@@ -26,12 +27,14 @@ import java.util.regex.Pattern;
 import static com.mcreater.amclcore.MetaData.oauthClientIdOverridePropertyName;
 import static com.mcreater.amclcore.MetaData.oauthDefaultClientId;
 import static com.mcreater.amclcore.concurrent.ConcurrentUtil.sleepTime;
+import static com.mcreater.amclcore.i18n.I18NManager.translatable;
 import static com.mcreater.amclcore.util.JsonUtil.createList;
 import static com.mcreater.amclcore.util.JsonUtil.createPair;
 import static com.mcreater.amclcore.util.NetUtil.buildScopeString;
 import static com.mcreater.amclcore.util.PropertyUtil.readProperty;
 import static com.mcreater.amclcore.util.SwingUtil.copyContentAsync;
 import static com.mcreater.amclcore.util.SwingUtil.openBrowserAsync;
+import static java.util.Objects.requireNonNull;
 
 /**
  * OAuth Microsoft official <a href="https://learn.microsoft.com/zh-cn/azure/active-directory/develop/v2-oauth2-auth-code-flow">documentation</a><br>
@@ -100,7 +103,7 @@ public enum OAuth {
      * 从 XBox XSTS 登录至 Minecraft 的 URL
      */
     private static final String minecraftLoginUrl = "api.minecraftservices.com/authentication/login_with_xbox";
-    private static final String minecraftProfileUrl = "api.minecraftservices.com/minecraft/profile";
+    public static final String minecraftProfileUrl = "api.minecraftservices.com/minecraft/profile";
 
     /**
      * Fetch device code model for auth<br>
@@ -118,6 +121,7 @@ public enum OAuth {
                 .uriParam("scope", buildScopeString(" ", "XboxLive.signin", "offline_access"))
                 .timeout(5000)
                 .reqTimeout(5000)
+                .setRetry(5)
                 .sendAndReadJson(DeviceCodeModel.class);
 
         Optional.of(requestHandler).ifPresent(c -> c.accept(model));
@@ -168,6 +172,7 @@ public enum OAuth {
                 )
                 .timeout(5000)
                 .reqTimeout(5000)
+                .setRetry(5)
                 .sendAndReadJson(AuthCodeModel.class);
 
         return DeviceCodeConverterModel.builder()
@@ -259,6 +264,7 @@ public enum OAuth {
                                 .RelyingParty("http://auth.xboxlive.com")
                                 .TokenType("JWT")
                 )
+                .setRetry(5)
                 .sendAndReadJson(XBLTokenRequestModel.class);
 
         return XBLAccountModel.builder()
@@ -295,6 +301,7 @@ public enum OAuth {
                         .TokenType("JWT")
                         .build()
                 )
+                .setRetry(5)
                 .sendAndReadJson(XBLTokenRequestModel.class);
 
         String userHash = requestModel.getDisplayClaims().getXui().stream()
@@ -329,6 +336,7 @@ public enum OAuth {
                                 )
                         )
                         .build())
+                .setRetry(5)
                 .sendAndReadJson(MinecraftRequestModel.class);
     }
 
@@ -345,18 +353,11 @@ public enum OAuth {
         MinecraftProductRequestModel requestModel = HttpClientWrapper.create(HttpClientWrapper.Method.GET)
                 .uri(minecraftStoreUrl)
                 .header("Authorization", String.format("%s %s", user.getTokenType(), user.getAccessToken()))
+                .setRetry(5)
                 .sendAndReadJson(MinecraftProductRequestModel.class);
         return requestModel.getItems().stream()
                 .filter(m -> "game_minecraft".equals(m.getName()) || "product_minecraft".equals(m.getName()))
                 .count() >= 2;
-    }
-
-    private void fetchMinecraftProfile(MinecraftRequestModel user) throws URISyntaxException, IOException {
-        MinecraftProfileRequestModel requestModel = HttpClientWrapper.create(HttpClientWrapper.Method.GET)
-                .uri(minecraftProfileUrl)
-                .header("Authorization", String.format("%s %s", user.getTokenType(), user.getAccessToken()))
-                .sendAndReadJson(MinecraftProfileRequestModel.class);
-        System.out.println(requestModel);
     }
 
     /**
@@ -366,7 +367,7 @@ public enum OAuth {
      * @param requestHandler the handler for device token<br>设备码的处理器
      * @return created task<br>创建的任务
      */
-    public OAuthLoginTask fetchDeviceTokenAsync(Consumer<DeviceCodeModel> requestHandler) {
+    public OAuthLoginTask deviceCodeLoginAsync(Consumer<DeviceCodeModel> requestHandler) {
         return new OAuthLoginTask(requestHandler);
     }
 
@@ -374,66 +375,77 @@ public enum OAuth {
         return readProperty(oauthClientIdOverridePropertyName, oauthDefaultClientId);
     }
 
-    @AllArgsConstructor
-    public class OAuthLoginTask extends AbstractTask<MinecraftRequestModel> {
+    public class OAuthLoginTask extends AbstractTask<MicrosoftAccount> {
         private final Consumer<DeviceCodeModel> requestHandler;
 
-        protected MinecraftRequestModel call() throws Exception {
+        private OAuthLoginTask(@NotNull Consumer<DeviceCodeModel> requestHandler) {
+            this.requestHandler = requireNonNull(requestHandler);
+        }
+
+        protected MicrosoftAccount call() throws Exception {
             DeviceCodeModel deviceCodeRaw;
             DeviceCodeConverterModel deviceCode;
             // TODO fetch device code
             {
-                setState(TaskState.<MinecraftRequestModel>builder()
+                setState(TaskState.<MicrosoftAccount>builder()
                         .totalStage(7)
                         .currentStage(0)
-                        .message(I18NManager.translatable("core.oauth.login.start"))
+                        .message(translatable("core.oauth.login.start"))
                         .build());
                 deviceCodeRaw = fetchDeviceToken(requestHandler);
             }
             // TODO let user login
             {
-                setState(TaskState.<MinecraftRequestModel>builder()
+                setState(TaskState.<MicrosoftAccount>builder()
                         .totalStage(7)
                         .currentStage(1)
-                        .message(I18NManager.translatable("core.oauth.deviceCode.pre.text"))
+                        .message(translatable("core.oauth.deviceCode.pre.text"))
                         .build());
                 deviceCode = fetchUserLoginToken(deviceCodeRaw);
             }
             // TODO fork & delegate internal task to login minecraft
             {
-                setState(TaskState.<MinecraftRequestModel>builder()
+                setState(TaskState.<MicrosoftAccount>builder()
                         .totalStage(7)
                         .currentStage(2)
-                        .message(I18NManager.translatable("core.oauth.deviceCode.after.text"))
+                        .message(translatable("core.oauth.deviceCode.after.text"))
                         .build());
-                return new OAuthLoginPartTask(deviceCode)
+                return new OAuthLoginInternalTask(deviceCode)
                         .bindTo(this)
                         .fork()
                         .get()
                         .orElseThrow(OAuthXBLNotFoundException::new);
             }
         }
+
+        protected Text getTaskName() {
+            return translatable("core.oauth.task.login.name");
+        }
     }
 
-    @AllArgsConstructor
-    protected class OAuthLoginPartTask extends AbstractTask<MinecraftRequestModel> {
+    protected class OAuthLoginInternalTask extends AbstractTask<MicrosoftAccount> {
         private final DeviceCodeConverterModel model;
 
-        protected MinecraftRequestModel call() throws Exception {
+        private OAuthLoginInternalTask(@NotNull DeviceCodeConverterModel model) {
+            this.model = requireNonNull(model);
+        }
+
+        protected MicrosoftAccount call() throws Exception {
             XBLAccountModel xblToken, xstsToken;
             MinecraftRequestModel minecraftUser;
+            MicrosoftAccount account;
             // TODO login XBox Live
             {
                 xblToken = fetchXBLUser(model);
                 setTopTaskState(TaskState.<MinecraftRequestModel>builder()
                         .totalStage(7)
                         .currentStage(3)
-                        .message(I18NManager.translatable("core.oauth.xbl.after.text"))
+                        .message(translatable("core.oauth.xbl.after.text"))
                         .build());
-                setState(TaskState.<MinecraftRequestModel>builder()
+                setState(TaskState.<MicrosoftAccount>builder()
                         .totalStage(5)
                         .currentStage(1)
-                        .message(I18NManager.translatable("core.oauth.xbl.after.text"))
+                        .message(translatable("core.oauth.xbl.after.text"))
                         .build());
             }
             // TODO login XBox XSTS
@@ -442,34 +454,54 @@ public enum OAuth {
                 setTopTaskState(TaskState.<MinecraftRequestModel>builder()
                         .totalStage(7)
                         .currentStage(4)
-                        .message(I18NManager.translatable("core.oauth.xsts.after.text"))
+                        .message(translatable("core.oauth.xsts.after.text"))
                         .build());
-                setState(TaskState.<MinecraftRequestModel>builder()
+                setState(TaskState.<MicrosoftAccount>builder()
                         .totalStage(5)
                         .currentStage(2)
-                        .message(I18NManager.translatable("core.oauth.xsts.after.text"))
+                        .message(translatable("core.oauth.xsts.after.text"))
                         .build());
             }
             // TODO login minecraft and check account (to be done)
             {
                 minecraftUser = fetchMinecraftUser(xstsToken);
-                setTopTaskState(TaskState.<MinecraftRequestModel>builder()
+                setTopTaskState(TaskState.<MicrosoftAccount>builder()
                         .totalStage(7)
                         .currentStage(5)
-                        .message(I18NManager.translatable("core.oauth.mclogin.after.text"))
+                        .message(translatable("core.oauth.mclogin.after.text"))
                         .build());
-                setState(TaskState.<MinecraftRequestModel>builder()
+                setState(TaskState.<MicrosoftAccount>builder()
                         .totalStage(5)
                         .currentStage(3)
-                        .message(I18NManager.translatable("core.oauth.mclogin.after.text"))
+                        .message(translatable("core.oauth.mclogin.after.text"))
                         .build());
             }
-            // TODO check minecraft store and fetch Minecraft profile
+            // TODO check minecraft store and create instance of MicrosoftAccount
             {
                 if (!checkMinecraftStore(minecraftUser)) throw new OAuthMinecraftStoreCheckException();
-                fetchMinecraftProfile(minecraftUser);
+                account = MicrosoftAccount.create(minecraftUser, model);
+                setTopTaskState(TaskState.<MicrosoftAccount>builder()
+                        .totalStage(7)
+                        .currentStage(6)
+                        .message(translatable("core.oauth.storeCheck.after.text"))
+                        .build());
+                setState(TaskState.<MicrosoftAccount>builder()
+                        .totalStage(5)
+                        .currentStage(4)
+                        .message(translatable("core.oauth.storeCheck.after.text"))
+                        .build());
             }
-            return minecraftUser;
+
+            account.fetchProfileAsync()
+                    .bindTo(getTopTask())
+                    .fork()
+                    .get();
+
+            return account;
+        }
+
+        protected Text getTaskName() {
+            return translatable("core.oauth.task.login.internal.name");
         }
     }
 }

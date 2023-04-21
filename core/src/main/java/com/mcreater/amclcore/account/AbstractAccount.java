@@ -1,17 +1,35 @@
 package com.mcreater.amclcore.account;
 
-import lombok.Data;
+import com.mcreater.amclcore.concurrent.AbstractAction;
+import lombok.Getter;
+import org.jetbrains.annotations.NotNull;
 
 import java.util.UUID;
 
-@Data
+import static java.util.Objects.requireNonNull;
+
 public abstract class AbstractAccount {
-    private String userName;
+    @Getter
+    private String accountName;
+    @Getter
     private UUID uuid;
+    @Getter
     private String accessToken;
 
-    public AbstractAccount(String userName, UUID uuid, String accessToken) {
-        setUserName(userName);
+    protected void setAccountName(@NotNull String accountName) {
+        this.accountName = requireNonNull(accountName);
+    }
+
+    protected void setUuid(@NotNull UUID uuid) {
+        this.uuid = requireNonNull(uuid);
+    }
+
+    protected void setAccessToken(@NotNull String accessToken) {
+        this.accessToken = requireNonNull(accessToken);
+    }
+
+    public AbstractAccount(String accountName, UUID uuid, String accessToken) {
+        setAccountName(accountName);
         setUuid(uuid);
         setAccessToken(accessToken);
     }
@@ -19,4 +37,8 @@ public abstract class AbstractAccount {
     public AbstractAccount(String accessToken) {
         setAccessToken(accessToken);
     }
+
+    public abstract AbstractAction refreshAsync();
+
+    public abstract AbstractAction fetchProfileAsync();
 }

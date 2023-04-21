@@ -3,6 +3,7 @@ package com.mcreater.amclcore.util;
 import com.mcreater.amclcore.util.iterators.RepeatableIterable;
 
 import java.util.UUID;
+import java.util.stream.Collectors;
 
 public class StringUtil {
     public static String toPercentage(int value) {
@@ -17,6 +18,15 @@ public class StringUtil {
     public static String repeat(String s, int count) {
         if (count < 0) throw new IllegalArgumentException("argument 'count' cannot be negative.");
         return String.join("", new RepeatableIterable<>(s, count));
+    }
+
+    public static String shortString(String s, long size) {
+        if (s.length() <= size) return s;
+        return s.chars()
+                .boxed()
+                .map(integer -> String.valueOf((char) (int) integer))
+                .limit(size)
+                .collect(Collectors.joining()) + "...";
     }
 
     private static boolean internalCheckUUID(String uuid) {

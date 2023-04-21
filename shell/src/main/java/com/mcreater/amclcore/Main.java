@@ -1,10 +1,10 @@
 package com.mcreater.amclcore;
 
+import com.mcreater.amclcore.account.MicrosoftAccount;
 import com.mcreater.amclcore.account.auth.OAuth;
 import com.mcreater.amclcore.concurrent.ConcurrentExecutors;
 import com.mcreater.amclcore.concurrent.TaskState;
 import com.mcreater.amclcore.i18n.Text;
-import com.mcreater.amclcore.model.oauth.MinecraftRequestModel;
 import com.mcreater.amclcore.util.StringUtil;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
@@ -24,9 +24,11 @@ public class Main {
     }
 
     public static void loginTest() throws Exception {
+        // TODO test offline
+//        HttpClientWrapper.setProxy(new HttpHost(InetAddress.getLocalHost()));
         ConcurrentExecutors.OAUTH_LOGIN_EXECUTOR.getWrappedListeners().add(logger::info);
-        Optional<MinecraftRequestModel> model = ConcurrentExecutors.OAUTH_LOGIN_EXECUTOR.submit(
-                OAuth.MICROSOFT.fetchDeviceTokenAsync(OAuth.defaultDevHandler)
+        Optional<MicrosoftAccount> account = ConcurrentExecutors.OAUTH_LOGIN_EXECUTOR.submit(
+                OAuth.MICROSOFT.deviceCodeLoginAsync(OAuth.defaultDevHandler)
                         .addStateConsumer(c -> Optional.ofNullable(c)
                                 .map(TaskState::getMessage)
                                 .map(Text::getText)
@@ -39,6 +41,6 @@ public class Main {
                         )
         ).get();
 
-        System.out.println(model.orElse(null));
+        logger.info(account.orElse(null));
     }
 }

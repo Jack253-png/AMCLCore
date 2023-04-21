@@ -2,14 +2,17 @@ package com.mcreater.amclcore.util;
 
 import com.mcreater.amclcore.concurrent.AbstractAction;
 import com.mcreater.amclcore.concurrent.AbstractTask;
+import com.mcreater.amclcore.i18n.Text;
 import com.mcreater.amclcore.util.platform.OperatingSystem;
-import lombok.AllArgsConstructor;
 
 import java.awt.*;
 import java.awt.datatransfer.StringSelection;
 import java.io.IOException;
 import java.io.InputStream;
 import java.net.URI;
+
+import static com.mcreater.amclcore.i18n.I18NManager.translatable;
+import static com.mcreater.amclcore.util.StringUtil.shortString;
 
 public class SwingUtil {
     private static final String[] linuxBrowsers = {
@@ -27,9 +30,12 @@ public class SwingUtil {
         INTERNAL_EXCEPTION
     }
 
-    @AllArgsConstructor
     public static class BrowserOpenTask extends AbstractTask<BrowserState> {
         private final String url;
+
+        private BrowserOpenTask(String url) {
+            this.url = url;
+        }
 
         protected BrowserState call() {
             try {
@@ -60,18 +66,28 @@ public class SwingUtil {
             }
             return BrowserState.NOT_FOUND;
         }
+
+        protected Text getTaskName() {
+            return translatable("core.swing.api.task.browser.name", shortString(url, 20));
+        }
     }
 
-    @AllArgsConstructor
     public static class CopyContentTask extends AbstractAction {
         private final String content;
 
-        protected Void call() {
+        private CopyContentTask(String content) {
+            this.content = content;
+        }
+
+        protected void execute() {
             Toolkit.getDefaultToolkit()
                     .getSystemClipboard()
                     .setContents(new StringSelection(content), (clipboard1, transferable) -> {
                     });
-            return null;
+        }
+
+        protected Text getTaskName() {
+            return translatable("core.swing.api.task.clipboard.name", shortString(content, 20));
         }
     }
     public static BrowserOpenTask openBrowserAsync(String url) {

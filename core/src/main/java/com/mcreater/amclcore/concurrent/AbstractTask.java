@@ -1,6 +1,7 @@
 package com.mcreater.amclcore.concurrent;
 
 import com.mcreater.amclcore.exceptions.report.ExceptionReporter;
+import com.mcreater.amclcore.i18n.Text;
 import lombok.Getter;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
@@ -15,10 +16,10 @@ import java.util.function.Consumer;
 
 import static com.mcreater.amclcore.concurrent.ConcurrentExecutors.INTERFACE_EVENT_EXECUTORS;
 import static com.mcreater.amclcore.concurrent.ConcurrentExecutors.createInterfaceEventExecutor;
+import static com.mcreater.amclcore.i18n.I18NManager.translatable;
 
 public abstract class AbstractTask<T> extends RecursiveTask<Optional<T>> {
     private static final Logger EVENT_LOGGER = LogManager.getLogger(AbstractTask.class);
-    @Getter
     private final List<Consumer<TaskState<T>>> stateConsumers = new Vector<>();
     @Getter
     private TaskState<T> state;
@@ -34,6 +35,10 @@ public abstract class AbstractTask<T> extends RecursiveTask<Optional<T>> {
     public AbstractTask<T> addStateConsumer(Consumer<TaskState<T>> c) {
         stateConsumers.add(c);
         return this;
+    }
+
+    public List<Consumer<TaskState<T>>> getStateConsumers() {
+        return Collections.unmodifiableList(stateConsumers);
     }
 
     public AbstractTask() {
@@ -64,7 +69,7 @@ public abstract class AbstractTask<T> extends RecursiveTask<Optional<T>> {
         int lastCurr = Optional.ofNullable(state).map(TaskState::getCurrentStage).orElse(1);
         try {
             T result = call();
-            EVENT_LOGGER.info(String.format("Task %s finished", this));
+            EVENT_LOGGER.info(translatable("core.concurrent.base.event.finish.name", this).getText());
             setState(TaskState.<T>builder()
                     .taskType(TaskState.Type.FINISHED)
                     .totalStage(lastTotal)
@@ -107,5 +112,11 @@ public abstract class AbstractTask<T> extends RecursiveTask<Optional<T>> {
 
     public List<AbstractTask<?>> getSubTasks() {
         return Collections.unmodifiableList(bindTasks);
+    }
+
+    protected abstract Text getTaskName();
+
+    public String toString() {
+        return getTaskName().getText();
     }
 }

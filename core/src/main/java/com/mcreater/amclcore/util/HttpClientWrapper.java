@@ -3,8 +3,11 @@ package com.mcreater.amclcore.util;
 import com.mcreater.amclcore.annotations.RequestModel;
 import com.mcreater.amclcore.exceptions.io.RequestException;
 import lombok.Builder;
+import lombok.Getter;
+import lombok.Setter;
 import org.apache.commons.lang3.tuple.Pair;
 import org.apache.http.HttpEntity;
+import org.apache.http.HttpHost;
 import org.apache.http.HttpResponse;
 import org.apache.http.NameValuePair;
 import org.apache.http.client.HttpClient;
@@ -16,6 +19,8 @@ import org.apache.http.concurrent.Cancellable;
 import org.apache.http.entity.StringEntity;
 import org.apache.http.impl.client.HttpClients;
 import org.apache.http.message.BasicNameValuePair;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 
 import java.io.IOException;
 import java.io.UnsupportedEncodingException;
@@ -29,9 +34,15 @@ import java.util.Vector;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 
+import static com.mcreater.amclcore.i18n.I18NManager.translatable;
 import static com.mcreater.amclcore.util.JsonUtil.GSON_PARSER;
 
 public class HttpClientWrapper {
+    private static final Logger EVENT_LOGGER = LogManager.getLogger(HttpClientWrapper.class);
+    @Getter
+    @Setter
+    private static HttpHost proxy;
+
     public enum Method {
         GET,
         POST,
@@ -56,18 +67,30 @@ public class HttpClientWrapper {
             return scheme;
         }
     }
+
     private final HttpClient client;
     private final HttpRequestBase request;
     private final RequestConfig.Builder config = RequestConfig.custom();
     private final URIBuilder requestURI = new URIBuilder().setScheme("https");
+    private final Method method;
+    private int retry = 1;
     private boolean catchHttpError = false;
+
     private HttpClientWrapper(Method method) {
+        this.method = method;
         client = HttpClients.createDefault();
         request = createUriRequest(method);
+        config.setProxy(proxy);
     }
 
     public static HttpClientWrapper create(Method method) {
         return new HttpClientWrapper(method);
+    }
+
+    public HttpClientWrapper setRetry(int retry) {
+        if (retry < 1) throw new IllegalArgumentException("retry < 1");
+        this.retry = retry;
+        return catchHttpExc(true);
     }
 
     public HttpClientWrapper timeout(int timeout) {
@@ -201,11 +224,23 @@ public class HttpClientWrapper {
     }
 
     public HttpEntity send() throws URISyntaxException, IOException {
+        int current = 1;
         request.setURI(requestURI.build());
         request.setConfig(config.build());
-        HttpResponse req = client.execute(request);
-        if (req.getStatusLine().getStatusCode() > 399 && catchHttpError)
-            throw new RequestException(req.getStatusLine(), req.getEntity());
+        HttpResponse req;
+        EVENT_LOGGER.info(translatable("core.net.execute.pre.text", requestURI.build(), method).getText());
+        while (true) {
+            req = client.execute(request);
+            if (req.getStatusLine().getStatusCode() > 399) {
+                EVENT_LOGGER.info(translatable("core.net.execute.status.text", req.getStatusLine().getStatusCode(), current).getText());
+                if (current >= retry) {
+                    if (catchHttpError) throw new RequestException(req.getStatusLine(), req.getEntity());
+                    else return req.getEntity();
+                } else current++;
+            } else break;
+        }
+        EVENT_LOGGER.info(translatable("core.net.execute.status.text", req.getStatusLine().getStatusCode(), current).getText());
+        EVENT_LOGGER.info(translatable("core.net.execute.finish.text", req.getStatusLine().getStatusCode(), current).getText());
         return req.getEntity();
     }
 
@@ -218,6 +253,7 @@ public class HttpClientWrapper {
     private HttpRequestBase createUriRequest(Method method) {
         switch (method) {
             default:
+                throw new IllegalArgumentException("method == null!");
             case GET:
                 return new HttpGet();
             case POST:

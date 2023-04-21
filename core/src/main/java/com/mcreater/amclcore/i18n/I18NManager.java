@@ -113,8 +113,8 @@ public class I18NManager {
     private static String getNotNull(Locale locale, String key, Object... args) throws NullPointerException {
         try {
             return requireNonNull(String.format(transitionMap.get(locale).get(key), args));
-        } catch (MissingFormatArgumentException e) {
-            return requireNonNull(transitionMap.get(locale).get(key));
+        } catch (MissingFormatArgumentException | IllegalFormatConversionException e) {
+            return "Format error: " + requireNonNull(transitionMap.get(locale).get(key));
         }
     }
 
