@@ -90,7 +90,7 @@ public class HttpClientWrapper {
     public HttpClientWrapper setRetry(int retry) {
         if (retry < 1) throw new IllegalArgumentException("retry < 1");
         this.retry = retry;
-        return catchHttpExc(true);
+        return catchHttpExc(retry != 1);
     }
 
     public HttpClientWrapper timeout(int timeout) {
