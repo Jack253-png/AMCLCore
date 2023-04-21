@@ -11,7 +11,6 @@ import com.mcreater.amclcore.exceptions.oauth.OAuthXBLNotFoundException;
 import com.mcreater.amclcore.i18n.Text;
 import com.mcreater.amclcore.model.oauth.*;
 import com.mcreater.amclcore.util.HttpClientWrapper;
-import lombok.AllArgsConstructor;
 import org.jetbrains.annotations.NotNull;
 
 import java.io.IOException;
@@ -42,7 +41,6 @@ import static java.util.Objects.requireNonNull;
  * OAuth 微软官方 <a href="https://learn.microsoft.com/zh-cn/azure/active-directory/develop/v2-oauth2-auth-code-flow">文档</a><br>
  * * Mojang minecraft 登录验证 <a href="https://wiki.vg/Mojang_API">API</a>
  */
-@AllArgsConstructor
 public enum OAuth {
     /**
      * The microsoft oauth instance for {@link OAuth}<br>
@@ -53,6 +51,32 @@ public enum OAuth {
             "login.microsoftonline.com/consumers/oauth2/v2.0/token",
             "login.live.com/oauth20_token.srf"
     );
+
+    OAuth(String deviceCodeUrl, String tokenUrl, String authTokenUrl) {
+        this.deviceCodeUrl = deviceCodeUrl;
+        this.tokenUrl = tokenUrl;
+        this.authTokenUrl = authTokenUrl;
+        if ("MICROSOFT".equals(toString())) MicrosoftAccount.setApiAccessor(new MicrosoftAccount.Accessor() {
+            @Override
+            public String getMinecraftProfileUrl() {
+                return minecraftProfileUrl;
+            }
+
+            @Override
+            public OAuthLoginInternalTask createLoginInternalTask(DeviceCodeConverterModel model) {
+                return new OAuthLoginInternalTask(model);
+            }
+
+            public String createClientID() {
+                return OAuth.createClientID();
+            }
+
+            public String getTokenUrl() {
+                return tokenUrl;
+            }
+        });
+    }
+
     private final String deviceCodeUrl;
     private final String tokenUrl;
     private final String authTokenUrl;
@@ -103,7 +127,11 @@ public enum OAuth {
      * 从 XBox XSTS 登录至 Minecraft 的 URL
      */
     private static final String minecraftLoginUrl = "api.minecraftservices.com/authentication/login_with_xbox";
-    public static final String minecraftProfileUrl = "api.minecraftservices.com/minecraft/profile";
+    /**
+     * the profile api url
+     * 档案API URL
+     */
+    private static final String minecraftProfileUrl = "api.minecraftservices.com/minecraft/profile";
 
     /**
      * Fetch device code model for auth<br>
@@ -380,6 +408,7 @@ public enum OAuth {
         private final Consumer<DeviceCodeModel> requestHandler;
 
         private OAuthLoginTask(@NotNull Consumer<DeviceCodeModel> requestHandler) {
+            canBind = false;
             this.requestHandler = requireNonNull(requestHandler);
         }
 
@@ -424,7 +453,7 @@ public enum OAuth {
         }
     }
 
-    protected class OAuthLoginInternalTask extends AbstractTask<MicrosoftAccount> {
+    public class OAuthLoginInternalTask extends AbstractTask<MicrosoftAccount> {
         private final DeviceCodeConverterModel model;
 
         private OAuthLoginInternalTask(@NotNull DeviceCodeConverterModel model) {

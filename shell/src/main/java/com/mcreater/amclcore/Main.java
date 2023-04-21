@@ -29,16 +29,16 @@ public class Main {
         ConcurrentExecutors.OAUTH_LOGIN_EXECUTOR.getWrappedListeners().add(logger::info);
         Optional<MicrosoftAccount> account = ConcurrentExecutors.OAUTH_LOGIN_EXECUTOR.submit(
                 OAuth.MICROSOFT.deviceCodeLoginAsync(OAuth.defaultDevHandler)
-                        .addStateConsumer(c -> Optional.ofNullable(c)
-                                .map(TaskState::getMessage)
-                                .map(Text::getText)
-                                .ifPresent(logger::info)
-                        )
-                        .addStateConsumer(c -> Optional.ofNullable(c)
-                                .map(TaskState::getStateInt)
-                                .map(StringUtil::toPercentage)
-                                .ifPresent(logger::info)
-                        )
+                        .addStateConsumer(c -> {
+                            Optional.ofNullable(c)
+                                    .map(TaskState::getMessage)
+                                    .map(Text::getText)
+                                    .ifPresent(logger::info);
+                            Optional.ofNullable(c)
+                                    .map(TaskState::getStateInt)
+                                    .map(StringUtil::toPercentage)
+                                    .ifPresent(logger::info);
+                        })
         ).get();
 
         logger.info(account.orElse(null));

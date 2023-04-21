@@ -26,6 +26,7 @@ public abstract class AbstractTask<T> extends RecursiveTask<Optional<T>> {
     private final List<AbstractTask<?>> bindTasks = new Vector<>();
     @Getter
     private AbstractTask<?> topTask;
+    protected boolean canBind = true;
 
     public AbstractTask<T> addStateConsumers(List<Consumer<TaskState<T>>> c) {
         c.forEach(this::addStateConsumer);
@@ -93,6 +94,7 @@ public abstract class AbstractTask<T> extends RecursiveTask<Optional<T>> {
     }
 
     private void bindTask(AbstractTask<?> task) throws OperationNotSupportedException {
+        if (!task.canBind) throw new OperationNotSupportedException("this.canBind == false!");
         Optional.ofNullable(task.topTask).ifPresent(task1 -> {
             task1.bindTasks.remove(task);
             task.topTask = null;
