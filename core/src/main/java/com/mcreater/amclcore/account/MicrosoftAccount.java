@@ -13,8 +13,10 @@ import com.mcreater.amclcore.util.HttpClientWrapper;
 import lombok.Setter;
 import org.jetbrains.annotations.NotNull;
 
+import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
+import java.util.Vector;
 
 import static com.mcreater.amclcore.i18n.I18NManager.translatable;
 import static com.mcreater.amclcore.util.FunctionUtil.genSelfFunction;
@@ -40,16 +42,11 @@ public class MicrosoftAccount extends AbstractAccount {
                 throw new UnsupportedOperationException("not implemented yet");
             }
         };
-
         String getMinecraftProfileUrl();
-
         OAuth.OAuthLoginInternalTask createLoginInternalTask(DeviceCodeConverterModel model);
-
         String createClientID();
-
         String getTokenUrl();
     }
-
     @Setter
     private static Accessor apiAccessor = Accessor.INSTANCE;
     private String refreshToken;
@@ -69,7 +66,6 @@ public class MicrosoftAccount extends AbstractAccount {
     /**
      * create account refresh task<br>
      * 创建账户刷新任务
-     *
      * @return the created task<br>被创建的任务
      */
     public AbstractAction refreshAsync() {
@@ -84,6 +80,18 @@ public class MicrosoftAccount extends AbstractAccount {
      */
     public FetchProfileTask fetchProfileAsync() {
         return new FetchProfileTask();
+    }
+
+    public List<MinecraftProfileRequestModel.MinecraftProfileSkinModel> getSkins() {
+        return Optional.ofNullable(profile)
+                .map(MinecraftProfileRequestModel::getSkins)
+                .orElse(new Vector<>());
+    }
+
+    public List<MinecraftProfileRequestModel.MinecraftProfileCapeModel> getCapes() {
+        return Optional.ofNullable(profile)
+                .map(MinecraftProfileRequestModel::getCapes)
+                .orElse(new Vector<>());
     }
 
     public String getAccountName() {
@@ -121,7 +129,6 @@ public class MicrosoftAccount extends AbstractAccount {
         private RefreshAccountTask() {
             canBind = false;
         }
-
         protected void execute() throws Exception {
             TokenResponseModel model;
             // TODO Refresh with RefreshToken

@@ -2,6 +2,7 @@ package com.mcreater.amclcore.concurrent;
 
 import com.mcreater.amclcore.exceptions.report.ExceptionReporter;
 import com.mcreater.amclcore.i18n.Text;
+import com.mcreater.amclcore.util.sets.ImmutableDoubleValueSet;
 import lombok.Getter;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
@@ -21,6 +22,7 @@ import static com.mcreater.amclcore.i18n.I18NManager.translatable;
 public abstract class AbstractTask<T> extends RecursiveTask<Optional<T>> {
     private static final Logger EVENT_LOGGER = LogManager.getLogger(AbstractTask.class);
     private final List<Consumer<TaskState<T>>> stateConsumers = new Vector<>();
+    private final List<Consumer<AbstractTask<?>>> bindConsumers = new Vector<>();
     @Getter
     private TaskState<T> state;
     private final List<AbstractTask<?>> bindTasks = new Vector<>();
@@ -38,8 +40,22 @@ public abstract class AbstractTask<T> extends RecursiveTask<Optional<T>> {
         return this;
     }
 
+    public AbstractTask<T> addBindConsumers(List<Consumer<AbstractTask<?>>> c) {
+        c.forEach(this::addBindConsumer);
+        return this;
+    }
+
+    public AbstractTask<T> addBindConsumer(Consumer<AbstractTask<?>> c) {
+        bindConsumers.add(c);
+        return this;
+    }
+
     public List<Consumer<TaskState<T>>> getStateConsumers() {
         return Collections.unmodifiableList(stateConsumers);
+    }
+
+    public List<Consumer<AbstractTask<?>>> getBindConsumers() {
+        return Collections.unmodifiableList(bindConsumers);
     }
 
     public AbstractTask() {
@@ -65,43 +81,55 @@ public abstract class AbstractTask<T> extends RecursiveTask<Optional<T>> {
      */
     protected abstract T call() throws Exception;
 
+    private void stateFinish(ImmutableDoubleValueSet<Integer, Integer> lastState, T result) {
+        setState(TaskState.<T>builder()
+                .taskType(TaskState.Type.FINISHED)
+                .totalStage(lastState.getValue1())
+                .currentStage(lastState.getValue1())
+                .result(result)
+                .build()
+        );
+    }
+
+    private void stateExc(ImmutableDoubleValueSet<Integer, Integer> lastState, Throwable e) {
+        setState(TaskState.<T>builder()
+                .message(translatable("core.concurrent.base.event.exception.text", e))
+                .throwable(e)
+                .totalStage(lastState.getValue1())
+                .currentStage(lastState.getValue2())
+                .taskType(TaskState.Type.ERROR)
+                .build()
+        );
+    }
+
+    private ImmutableDoubleValueSet<Integer, Integer> fetchTaskState() {
+        return ImmutableDoubleValueSet.<Integer, Integer>builder()
+                .value1(Optional.ofNullable(state).map(TaskState::getTotalStage).orElse(1))
+                .value2(Optional.ofNullable(state).map(TaskState::getCurrentStage).orElse(1))
+                .build();
+    }
+
     protected Optional<T> compute() {
-        int lastTotal = Optional.ofNullable(state).map(TaskState::getTotalStage).orElse(1);
-        int lastCurr = Optional.ofNullable(state).map(TaskState::getCurrentStage).orElse(1);
+        ImmutableDoubleValueSet<Integer, Integer> lastState = fetchTaskState();
         try {
             T result = call();
             EVENT_LOGGER.info(translatable("core.concurrent.base.event.finish.name", this).getText());
-            setState(TaskState.<T>builder()
-                    .taskType(TaskState.Type.FINISHED)
-                    .totalStage(lastTotal)
-                    .currentStage(lastTotal)
-                    .result(result)
-                    .build()
-            );
+            stateFinish(lastState, result);
             return Optional.ofNullable(result);
         } catch (Exception e) {
             ExceptionReporter.report(e, ExceptionReporter.ExceptionType.CONCURRENT);
-            setState(TaskState.<T>builder()
-                    .message(translatable("core.concurrent.base.event.exception.text", e))
-                    .throwable(e)
-                    .totalStage(lastTotal)
-                    .currentStage(lastCurr)
-                    .taskType(TaskState.Type.ERROR)
-                    .build()
-            );
+            stateExc(lastState, e);
         }
         return Optional.empty();
     }
 
     private void bindTask(AbstractTask<?> task) throws OperationNotSupportedException {
         if (!task.canBind) throw new OperationNotSupportedException("this.canBind == false!");
-        Optional.ofNullable(task.topTask).ifPresent(task1 -> {
-            task1.bindTasks.remove(task);
-            task.topTask = null;
-        });
-        if (this.topTask != null) throw new OperationNotSupportedException("this.topTask != null");
+        if (task.topTask != null) throw new OperationNotSupportedException("task.topTask != null!");
+        if (this.topTask != null) throw new OperationNotSupportedException("this.topTask != null!");
         bindTasks.add(task);
         task.topTask = this;
+        INTERFACE_EVENT_EXECUTORS.get(this).execute(() -> getBindConsumers().forEach(c -> c.accept(task)));
     }
 
     public AbstractTask<T> bindTo(AbstractTask<?> task) {
@@ -121,5 +149,19 @@ public abstract class AbstractTask<T> extends RecursiveTask<Optional<T>> {
 
     public String toString() {
         return getTaskName().getText();
+    }
+
+    public boolean tryUnfork() {
+        throw new RuntimeException(new OperationNotSupportedException());
+    }
+
+    public void complete(Optional<T> value) {
+        super.complete(value);
+        stateFinish(fetchTaskState(), value.orElse(null));
+    }
+
+    public void completeExceptionally(Throwable ex) {
+        super.completeExceptionally(ex);
+        stateExc(fetchTaskState(), ex);
     }
 }

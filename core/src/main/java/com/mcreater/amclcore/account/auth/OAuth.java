@@ -51,7 +51,6 @@ public enum OAuth {
             "login.microsoftonline.com/consumers/oauth2/v2.0/token",
             "login.live.com/oauth20_token.srf"
     );
-
     OAuth(String deviceCodeUrl, String tokenUrl, String authTokenUrl) {
         this.deviceCodeUrl = deviceCodeUrl;
         this.tokenUrl = tokenUrl;
@@ -76,7 +75,6 @@ public enum OAuth {
             }
         });
     }
-
     private final String deviceCodeUrl;
     private final String tokenUrl;
     private final String authTokenUrl;

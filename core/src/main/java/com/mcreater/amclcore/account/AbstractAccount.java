@@ -41,15 +41,12 @@ public abstract class AbstractAccount {
     /**
      * create account refresh task<br>
      * 创建账户刷新任务
-     *
      * @return the created task<br>被创建的任务
      */
     public abstract AbstractAction refreshAsync();
-
     /**
      * create fetch profile task<br>
      * 创建档案获取任务
-     *
      * @return the created task<br>被创建的任务
      */
     public abstract AbstractAction fetchProfileAsync();
