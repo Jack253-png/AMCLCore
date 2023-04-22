@@ -23,9 +23,9 @@ public class MinecraftProfileRequestModel {
     @RequestModel
     public static class MinecraftProfileSkinModel {
         private UUID id;
-        private String state;
+        private State state;
         private String url;
-        private String variant;
+        private Variant variant;
     }
 
     @Data
@@ -33,8 +33,34 @@ public class MinecraftProfileRequestModel {
     @RequestModel
     public static class MinecraftProfileCapeModel {
         private UUID id;
-        private String state;
+        private State state;
         private String url;
         private String alias;
+    }
+
+    public enum State {
+        ACTIVE,
+        INACTIVE;
+
+        public static State parse(String s) {
+            try {
+                return valueOf(s);
+            } catch (Exception e) {
+                return INACTIVE;
+            }
+        }
+    }
+
+    public enum Variant {
+        CLASSIC,
+        SLIM;
+
+        public static Variant parse(String s) {
+            try {
+                return valueOf(s);
+            } catch (Exception e) {
+                return CLASSIC;
+            }
+        }
     }
 }

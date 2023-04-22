@@ -42,5 +42,7 @@ public class Main {
         ).get();
 
         logger.info(account.orElse(null));
+        logger.info(account.orElse(null).getSkins());
+        logger.info(account.orElse(null).getCapes());
     }
 }
