@@ -1,7 +1,9 @@
 package com.mcreater.amclcore.concurrent;
 
+import com.mcreater.amclcore.concurrent.task.AbstractTask;
 import lombok.Getter;
 
+import java.util.Collections;
 import java.util.List;
 import java.util.Optional;
 import java.util.Vector;
@@ -24,6 +26,14 @@ public class ExtendForkJoinPool extends ForkJoinPool {
                               Thread.UncaughtExceptionHandler handler,
                               boolean asyncMode) {
         super(parallelism, factory, handler, asyncMode);
+    }
+
+    public List<AbstractTask<?>> getTasks() {
+        return Collections.unmodifiableList(tasks);
+    }
+
+    public List<ForkJoinTask<?>> getAllTasks() {
+        return Collections.unmodifiableList(allTasks);
     }
 
     private <T> ForkJoinTask<T> processTask(ForkJoinTask<T> task) {

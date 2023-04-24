@@ -1,7 +1,7 @@
 package com.mcreater.amclcore.util;
 
-import com.mcreater.amclcore.concurrent.AbstractAction;
-import com.mcreater.amclcore.concurrent.AbstractTask;
+import com.mcreater.amclcore.concurrent.task.AbstractAction;
+import com.mcreater.amclcore.concurrent.task.AbstractTask;
 import com.mcreater.amclcore.i18n.Text;
 import com.mcreater.amclcore.util.platform.OperatingSystem;
 

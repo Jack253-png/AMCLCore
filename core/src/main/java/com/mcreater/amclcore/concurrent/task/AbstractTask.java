@@ -1,5 +1,6 @@
-package com.mcreater.amclcore.concurrent;
+package com.mcreater.amclcore.concurrent.task;
 
+import com.mcreater.amclcore.concurrent.TaskState;
 import com.mcreater.amclcore.exceptions.report.ExceptionReporter;
 import com.mcreater.amclcore.i18n.Text;
 import com.mcreater.amclcore.util.sets.ImmutableDoubleValueSet;

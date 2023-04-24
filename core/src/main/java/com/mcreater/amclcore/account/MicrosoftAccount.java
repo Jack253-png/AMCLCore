@@ -1,8 +1,9 @@
 package com.mcreater.amclcore.account;
 
 import com.mcreater.amclcore.account.auth.OAuth;
-import com.mcreater.amclcore.concurrent.AbstractAction;
 import com.mcreater.amclcore.concurrent.TaskState;
+import com.mcreater.amclcore.concurrent.task.AbstractAction;
+import com.mcreater.amclcore.concurrent.task.AbstractTask;
 import com.mcreater.amclcore.exceptions.oauth.OAuthXBLNotFoundException;
 import com.mcreater.amclcore.i18n.Text;
 import com.mcreater.amclcore.model.oauth.DeviceCodeConverterModel;
@@ -80,6 +81,16 @@ public class MicrosoftAccount extends AbstractAccount {
      */
     public FetchProfileTask fetchProfileAsync() {
         return new FetchProfileTask();
+    }
+
+    /**
+     * create check profile's AccessToken is outdated or not task<br>
+     * 创建检查账户 AccessToken 是否失效与否的任务
+     *
+     * @return the created task<br>被创建的任务
+     */
+    public AbstractTask<Boolean> validateAccountAsync() {
+        return new ValidateAccountTask();
     }
 
     public List<MinecraftProfileRequestModel.MinecraftProfileSkinModel> getSkins() {
@@ -190,6 +201,24 @@ public class MicrosoftAccount extends AbstractAccount {
 
         protected Text getTaskName() {
             return translatable("core.oauth.task.refreshAccount.name");
+        }
+    }
+
+    public class ValidateAccountTask extends AbstractTask<Boolean> {
+        private ValidateAccountTask() {
+        }
+
+        protected Boolean call() {
+            try {
+                fetchProfileAsync().execute();
+                return true;
+            } catch (Exception e) {
+                return false;
+            }
+        }
+
+        protected Text getTaskName() {
+            return translatable("core.oauth.task.validate.text");
         }
     }
 }

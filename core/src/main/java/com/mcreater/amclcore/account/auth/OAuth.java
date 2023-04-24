@@ -1,9 +1,9 @@
 package com.mcreater.amclcore.account.auth;
 
 import com.mcreater.amclcore.account.MicrosoftAccount;
-import com.mcreater.amclcore.concurrent.AbstractTask;
 import com.mcreater.amclcore.concurrent.ConcurrentExecutors;
 import com.mcreater.amclcore.concurrent.TaskState;
+import com.mcreater.amclcore.concurrent.task.AbstractTask;
 import com.mcreater.amclcore.exceptions.oauth.OAuthMinecraftStoreCheckException;
 import com.mcreater.amclcore.exceptions.oauth.OAuthTimeOutException;
 import com.mcreater.amclcore.exceptions.oauth.OAuthUserHashException;
@@ -25,7 +25,6 @@ import java.util.regex.Pattern;
 
 import static com.mcreater.amclcore.MetaData.oauthClientIdOverridePropertyName;
 import static com.mcreater.amclcore.MetaData.oauthDefaultClientId;
-import static com.mcreater.amclcore.concurrent.ConcurrentUtil.sleepTime;
 import static com.mcreater.amclcore.i18n.I18NManager.translatable;
 import static com.mcreater.amclcore.util.JsonUtil.createList;
 import static com.mcreater.amclcore.util.JsonUtil.createPair;
@@ -33,6 +32,7 @@ import static com.mcreater.amclcore.util.NetUtil.buildScopeString;
 import static com.mcreater.amclcore.util.PropertyUtil.readProperty;
 import static com.mcreater.amclcore.util.SwingUtil.copyContentAsync;
 import static com.mcreater.amclcore.util.SwingUtil.openBrowserAsync;
+import static com.mcreater.amclcore.util.concurrent.ConcurrentUtil.sleepTime;
 import static java.util.Objects.requireNonNull;
 
 /**

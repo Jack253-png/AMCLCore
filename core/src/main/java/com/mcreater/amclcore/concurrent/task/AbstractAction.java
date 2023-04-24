@@ -1,4 +1,4 @@
-package com.mcreater.amclcore.concurrent;
+package com.mcreater.amclcore.concurrent.task;
 
 public abstract class AbstractAction extends AbstractTask<Void> {
     protected abstract void execute() throws Exception;

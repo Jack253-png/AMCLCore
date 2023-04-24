@@ -1,4 +1,4 @@
-package com.mcreater.amclcore.concurrent;
+package com.mcreater.amclcore.util.concurrent;
 
 import com.mcreater.amclcore.exceptions.report.ExceptionReporter;
 

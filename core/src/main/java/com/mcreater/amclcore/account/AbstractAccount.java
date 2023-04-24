@@ -1,6 +1,7 @@
 package com.mcreater.amclcore.account;
 
-import com.mcreater.amclcore.concurrent.AbstractAction;
+import com.mcreater.amclcore.concurrent.task.AbstractAction;
+import com.mcreater.amclcore.concurrent.task.AbstractTask;
 import lombok.Getter;
 import org.jetbrains.annotations.NotNull;
 
@@ -44,10 +45,20 @@ public abstract class AbstractAccount {
      * @return the created task<br>被创建的任务
      */
     public abstract AbstractAction refreshAsync();
+
     /**
      * create fetch profile task<br>
      * 创建档案获取任务
+     *
      * @return the created task<br>被创建的任务
      */
     public abstract AbstractAction fetchProfileAsync();
+
+    /**
+     * create check profile's AccessToken is outdated or not task<br>
+     * 创建检查账户 AccessToken 是否失效与否的任务
+     *
+     * @return the created task<br>被创建的任务
+     */
+    public abstract AbstractTask<Boolean> validateAccountAsync();
 }

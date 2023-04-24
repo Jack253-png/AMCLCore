@@ -14,6 +14,7 @@
   "core.oauth.refreshAccount.pre.text": "正在启动账户刷新服务...",
   "core.oauth.refreshAccount.refreshingToken.text": "更新刷新令牌中...",
   "core.oauth.refreshAccount.updateProfile.text": "更新档案中...",
+  "core.oauth.task.validate.text": "账户验证任务",
   "core.swing.api.task.clipboard.name": "剪贴板复制 %s 任务",
   "core.swing.api.task.browser.name": "浏览器打开 URL %s 任务",
   "core.concurrent.base.event.finish.name": "%s完成",
