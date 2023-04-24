@@ -44,5 +44,19 @@ public class Main {
         logger.info(account.orElse(null));
         logger.info(account.orElse(null).getSkins());
         logger.info(account.orElse(null).getCapes());
+
+        ConcurrentExecutors.EVENT_QUEUE_EXECUTOR.submit(
+                account.orElse(null).disableAccountCapeAsync()
+                        .addStateConsumer(c -> {
+                            Optional.ofNullable(c)
+                                    .map(TaskState::getMessage)
+                                    .map(Text::getText)
+                                    .ifPresent(logger::info);
+                            Optional.ofNullable(c)
+                                    .map(TaskState::getStateInt)
+                                    .map(StringUtil::toPercentage)
+                                    .ifPresent(logger::info);
+                        })
+        ).get();
     }
 }

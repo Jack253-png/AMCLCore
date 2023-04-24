@@ -73,6 +73,10 @@ public enum OAuth {
             public String getTokenUrl() {
                 return tokenUrl;
             }
+
+            public String getMinecraftCapeModifyUrl() {
+                return minecraftCapeModifyUrl;
+            }
         });
     }
     private final String deviceCodeUrl;
@@ -130,6 +134,11 @@ public enum OAuth {
      * 档案API URL
      */
     private static final String minecraftProfileUrl = "api.minecraftservices.com/minecraft/profile";
+    /**
+     * the cape modify url for Minecraft<br>
+     * Minecraft 披风修改 URL
+     */
+    private static final String minecraftCapeModifyUrl = "api.minecraftservices.com/minecraft/profile/capes/active";
 
     /**
      * Fetch device code model for auth<br>
@@ -141,15 +150,15 @@ public enum OAuth {
      * @throws IOException        If an I/O exception occurred<br>如果一个IO错误发生
      */
     private DeviceCodeModel fetchDeviceToken(Consumer<DeviceCodeModel> requestHandler) throws URISyntaxException, IOException {
-        DeviceCodeModel model = HttpClientWrapper.create(HttpClientWrapper.Method.GET)
+        DeviceCodeModel model = requireNonNull(HttpClientWrapper.create(HttpClientWrapper.Method.GET)
                 .uri(deviceCodeUrl)
                 .uriParam("client_id", createClientID())
                 .uriParam("scope", buildScopeString(" ", "XboxLive.signin", "offline_access"))
                 .timeout(5000)
                 .reqTimeout(5000)
-                .setRetry(5)
-                .sendAndReadJson(DeviceCodeModel.class);
-        requireNonNull(model);
+                .retry(5)
+                .sendAndReadJson(DeviceCodeModel.class));
+
         Optional.of(requestHandler).ifPresent(c -> c.accept(model));
         return model;
     }
@@ -187,7 +196,7 @@ public enum OAuth {
      */
     @Deprecated
     private DeviceCodeConverterModel acquireAccessToken(String url) throws URISyntaxException, IOException {
-        AuthCodeModel model = HttpClientWrapper.create(HttpClientWrapper.Method.GET)
+        AuthCodeModel model = requireNonNull(HttpClientWrapper.create(HttpClientWrapper.Method.GET)
                 .uri(authTokenUrl)
                 .entityEncodedUrl(
                         createPair("client_id", minecraftAzureApplicationId),
@@ -198,9 +207,9 @@ public enum OAuth {
                 )
                 .timeout(5000)
                 .reqTimeout(5000)
-                .setRetry(5)
-                .sendAndReadJson(AuthCodeModel.class);
-        requireNonNull(model);
+                .retry(5)
+                .sendAndReadJson(AuthCodeModel.class));
+
         return DeviceCodeConverterModel.builder()
                 .model(
                         TokenResponseModel.builder()
@@ -276,7 +285,7 @@ public enum OAuth {
      * @throws IOException        If an I/O Exception occurred<br>如果一个IO错误发生
      */
     private XBLAccountModel fetchXBLUser(DeviceCodeConverterModel parsedDeviceCode) throws IOException, URISyntaxException {
-        XBLTokenRequestModel requestModel = HttpClientWrapper.create(HttpClientWrapper.Method.POST)
+        XBLTokenRequestModel requestModel = requireNonNull(HttpClientWrapper.create(HttpClientWrapper.Method.POST)
                 .uri(xblTokenUrl)
                 .entityJson(
                         XBLTokenResponseModel.builder()
@@ -290,9 +299,9 @@ public enum OAuth {
                                 .RelyingParty("http://auth.xboxlive.com")
                                 .TokenType("JWT")
                 )
-                .setRetry(5)
-                .sendAndReadJson(XBLTokenRequestModel.class);
-        requireNonNull(requestModel);
+                .retry(5)
+                .sendAndReadJson(XBLTokenRequestModel.class));
+
         return XBLAccountModel.builder()
                 .token(requestModel.getToken())
                 .hash(
@@ -314,7 +323,7 @@ public enum OAuth {
      * @throws IOException        If an I/O Exception occurred<br>如果一个IO错误发生
      */
     private XBLAccountModel fetchXSTSUser(XBLAccountModel xblUser) throws IOException, URISyntaxException {
-        XBLTokenRequestModel requestModel = HttpClientWrapper.create(HttpClientWrapper.Method.POST)
+        XBLTokenRequestModel requestModel = requireNonNull(HttpClientWrapper.create(HttpClientWrapper.Method.POST)
                 .uri(xstsTokenUrl)
                 .entityJson(XSTSTokenResponseModel.builder()
                         .Properties(
@@ -327,9 +336,9 @@ public enum OAuth {
                         .TokenType("JWT")
                         .build()
                 )
-                .setRetry(5)
-                .sendAndReadJson(XBLTokenRequestModel.class);
-        requireNonNull(requestModel);
+                .retry(5)
+                .sendAndReadJson(XBLTokenRequestModel.class));
+
         String userHash = requestModel.getDisplayClaims().getXui().stream()
                 .map(XBLTokenRequestModel.XBLTokenUserHashModel::getUhs)
                 .findAny()
@@ -362,7 +371,7 @@ public enum OAuth {
                                 )
                         )
                         .build())
-                .setRetry(5)
+                .retry(5)
                 .sendAndReadJson(MinecraftRequestModel.class));
     }
 
@@ -376,12 +385,12 @@ public enum OAuth {
      * @throws IOException        If an I/O Exception occurred<br>如果一个IO错误发生
      */
     private boolean checkMinecraftStore(MinecraftRequestModel user) throws URISyntaxException, IOException {
-        MinecraftProductRequestModel requestModel = HttpClientWrapper.create(HttpClientWrapper.Method.GET)
+        MinecraftProductRequestModel requestModel = requireNonNull(HttpClientWrapper.create(HttpClientWrapper.Method.GET)
                 .uri(minecraftStoreUrl)
                 .header("Authorization", String.format("%s %s", user.getTokenType(), user.getAccessToken()))
-                .setRetry(5)
-                .sendAndReadJson(MinecraftProductRequestModel.class);
-        requireNonNull(requestModel);
+                .retry(5)
+                .sendAndReadJson(MinecraftProductRequestModel.class));
+
         return requestModel.getItems().stream()
                 .filter(m -> "game_minecraft".equals(m.getName()) || "product_minecraft".equals(m.getName()))
                 .count() >= 2;

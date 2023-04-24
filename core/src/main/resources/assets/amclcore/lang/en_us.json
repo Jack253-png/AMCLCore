@@ -15,6 +15,7 @@
   "core.oauth.refreshAccount.refreshingToken.text": "Updating refresh token...",
   "core.oauth.refreshAccount.updateProfile.text": "Updating profile...",
   "core.oauth.task.validate.text": "Account validate task",
+  "core.oauth.task.disable_cape.text": "Disable cape task",
   "core.swing.api.task.clipboard.name": "Clipboard copy %s task",
   "core.swing.api.task.browser.name": "Open browser url %s task",
   "core.concurrent.base.event.finish.name": "Task %s finished",

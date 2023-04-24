@@ -61,4 +61,12 @@ public abstract class AbstractAccount {
      * @return the created task<br>被创建的任务
      */
     public abstract AbstractTask<Boolean> validateAccountAsync();
+
+    /**
+     * create disable cape task<br>
+     * 创建禁用披风任务
+     *
+     * @return the created task<br>被创建的任务
+     */
+    public abstract AbstractAction disableAccountCapeAsync();
 }

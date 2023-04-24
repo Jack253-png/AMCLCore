@@ -87,7 +87,7 @@ public class HttpClientWrapper {
         return new HttpClientWrapper(method);
     }
 
-    public HttpClientWrapper setRetry(int retry) {
+    public HttpClientWrapper retry(int retry) {
         if (retry < 1) throw new IllegalArgumentException("retry < 1");
         this.retry = retry;
         return catchHttpExc(retry != 1);
@@ -141,6 +141,10 @@ public class HttpClientWrapper {
     public HttpClientWrapper header(String key, String value) {
         request.addHeader(key, value);
         return this;
+    }
+
+    public HttpClientWrapper header(Map.Entry<String, String> header) {
+        return header(header.getKey(), header.getValue());
     }
 
     public HttpClientWrapper entity(HttpEntity entity) {

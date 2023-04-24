@@ -12,12 +12,10 @@ import com.mcreater.amclcore.model.oauth.TokenResponseModel;
 import com.mcreater.amclcore.model.oauth.session.MinecraftProfileRequestModel;
 import com.mcreater.amclcore.util.HttpClientWrapper;
 import lombok.Setter;
+import org.apache.commons.lang3.tuple.ImmutablePair;
 import org.jetbrains.annotations.NotNull;
 
-import java.util.List;
-import java.util.Optional;
-import java.util.UUID;
-import java.util.Vector;
+import java.util.*;
 
 import static com.mcreater.amclcore.i18n.I18NManager.translatable;
 import static com.mcreater.amclcore.util.FunctionUtil.genSelfFunction;
@@ -42,11 +40,18 @@ public class MicrosoftAccount extends AbstractAccount {
             public String getTokenUrl() {
                 throw new UnsupportedOperationException("not implemented yet");
             }
+
+            public String getMinecraftCapeModifyUrl() {
+                throw new UnsupportedOperationException("not implemented yet");
+            }
         };
         String getMinecraftProfileUrl();
         OAuth.OAuthLoginInternalTask createLoginInternalTask(DeviceCodeConverterModel model);
         String createClientID();
+
         String getTokenUrl();
+
+        String getMinecraftCapeModifyUrl();
     }
     @Setter
     private static Accessor apiAccessor = Accessor.INSTANCE;
@@ -89,8 +94,18 @@ public class MicrosoftAccount extends AbstractAccount {
      *
      * @return the created task<br>被创建的任务
      */
-    public AbstractTask<Boolean> validateAccountAsync() {
+    public ValidateAccountTask validateAccountAsync() {
         return new ValidateAccountTask();
+    }
+
+    /**
+     * create disable cape task<br>
+     * 创建禁用披风任务
+     *
+     * @return the created task<br>被创建的任务
+     */
+    public DisableAccountCapeTask disableAccountCapeAsync() {
+        return new DisableAccountCapeTask();
     }
 
     public List<MinecraftProfileRequestModel.MinecraftProfileSkinModel> getSkins() {
@@ -130,8 +145,8 @@ public class MicrosoftAccount extends AbstractAccount {
         protected void execute() throws Exception {
             profile = requireNonNull(HttpClientWrapper.create(HttpClientWrapper.Method.GET)
                     .uri(apiAccessor.getMinecraftProfileUrl())
-                    .header("Authorization", String.format("%s %s", tokenType, getAccessToken()))
-                    .setRetry(5)
+                    .header(tokenHeader())
+                    .retry(5)
                     .sendAndReadJson(MinecraftProfileRequestModel.class));
         }
     }
@@ -150,7 +165,7 @@ public class MicrosoftAccount extends AbstractAccount {
                         .message(translatable("core.oauth.refreshAccount.pre.text"))
                         .build()
                 );
-                model = HttpClientWrapper.create(HttpClientWrapper.Method.POST)
+                model = requireNonNull(HttpClientWrapper.create(HttpClientWrapper.Method.POST)
                         .uri(apiAccessor.getTokenUrl())
                         .entityEncodedUrl(
                                 createPair("client_id", apiAccessor.createClientID()),
@@ -159,7 +174,8 @@ public class MicrosoftAccount extends AbstractAccount {
                         )
                         .timeout(5000)
                         .reqTimeout(5000)
-                        .sendAndReadJson(TokenResponseModel.class);
+                        .retry(5)
+                        .sendAndReadJson(TokenResponseModel.class));
             }
             // TODO Update refresh token
             {
@@ -220,5 +236,26 @@ public class MicrosoftAccount extends AbstractAccount {
         protected Text getTaskName() {
             return translatable("core.oauth.task.validate.text");
         }
+    }
+
+    public class DisableAccountCapeTask extends AbstractAction {
+
+        protected void execute() throws Exception {
+            profile = HttpClientWrapper.create(HttpClientWrapper.Method.DELETE)
+                    .uri(apiAccessor.getMinecraftCapeModifyUrl())
+                    .header(tokenHeader())
+                    .timeout(5000)
+                    .reqTimeout(5000)
+                    .retry(5)
+                    .sendAndReadJson(MinecraftProfileRequestModel.class);
+        }
+
+        protected Text getTaskName() {
+            return translatable("core.oauth.task.disable_cape.text");
+        }
+    }
+
+    private Map.Entry<String, String> tokenHeader() {
+        return new ImmutablePair<>("Authorization", String.format("%s %s", tokenType, getAccessToken()));
     }
 }
