@@ -30,8 +30,9 @@ public class Main {
                         .addBindConsumer(t -> t.addStateConsumer(state -> AbstractTask.printTextData(state, logger::info)))
         ).get();
 
-        logger.info(account.orElse(null));
-        logger.info(account.orElse(null).getSkins());
-        logger.info(account.orElse(null).getCapes());
+        account.ifPresent(a -> {
+            logger.info(a.getSkins());
+            logger.info(a.getCapes());
+        });
     }
 }
