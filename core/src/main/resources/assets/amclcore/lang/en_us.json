@@ -1,7 +1,7 @@
 {
   "core.transitions.name": "AMCL Core transitions pack",
   "core.oauth.task.login.name": "OAuth login task",
-  "core.oauth.task.login.internal.name": "OAuth login internal task",
+  "core.oauth.task.login.internal.name": "OAuth internal login task",
   "core.oauth.login.start": "Start OAuth logging service...",
   "core.oauth.deviceCode.pre.text": "Waiting user logging...",
   "core.oauth.deviceCode.after.text": "User login finished, delegating internal task to login Minecraft...",

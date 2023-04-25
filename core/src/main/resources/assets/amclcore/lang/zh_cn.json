@@ -1,7 +1,7 @@
 {
   "core.transitions.name": "AMCL 核心翻译包",
   "core.oauth.task.login.name": "OAuth 登录任务",
-  "core.oauth.task.login.internal.name": "OAuth 登录内部任务",
+  "core.oauth.task.login.internal.name": "OAuth 内部登录任务",
   "core.oauth.login.start": "正在启动 OAuth 登录服务...",
   "core.oauth.deviceCode.pre.text": "等待用户登录...",
   "core.oauth.deviceCode.after.text": "用户登录完成, 正在委托内部任务登录 Minecraft...",
