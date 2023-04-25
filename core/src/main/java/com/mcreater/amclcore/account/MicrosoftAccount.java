@@ -153,14 +153,14 @@ public class MicrosoftAccount extends AbstractAccount {
 
     public class RefreshAccountTask extends AbstractAction {
         private RefreshAccountTask() {
-            canBind = false;
+            isRoot = true;
         }
         protected void execute() throws Exception {
             TokenResponseModel model;
             // TODO Refresh with RefreshToken
             {
                 setState(TaskState.<Void>builder()
-                        .totalStage(7)
+                        .totalStage(4)
                         .currentStage(1)
                         .message(translatable("core.oauth.refreshAccount.pre.text"))
                         .build()
@@ -180,7 +180,7 @@ public class MicrosoftAccount extends AbstractAccount {
             // TODO Update refresh token
             {
                 setState(TaskState.<Void>builder()
-                        .totalStage(7)
+                        .totalStage(4)
                         .currentStage(2)
                         .message(translatable("core.oauth.refreshAccount.refreshingToken.text"))
                         .build()
@@ -203,8 +203,8 @@ public class MicrosoftAccount extends AbstractAccount {
             // TODO Update profile
             {
                 setState(TaskState.<Void>builder()
-                        .totalStage(7)
-                        .currentStage(6)
+                        .totalStage(4)
+                        .currentStage(3)
                         .message(translatable("core.oauth.refreshAccount.updateProfile.text"))
                         .build()
                 );

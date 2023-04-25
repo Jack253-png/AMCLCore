@@ -21,6 +21,13 @@ import static com.mcreater.amclcore.concurrent.ConcurrentExecutors.createInterfa
 import static com.mcreater.amclcore.i18n.I18NManager.translatable;
 
 public abstract class AbstractTask<T> extends RecursiveTask<Optional<T>> {
+    public static void printTextData(TaskState<?> taskState, Consumer<String> output) {
+        Optional.ofNullable(taskState)
+                .map(TaskState::getMessage)
+                .map(Text::getText)
+                .ifPresent(output);
+    }
+
     private static final Logger EVENT_LOGGER = LogManager.getLogger(AbstractTask.class);
     private final List<Consumer<TaskState<T>>> stateConsumers = new Vector<>();
     private final List<Consumer<AbstractTask<?>>> bindConsumers = new Vector<>();
@@ -29,7 +36,7 @@ public abstract class AbstractTask<T> extends RecursiveTask<Optional<T>> {
     private final List<AbstractTask<?>> bindTasks = new Vector<>();
     @Getter
     private AbstractTask<?> topTask;
-    protected boolean canBind = true;
+    protected boolean isRoot = false;
 
     public AbstractTask<T> addStateConsumers(List<Consumer<TaskState<T>>> c) {
         c.forEach(this::addStateConsumer);
@@ -67,10 +74,6 @@ public abstract class AbstractTask<T> extends RecursiveTask<Optional<T>> {
     protected void setState(TaskState<T> state) {
         this.state = state;
         INTERFACE_EVENT_EXECUTORS.get(this).execute(() -> getStateConsumers().forEach(c -> c.accept(state)));
-    }
-
-    protected void setTopTaskState(TaskState s) {
-        Optional.ofNullable(topTask).ifPresent(abstractTask -> abstractTask.setState(s));
     }
 
     /**
@@ -124,10 +127,13 @@ public abstract class AbstractTask<T> extends RecursiveTask<Optional<T>> {
         return Optional.empty();
     }
 
-    private void bindTask(AbstractTask<?> task) throws OperationNotSupportedException {
-        if (!task.canBind) throw new OperationNotSupportedException("this.canBind == false!");
+    private void addSubTask(AbstractTask<?> task) throws OperationNotSupportedException {
+        if (task.isRoot) throw new OperationNotSupportedException("this.isRoot == true!");
         if (task.topTask != null) throw new OperationNotSupportedException("task.topTask != null!");
-        if (this.topTask != null) throw new OperationNotSupportedException("this.topTask != null!");
+        if (this.topTask != null) {
+            this.topTask.addSubTask(task);
+            return;
+        }
         bindTasks.add(task);
         task.topTask = this;
         INTERFACE_EVENT_EXECUTORS.get(this).execute(() -> getBindConsumers().forEach(c -> c.accept(task)));
@@ -135,7 +141,7 @@ public abstract class AbstractTask<T> extends RecursiveTask<Optional<T>> {
 
     public AbstractTask<T> bindTo(AbstractTask<?> task) {
         try {
-            task.bindTask(this);
+            task.addSubTask(this);
         } catch (Exception e) {
             ExceptionReporter.report(e, ExceptionReporter.ExceptionType.UNKNOWN);
         }
