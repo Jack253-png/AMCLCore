@@ -20,7 +20,6 @@ import java.util.*;
 import static com.mcreater.amclcore.i18n.I18NManager.translatable;
 import static com.mcreater.amclcore.util.FunctionUtil.genSelfFunction;
 import static com.mcreater.amclcore.util.JsonUtil.createPair;
-import static java.util.Objects.requireNonNull;
 
 public class MicrosoftAccount extends AbstractAccount {
     public interface Accessor {
@@ -143,11 +142,11 @@ public class MicrosoftAccount extends AbstractAccount {
         }
 
         protected void execute() throws Exception {
-            profile = requireNonNull(HttpClientWrapper.create(HttpClientWrapper.Method.GET)
+            profile = HttpClientWrapper.create(HttpClientWrapper.Method.GET)
                     .uri(apiAccessor.getMinecraftProfileUrl())
                     .header(tokenHeader())
                     .retry(5)
-                    .sendAndReadJson(MinecraftProfileRequestModel.class));
+                    .sendAndReadJson(MinecraftProfileRequestModel.class);
         }
     }
 
@@ -160,12 +159,12 @@ public class MicrosoftAccount extends AbstractAccount {
             // TODO Refresh with RefreshToken
             {
                 setState(TaskState.<Void>builder()
-                        .totalStage(4)
+                        .totalStage(5)
                         .currentStage(1)
                         .message(translatable("core.oauth.refreshAccount.pre.text"))
                         .build()
                 );
-                model = requireNonNull(HttpClientWrapper.create(HttpClientWrapper.Method.POST)
+                model = HttpClientWrapper.create(HttpClientWrapper.Method.POST)
                         .uri(apiAccessor.getTokenUrl())
                         .entityEncodedUrl(
                                 createPair("client_id", apiAccessor.createClientID()),
@@ -175,12 +174,12 @@ public class MicrosoftAccount extends AbstractAccount {
                         .timeout(5000)
                         .reqTimeout(5000)
                         .retry(5)
-                        .sendAndReadJson(TokenResponseModel.class));
+                        .sendAndReadJson(TokenResponseModel.class);
             }
             // TODO Update refresh token
             {
                 setState(TaskState.<Void>builder()
-                        .totalStage(4)
+                        .totalStage(5)
                         .currentStage(2)
                         .message(translatable("core.oauth.refreshAccount.refreshingToken.text"))
                         .build()
@@ -189,13 +188,18 @@ public class MicrosoftAccount extends AbstractAccount {
             }
             // TODO Fork internal task for fetching AccessToken
             {
+                setState(TaskState.<Void>builder()
+                        .totalStage(5)
+                        .currentStage(3)
+                        .message(translatable("core.oauth.refreshAccount.refreshingBase.text"))
+                        .build()
+                );
                 MicrosoftAccount accountNew = apiAccessor.createLoginInternalTask(
                                 DeviceCodeConverterModel.builder()
                                         .model(model)
                                         .isDevice(true)
                                         .build())
                         .bindTo(this)
-                        .fork()
                         .get()
                         .orElseThrow(OAuthXBLNotFoundException::new);
                 setAccessToken(accountNew.getAccessToken());
@@ -203,14 +207,13 @@ public class MicrosoftAccount extends AbstractAccount {
             // TODO Update profile
             {
                 setState(TaskState.<Void>builder()
-                        .totalStage(4)
-                        .currentStage(3)
+                        .totalStage(5)
+                        .currentStage(4)
                         .message(translatable("core.oauth.refreshAccount.updateProfile.text"))
                         .build()
                 );
                 fetchProfileAsync()
                         .bindTo(this)
-                        .fork()
                         .get();
             }
         }

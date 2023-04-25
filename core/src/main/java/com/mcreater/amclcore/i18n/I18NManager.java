@@ -24,7 +24,7 @@ public class I18NManager {
                     locale -> locale,
                     I18NManager::parseI18N
             ));
-    private static final Map<Locale, Map<String, String>> transitionMap = new HashMap<>();
+    private static final Map<Locale, Map<String, Object>> transitionMap = new HashMap<>();
     private static final Map<Locale, List<String>> transitionFiles = new HashMap<>();
     private static final List<Text> packNames = new Vector<>();
 
@@ -64,7 +64,7 @@ public class I18NManager {
                 .map(e -> new ImmutablePair<>(e.getKey().replace("_", "-"), e.getValue()))
                 .forEach(e -> transitionFiles.get(Locale.forLanguageTag(e.getKey())).add(e.getValue()));
         transitionFiles.forEach((locale, strings) -> transitionMap.put(locale, strings.stream()
-                .map((Function<String, Map<String, String>>) s -> {
+                .map((Function<String, Map<String, Object>>) s -> {
                     try {
                         return GSON_PARSER.fromJson(
                                 IOStreamUtil.newReader(
@@ -74,7 +74,7 @@ public class I18NManager {
                                 ), TypeToken.getParameterized(
                                         Map.class,
                                         String.class,
-                                        String.class).getType()
+                                        Object.class).getType()
                         );
                     } catch (Exception e) {
                         ExceptionReporter.report(e, ExceptionReporter.ExceptionType.IO);
@@ -112,7 +112,9 @@ public class I18NManager {
 
     private static String getNotNull(Locale locale, String key, Object... args) throws NullPointerException {
         try {
-            return requireNonNull(String.format(transitionMap.get(locale).get(key), args));
+            Object data = transitionMap.get(locale).get(key);
+            if (data instanceof String) return requireNonNull(String.format(data.toString(), args));
+            else return "<map parse not implemented>";
         } catch (MissingFormatArgumentException | IllegalFormatConversionException e) {
             return "Format error: " + requireNonNull(transitionMap.get(locale).get(key));
         }

@@ -128,7 +128,8 @@ public abstract class AbstractTask<T> extends RecursiveTask<Optional<T>> {
     }
 
     private void addSubTask(AbstractTask<?> task) throws OperationNotSupportedException {
-        if (task.isRoot) throw new OperationNotSupportedException("this.isRoot == true!");
+        if (task == this) throw new OperationNotSupportedException("task == this!");
+        if (task.isRoot || task.bindTasks.size() > 0) throw new OperationNotSupportedException("this.isRoot == true!");
         if (task.topTask != null) throw new OperationNotSupportedException("task.topTask != null!");
         if (this.topTask != null) {
             this.topTask.addSubTask(task);
@@ -140,12 +141,17 @@ public abstract class AbstractTask<T> extends RecursiveTask<Optional<T>> {
     }
 
     public AbstractTask<T> bindTo(AbstractTask<?> task) {
+        fork();
         try {
-            task.addSubTask(this);
+            if (task != null) task.addSubTask(this);
         } catch (Exception e) {
             ExceptionReporter.report(e, ExceptionReporter.ExceptionType.UNKNOWN);
         }
         return this;
+    }
+
+    public AbstractTask<T> bind() {
+        return bindTo(null);
     }
 
     public List<AbstractTask<?>> getSubTasks() {
@@ -171,4 +177,6 @@ public abstract class AbstractTask<T> extends RecursiveTask<Optional<T>> {
         super.completeExceptionally(ex);
         stateExc(fetchTaskState(), ex);
     }
+
+
 }

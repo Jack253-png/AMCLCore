@@ -36,6 +36,7 @@ import java.util.stream.Collectors;
 
 import static com.mcreater.amclcore.i18n.I18NManager.translatable;
 import static com.mcreater.amclcore.util.JsonUtil.GSON_PARSER;
+import static java.util.Objects.requireNonNull;
 
 public class HttpClientWrapper {
     private static final Logger EVENT_LOGGER = LogManager.getLogger(HttpClientWrapper.class);
@@ -236,22 +237,22 @@ public class HttpClientWrapper {
         while (true) {
             req = client.execute(request);
             if (req.getStatusLine().getStatusCode() > 399) {
-                EVENT_LOGGER.info(translatable("core.net.execute.status.text", req.getStatusLine().getStatusCode(), current).getText());
+                EVENT_LOGGER.info(translatable("core.net.execute.status.text", req.getStatusLine().getStatusCode(), current - 1).getText());
                 if (current >= retry) {
                     if (catchHttpError) throw new RequestException(req.getStatusLine(), req.getEntity());
                     else return req.getEntity();
                 } else current++;
             } else break;
         }
-        EVENT_LOGGER.info(translatable("core.net.execute.status.text", req.getStatusLine().getStatusCode(), current).getText());
-        EVENT_LOGGER.info(translatable("core.net.execute.finish.text", req.getStatusLine().getStatusCode(), current).getText());
+        EVENT_LOGGER.info(translatable("core.net.execute.status.text", req.getStatusLine().getStatusCode(), current - 1).getText());
+        EVENT_LOGGER.info(translatable("core.net.execute.finish.text", req.getStatusLine().getStatusCode(), current - 1).getText());
         return req.getEntity();
     }
 
-    public <T> T sendAndReadJson(Class<T> clazz) throws URISyntaxException, IOException {
+    public <T> T sendAndReadJson(Class<T> clazz) throws URISyntaxException, IOException, NullPointerException {
         if (clazz.getAnnotation(RequestModel.class) == null)
             throw new UnsupportedOperationException("class " + clazz + " not an RequestModel class");
-        return GSON_PARSER.fromJson(IOStreamUtil.readStream(send().getContent()), clazz);
+        return requireNonNull(GSON_PARSER.fromJson(IOStreamUtil.readStream(send().getContent()), clazz));
     }
 
     private HttpRequestBase createUriRequest(Method method) {

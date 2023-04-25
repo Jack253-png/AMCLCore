@@ -24,6 +24,7 @@ public class Main {
         // TODO test offline
 //        HttpClientWrapper.setProxy(new HttpHost(InetAddress.getLocalHost()));
         ConcurrentExecutors.OAUTH_LOGIN_EXECUTOR.getWrappedListeners().add(logger::info);
+
         Optional<MicrosoftAccount> account = ConcurrentExecutors.OAUTH_LOGIN_EXECUTOR.submit(
                 OAuth.MICROSOFT.deviceCodeLoginAsync(OAuth.defaultDevHandler)
                         .addStateConsumer(state -> AbstractTask.printTextData(state, logger::info))

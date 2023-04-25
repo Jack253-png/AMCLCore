@@ -149,15 +149,15 @@ public enum OAuth {
      * @throws URISyntaxException If the device code api url {@link OAuth#deviceCodeUrl} malformed<br>如果设备码API URL {@link OAuth#deviceCodeUrl} 错误
      * @throws IOException        If an I/O exception occurred<br>如果一个IO错误发生
      */
-    private DeviceCodeModel fetchDeviceToken(Consumer<DeviceCodeModel> requestHandler) throws URISyntaxException, IOException {
-        DeviceCodeModel model = requireNonNull(HttpClientWrapper.create(HttpClientWrapper.Method.GET)
+    private DeviceCodeModel fetchDeviceToken(Consumer<DeviceCodeModel> requestHandler) throws URISyntaxException, IOException, NullPointerException {
+        DeviceCodeModel model = HttpClientWrapper.create(HttpClientWrapper.Method.GET)
                 .uri(deviceCodeUrl)
                 .uriParam("client_id", createClientID())
                 .uriParam("scope", buildScopeString(" ", "XboxLive.signin", "offline_access"))
                 .timeout(5000)
                 .reqTimeout(5000)
                 .retry(5)
-                .sendAndReadJson(DeviceCodeModel.class));
+                .sendAndReadJson(DeviceCodeModel.class);
 
         Optional.of(requestHandler).ifPresent(c -> c.accept(model));
         return model;
@@ -172,8 +172,8 @@ public enum OAuth {
      * @throws URISyntaxException If the device check api url is malformed<br>如果设备码检查API URL 错误
      * @throws IOException        If an I/O exception occurred<br>如果一个IO错误发生
      */
-    private TokenResponseModel checkToken(String deviceCode) throws URISyntaxException, IOException {
-        return requireNonNull(HttpClientWrapper.create(HttpClientWrapper.Method.POST)
+    private TokenResponseModel checkToken(String deviceCode) throws URISyntaxException, IOException, NullPointerException {
+        return HttpClientWrapper.create(HttpClientWrapper.Method.POST)
                 .uri(tokenUrl)
                 .entityEncodedUrl(
                         createPair("grant_type", buildScopeString(":", "urn", "ietf", "params", "oauth", "grant-type", "device_code")),
@@ -182,7 +182,7 @@ public enum OAuth {
                 )
                 .timeout(5000)
                 .reqTimeout(5000)
-                .sendAndReadJson(TokenResponseModel.class));
+                .sendAndReadJson(TokenResponseModel.class);
     }
 
     /**
@@ -195,8 +195,8 @@ public enum OAuth {
      * @throws IOException        If an I/O exception occurred<br>如果一个IO错误发生
      */
     @Deprecated
-    private DeviceCodeConverterModel acquireAccessToken(String url) throws URISyntaxException, IOException {
-        AuthCodeModel model = requireNonNull(HttpClientWrapper.create(HttpClientWrapper.Method.GET)
+    private DeviceCodeConverterModel acquireAccessToken(String url) throws URISyntaxException, IOException, NullPointerException {
+        AuthCodeModel model = HttpClientWrapper.create(HttpClientWrapper.Method.GET)
                 .uri(authTokenUrl)
                 .entityEncodedUrl(
                         createPair("client_id", minecraftAzureApplicationId),
@@ -208,7 +208,7 @@ public enum OAuth {
                 .timeout(5000)
                 .reqTimeout(5000)
                 .retry(5)
-                .sendAndReadJson(AuthCodeModel.class));
+                .sendAndReadJson(AuthCodeModel.class);
 
         return DeviceCodeConverterModel.builder()
                 .model(
@@ -288,8 +288,8 @@ public enum OAuth {
      * @throws URISyntaxException If the xbox live api url is malformed<br>如果 XBox Live API 的 URL 错误
      * @throws IOException        If an I/O Exception occurred<br>如果一个IO错误发生
      */
-    private XBLAccountModel fetchXBLUser(DeviceCodeConverterModel parsedDeviceCode) throws IOException, URISyntaxException {
-        XBLTokenRequestModel requestModel = requireNonNull(HttpClientWrapper.create(HttpClientWrapper.Method.POST)
+    private XBLAccountModel fetchXBLUser(DeviceCodeConverterModel parsedDeviceCode) throws IOException, URISyntaxException, NullPointerException {
+        XBLTokenRequestModel requestModel = HttpClientWrapper.create(HttpClientWrapper.Method.POST)
                 .uri(xblTokenUrl)
                 .entityJson(
                         XBLTokenResponseModel.builder()
@@ -304,7 +304,7 @@ public enum OAuth {
                                 .TokenType("JWT")
                 )
                 .retry(5)
-                .sendAndReadJson(XBLTokenRequestModel.class));
+                .sendAndReadJson(XBLTokenRequestModel.class);
 
         return XBLAccountModel.builder()
                 .token(requestModel.getToken())
@@ -326,8 +326,8 @@ public enum OAuth {
      * @throws URISyntaxException If the XSTS api url is malformed<br>如果 XSTS API 的 URL 错误
      * @throws IOException        If an I/O Exception occurred<br>如果一个IO错误发生
      */
-    private XBLAccountModel fetchXSTSUser(XBLAccountModel xblUser) throws IOException, URISyntaxException {
-        XBLTokenRequestModel requestModel = requireNonNull(HttpClientWrapper.create(HttpClientWrapper.Method.POST)
+    private XBLAccountModel fetchXSTSUser(XBLAccountModel xblUser) throws IOException, URISyntaxException, NullPointerException {
+        XBLTokenRequestModel requestModel = HttpClientWrapper.create(HttpClientWrapper.Method.POST)
                 .uri(xstsTokenUrl)
                 .entityJson(XSTSTokenResponseModel.builder()
                         .Properties(
@@ -341,7 +341,7 @@ public enum OAuth {
                         .build()
                 )
                 .retry(5)
-                .sendAndReadJson(XBLTokenRequestModel.class));
+                .sendAndReadJson(XBLTokenRequestModel.class);
 
         String userHash = requestModel.getDisplayClaims().getXui().stream()
                 .map(XBLTokenRequestModel.XBLTokenUserHashModel::getUhs)
@@ -364,8 +364,8 @@ public enum OAuth {
      * @throws URISyntaxException If the minecraft login api url is malformed<br>如果 Minecraft 登录API 的 URL 错误
      * @throws IOException        If an I/O Exception occurred<br>如果一个IO错误发生
      */
-    private MinecraftRequestModel fetchMinecraftUser(XBLAccountModel xblUser) throws IOException, URISyntaxException {
-        return requireNonNull(HttpClientWrapper.create(HttpClientWrapper.Method.POST)
+    private MinecraftRequestModel fetchMinecraftUser(XBLAccountModel xblUser) throws IOException, URISyntaxException, NullPointerException {
+        return HttpClientWrapper.create(HttpClientWrapper.Method.POST)
                 .uri(minecraftLoginUrl)
                 .entityJson(MinecraftResponseModel.builder()
                         .identityToken(
@@ -376,7 +376,7 @@ public enum OAuth {
                         )
                         .build())
                 .retry(5)
-                .sendAndReadJson(MinecraftRequestModel.class));
+                .sendAndReadJson(MinecraftRequestModel.class);
     }
 
     /**
@@ -388,12 +388,12 @@ public enum OAuth {
      * @throws URISyntaxException If the minecraft store api url is malformed<br>如果 Minecraft 商店API 的 URL 错误
      * @throws IOException        If an I/O Exception occurred<br>如果一个IO错误发生
      */
-    private boolean checkMinecraftStore(MinecraftRequestModel user) throws URISyntaxException, IOException {
-        MinecraftProductRequestModel requestModel = requireNonNull(HttpClientWrapper.create(HttpClientWrapper.Method.GET)
+    private boolean checkMinecraftStore(MinecraftRequestModel user) throws URISyntaxException, IOException, NullPointerException {
+        MinecraftProductRequestModel requestModel = HttpClientWrapper.create(HttpClientWrapper.Method.GET)
                 .uri(minecraftStoreUrl)
                 .header("Authorization", String.format("%s %s", user.getTokenType(), user.getAccessToken()))
                 .retry(5)
-                .sendAndReadJson(MinecraftProductRequestModel.class));
+                .sendAndReadJson(MinecraftProductRequestModel.class);
 
         return requestModel.getItems().stream()
                 .filter(m -> "game_minecraft".equals(m.getName()) || "product_minecraft".equals(m.getName()))
@@ -453,7 +453,6 @@ public enum OAuth {
                         .build());
                 return new OAuthLoginInternalTask(deviceCode)
                         .bindTo(this)
-                        .fork()
                         .get()
                         .orElseThrow(OAuthXBLNotFoundException::new);
             }
@@ -514,8 +513,7 @@ public enum OAuth {
             }
 
             account.fetchProfileAsync()
-                    .bindTo(getTopTask())
-                    .fork()
+                    .bindTo(this)
                     .get();
 
             return account;
