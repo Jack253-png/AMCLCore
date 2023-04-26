@@ -114,8 +114,8 @@ public class I18NManager {
         try {
             Object data = transitionMap.get(locale).get(key);
             if (data instanceof String) return requireNonNull(String.format(data.toString(), args));
-            else return "<map parse not implemented>";
-        } catch (MissingFormatArgumentException | IllegalFormatConversionException e) {
+            else throw new ClassCastException();
+        } catch (IllegalFormatException | ClassCastException e) {
             return "Format error: " + requireNonNull(transitionMap.get(locale).get(key));
         }
     }

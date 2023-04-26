@@ -11,6 +11,8 @@ import com.mcreater.amclcore.exceptions.oauth.OAuthXBLNotFoundException;
 import com.mcreater.amclcore.i18n.Text;
 import com.mcreater.amclcore.model.oauth.*;
 import com.mcreater.amclcore.util.HttpClientWrapper;
+import lombok.AccessLevel;
+import lombok.AllArgsConstructor;
 import org.jetbrains.annotations.NotNull;
 
 import java.io.IOException;
@@ -415,13 +417,9 @@ public enum OAuth {
         return readProperty(oauthClientIdOverridePropertyName, oauthDefaultClientId);
     }
 
+    @AllArgsConstructor(access = AccessLevel.PRIVATE)
     public class OAuthLoginTask extends AbstractTask<MicrosoftAccount> {
         private final Consumer<DeviceCodeModel> requestHandler;
-
-        private OAuthLoginTask(@NotNull Consumer<DeviceCodeModel> requestHandler) {
-            isRoot = true;
-            this.requestHandler = requireNonNull(requestHandler);
-        }
 
         protected MicrosoftAccount call() throws Exception {
             DeviceCodeModel deviceCodeRaw;

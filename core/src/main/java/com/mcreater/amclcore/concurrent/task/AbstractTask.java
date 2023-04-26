@@ -7,6 +7,7 @@ import com.mcreater.amclcore.util.sets.ImmutableDoubleValueSet;
 import lombok.Getter;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
+import org.jetbrains.annotations.Nullable;
 
 import javax.naming.OperationNotSupportedException;
 import java.util.Collections;
@@ -36,7 +37,6 @@ public abstract class AbstractTask<T> extends RecursiveTask<Optional<T>> {
     private final List<AbstractTask<?>> bindTasks = new Vector<>();
     @Getter
     private AbstractTask<?> topTask;
-    protected boolean isRoot = false;
 
     public AbstractTask<T> addStateConsumers(List<Consumer<TaskState<T>>> c) {
         c.forEach(this::addStateConsumer);
@@ -129,24 +129,21 @@ public abstract class AbstractTask<T> extends RecursiveTask<Optional<T>> {
 
     private void addSubTask(AbstractTask<?> task) throws OperationNotSupportedException {
         if (task == this) throw new OperationNotSupportedException("task == this!");
-        if (task.isRoot || task.bindTasks.size() > 0) throw new OperationNotSupportedException("this.isRoot == true!");
-        if (task.topTask != null) throw new OperationNotSupportedException("task.topTask != null!");
-        if (this.topTask != null) {
-            this.topTask.addSubTask(task);
-            return;
-        }
+        if (task == null) throw new NullPointerException("task == null!");
         bindTasks.add(task);
         task.topTask = this;
         INTERFACE_EVENT_EXECUTORS.get(this).execute(() -> getBindConsumers().forEach(c -> c.accept(task)));
     }
 
-    public AbstractTask<T> bindTo(AbstractTask<?> task) {
+    public AbstractTask<T> bindTo(@Nullable AbstractTask<?> task) {
         fork();
-        try {
-            if (task != null) task.addSubTask(this);
-        } catch (Exception e) {
-            ExceptionReporter.report(e, ExceptionReporter.ExceptionType.UNKNOWN);
-        }
+        Optional.ofNullable(task).ifPresent(t -> {
+            try {
+                t.addSubTask(AbstractTask.this);
+            } catch (Exception e) {
+                ExceptionReporter.report(e, ExceptionReporter.ExceptionType.UNKNOWN);
+            }
+        });
         return this;
     }
 
@@ -177,6 +174,4 @@ public abstract class AbstractTask<T> extends RecursiveTask<Optional<T>> {
         super.completeExceptionally(ex);
         stateExc(fetchTaskState(), ex);
     }
-
-
 }

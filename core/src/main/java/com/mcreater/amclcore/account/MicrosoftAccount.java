@@ -11,6 +11,9 @@ import com.mcreater.amclcore.model.oauth.MinecraftRequestModel;
 import com.mcreater.amclcore.model.oauth.TokenResponseModel;
 import com.mcreater.amclcore.model.oauth.session.MinecraftProfileRequestModel;
 import com.mcreater.amclcore.util.HttpClientWrapper;
+import lombok.AccessLevel;
+import lombok.AllArgsConstructor;
+import lombok.NoArgsConstructor;
 import lombok.Setter;
 import org.apache.commons.lang3.tuple.ImmutablePair;
 import org.jetbrains.annotations.NotNull;
@@ -133,10 +136,8 @@ public class MicrosoftAccount extends AbstractAccount {
                 .orElse(null);
     }
 
+    @AllArgsConstructor(access = AccessLevel.PRIVATE)
     public class FetchProfileTask extends AbstractAction {
-        private FetchProfileTask() {
-        }
-
         protected Text getTaskName() {
             return translatable("core.oauth.task.fetchProfile.name");
         }
@@ -150,10 +151,8 @@ public class MicrosoftAccount extends AbstractAccount {
         }
     }
 
+    @NoArgsConstructor(access = AccessLevel.PRIVATE)
     public class RefreshAccountTask extends AbstractAction {
-        private RefreshAccountTask() {
-            isRoot = true;
-        }
         protected void execute() throws Exception {
             TokenResponseModel model;
             // TODO Refresh with RefreshToken
