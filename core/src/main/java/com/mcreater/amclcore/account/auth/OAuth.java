@@ -79,6 +79,18 @@ public enum OAuth {
             public String getMinecraftCapeModifyUrl() {
                 return minecraftCapeModifyUrl;
             }
+
+            public String getMinecraftNameCheckUrl() {
+                return minecraftNameCheckUrl;
+            }
+
+            public String getMinecraftNameChangeUrl() {
+                return minecraftNameChangeUrl;
+            }
+
+            public String getMinecraftNameChangeStateUrl() {
+                return minecraftNameChangeStateUrl;
+            }
         });
     }
     private final String deviceCodeUrl;
@@ -94,7 +106,8 @@ public enum OAuth {
      * Minecraft azure login url<br>
      * Minecraft azure 登录URL
      */
-    private static final String minecraftAzureLoginUrl = "https://login.live.com/oauth20_authorize.srf?client_id=00000000402b5328&response_type=code&scope=service%3A%3Auser.auth.xboxlive.com%3A%3AMBI_SSL&redirect_uri=https%3A%2F%2Flogin.live.com%2Foauth20_desktop.srf";
+    @Deprecated
+    public static final String minecraftAzureLoginUrl = "https://login.live.com/oauth20_authorize.srf?client_id=00000000402b5328&response_type=code&scope=service%3A%3Auser.auth.xboxlive.com%3A%3AMBI_SSL&redirect_uri=https%3A%2F%2Flogin.live.com%2Foauth20_desktop.srf";
     /**
      * Azure direct login url pattern<br>
      * Azure 直接登录URL模板
@@ -141,6 +154,21 @@ public enum OAuth {
      * Minecraft 披风修改 URL
      */
     private static final String minecraftCapeModifyUrl = "api.minecraftservices.com/minecraft/profile/capes/active";
+    /**
+     * the profile name check url for Minecraft<br>
+     * Minecraft 档案名检查 URL
+     */
+    private static final String minecraftNameCheckUrl = "api.minecraftservices.com/minecraft/profile/name/%s/available";
+    /**
+     * the profile name change url for Minecraft<br>
+     * Minecraft 档案名更改 URL
+     */
+    private static final String minecraftNameChangeUrl = "api.minecraftservices.com/minecraft/profile/name/%s";
+    /**
+     * the profile name change state url for Minecraft<br>
+     * Minecraft 档案名更改状态 URL
+     */
+    private static final String minecraftNameChangeStateUrl = "api.minecraftservices.com/minecraft/profile/namechange";
 
     /**
      * Fetch device code model for auth<br>
@@ -240,10 +268,9 @@ public enum OAuth {
      * 使用 {@link OAuth#fetchDeviceToken(Consumer)} 的结果检测用户登录
      *
      * @return the processed device code<br>被处理过的设备代码
-     * @throws URISyntaxException If the xbox live api url is malformed<br>如果XBox Live API 的 URL 错误
-     * @throws IOException        If an I/O Exception occurred<br>如果一个IO错误发生
+     * @throws IOException If an I/O Exception occurred<br>如果一个IO错误发生
      */
-    private DeviceCodeConverterModel fetchUserLoginToken(DeviceCodeModel model) throws URISyntaxException, IOException {
+    private DeviceCodeConverterModel fetchUserLoginToken(DeviceCodeModel model) throws IOException {
         long startTime = System.nanoTime();
         int interval = model.getInterval();
 

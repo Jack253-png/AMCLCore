@@ -2,6 +2,7 @@ package com.mcreater.amclcore.account;
 
 import com.mcreater.amclcore.concurrent.task.AbstractAction;
 import com.mcreater.amclcore.concurrent.task.AbstractTask;
+import com.mcreater.amclcore.model.oauth.session.MinecraftNameChangedTimeRequestModel;
 import lombok.Getter;
 import org.jetbrains.annotations.NotNull;
 
@@ -69,4 +70,38 @@ public abstract class AbstractAccount {
      * @return the created task<br>被创建的任务
      */
     public abstract AbstractAction disableAccountCapeAsync();
+    // NOT IMPLEMENTED
+    // public abstract AbstractAction enableAccountCapeAsync();
+
+    /**
+     * create check account name changeable task<br>
+     * 创建检查账户名是否可以改变的任务
+     *
+     * @return the created task<br>被创建的任务
+     */
+    public abstract AbstractTask<Boolean> checkAccountNameChangeableAsync(@NotNull String newName);
+
+    /**
+     * create change account name task<br>
+     * 创建更改账户名任务
+     *
+     * @return the created task<br>被创建的任务
+     */
+    public abstract AbstractAction changeAccountNameAsync(@NotNull String newName);
+
+    /**
+     * create check account name changed time task<br>
+     * 创建检查账户名改变时间的任务
+     *
+     * @return the created task<br>被创建的任务
+     */
+    public abstract AbstractTask<MinecraftNameChangedTimeRequestModel> checkAccountNameChangedTimeAsync();
+
+    /**
+     * check account name is allowed<br>
+     * 检查账户名是否允许
+     *
+     * @return the check result<br>检查结果
+     */
+    public abstract boolean accountNameAllowed(String name);
 }

@@ -3,6 +3,7 @@ package com.mcreater.amclcore.util;
 import com.mcreater.amclcore.annotations.RequestModel;
 import com.mcreater.amclcore.exceptions.io.RequestException;
 import lombok.Builder;
+import lombok.Data;
 import lombok.Getter;
 import lombok.Setter;
 import org.apache.commons.lang3.tuple.Pair;
@@ -10,7 +11,6 @@ import org.apache.http.HttpEntity;
 import org.apache.http.HttpHost;
 import org.apache.http.HttpResponse;
 import org.apache.http.NameValuePair;
-import org.apache.http.client.HttpClient;
 import org.apache.http.client.config.RequestConfig;
 import org.apache.http.client.methods.*;
 import org.apache.http.client.utils.URIBuilder;
@@ -36,6 +36,7 @@ import java.util.stream.Collectors;
 
 import static com.mcreater.amclcore.i18n.I18NManager.translatable;
 import static com.mcreater.amclcore.util.JsonUtil.GSON_PARSER;
+import static com.mcreater.amclcore.util.concurrent.ConcurrentUtil.sleepTime;
 import static java.util.Objects.requireNonNull;
 
 public class HttpClientWrapper {
@@ -68,8 +69,6 @@ public class HttpClientWrapper {
             return scheme;
         }
     }
-
-    private final HttpClient client;
     private final HttpRequestBase request;
     private final RequestConfig.Builder config = RequestConfig.custom();
     private final URIBuilder requestURI = new URIBuilder().setScheme("https");
@@ -79,7 +78,6 @@ public class HttpClientWrapper {
 
     private HttpClientWrapper(Method method) {
         this.method = method;
-        client = HttpClients.createDefault();
         request = createUriRequest(method);
         config.setProxy(proxy);
     }
@@ -235,13 +233,14 @@ public class HttpClientWrapper {
         HttpResponse req;
         EVENT_LOGGER.info(translatable("core.net.execute.pre.text", requestURI.build(), method).getText());
         while (true) {
-            req = client.execute(request);
+            req = HttpClients.createDefault().execute(request);
             if (req.getStatusLine().getStatusCode() > 399) {
                 EVENT_LOGGER.info(translatable("core.net.execute.status.text", req.getStatusLine().getStatusCode(), current - 1).getText());
                 if (current >= retry) {
                     if (catchHttpError) throw new RequestException(req.getStatusLine(), req.getEntity());
                     else return req.getEntity();
                 } else current++;
+                sleepTime(500);
             } else break;
         }
         EVENT_LOGGER.info(translatable("core.net.execute.status.text", req.getStatusLine().getStatusCode(), current - 1).getText());
@@ -279,6 +278,7 @@ public class HttpClientWrapper {
     }
 
     @Builder
+    @Data
     public static class HttpStringEntityWrapper {
         @Builder.Default
         private String content = "";

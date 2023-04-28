@@ -17,6 +17,13 @@ public class MinecraftProfileRequestModel {
     private List<MinecraftProfileSkinModel> skins;
     private List<MinecraftProfileCapeModel> capes;
     private Map<Object, Object> profileActions;
+    // if exception
+    private String path;
+    private String errorType;
+    private String error;
+    private MinecraftNameChangeableRequestModel details;
+    private String errorMessage;
+    private String developerMessage;
 
     @Data
     @Builder
