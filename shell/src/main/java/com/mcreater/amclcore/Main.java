@@ -25,11 +25,11 @@ public class Main {
 //        HttpClientWrapper.setProxy(new HttpHost(InetAddress.getLocalHost()));
         ConcurrentExecutors.OAUTH_LOGIN_EXECUTOR.getWrappedListeners().add(logger::info);
 
-        Optional<MicrosoftAccount> account = ConcurrentExecutors.OAUTH_LOGIN_EXECUTOR.submit(
-                OAuth.MICROSOFT.deviceCodeLoginAsync(OAuth.defaultDevHandler)
-                        .addStateConsumer(state -> AbstractTask.printTextData(state, logger::info))
-                        .addBindConsumer(t -> t.addStateConsumer(state -> AbstractTask.printTextData(state, logger::info)))
-        ).get();
+        Optional<MicrosoftAccount> account = OAuth.MICROSOFT.deviceCodeLoginAsync(OAuth.defaultDevHandler)
+                .addStateConsumer(state -> AbstractTask.printTextData(state, logger::info))
+                .addBindConsumer(t -> t.addStateConsumer(state -> AbstractTask.printTextData(state, logger::info)))
+                .submitTo(ConcurrentExecutors.OAUTH_LOGIN_EXECUTOR)
+                .get();
 
         account.ifPresent(a -> {
             logger.info(a.getSkins());

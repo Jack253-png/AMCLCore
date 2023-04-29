@@ -15,6 +15,7 @@ import com.mcreater.amclcore.model.oauth.session.MinecraftProfileRequestModel;
 import com.mcreater.amclcore.util.HttpClientWrapper;
 import lombok.AccessLevel;
 import lombok.AllArgsConstructor;
+import lombok.Getter;
 import lombok.NoArgsConstructor;
 import org.apache.commons.lang3.tuple.ImmutablePair;
 import org.jetbrains.annotations.NotNull;
@@ -91,23 +92,36 @@ public class MicrosoftAccount extends AbstractAccount {
         if (MicrosoftAccount.apiAccessor == Accessor.INSTANCE) MicrosoftAccount.apiAccessor = apiAccessor;
     }
 
+    @Getter
     private String refreshToken;
+    @Getter
     private final String tokenType;
     private MinecraftProfileRequestModel profile;
 
-    private MicrosoftAccount(@NotNull MinecraftRequestModel minecraftUser, String refreshToken) {
+    private MicrosoftAccount(@NotNull MinecraftRequestModel minecraftUser, @NotNull String refreshToken) {
         super(minecraftUser.getAccessToken());
         this.refreshToken = refreshToken;
         this.tokenType = minecraftUser.getTokenType();
+    }
+
+    private MicrosoftAccount(@NotNull String accessToken, @NotNull String refreshToken, @NotNull String tokenType) {
+        super(accessToken);
+        this.refreshToken = refreshToken;
+        this.tokenType = tokenType;
     }
 
     public static MicrosoftAccount create(@NotNull MinecraftRequestModel minecraftUser, @NotNull DeviceCodeConverterModel deviceCode) {
         return new MicrosoftAccount(minecraftUser, deviceCode.getModel().getRefreshToken());
     }
 
+    public static MicrosoftAccount create(@NotNull String accessToken, @NotNull String refreshToken, @NotNull String tokenType) {
+        return new MicrosoftAccount(accessToken, refreshToken, tokenType);
+    }
+
     /**
      * create account refresh task<br>
      * 创建账户刷新任务
+     *
      * @return the created task<br>被创建的任务
      */
     public AbstractAction refreshAsync() {

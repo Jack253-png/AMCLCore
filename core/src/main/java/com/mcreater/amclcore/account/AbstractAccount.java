@@ -104,4 +104,8 @@ public abstract class AbstractAccount {
      * @return the check result<br>检查结果
      */
     public abstract boolean accountNameAllowed(String name);
+
+    public final MicrosoftAccount toMicrosoftAccount() {
+        return (MicrosoftAccount) this;
+    }
 }

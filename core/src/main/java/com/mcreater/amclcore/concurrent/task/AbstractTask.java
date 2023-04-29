@@ -14,6 +14,7 @@ import java.util.Collections;
 import java.util.List;
 import java.util.Optional;
 import java.util.Vector;
+import java.util.concurrent.ForkJoinPool;
 import java.util.concurrent.RecursiveTask;
 import java.util.function.Consumer;
 
@@ -173,5 +174,10 @@ public abstract class AbstractTask<T> extends RecursiveTask<Optional<T>> {
     public void completeExceptionally(Throwable ex) {
         super.completeExceptionally(ex);
         stateExc(fetchTaskState(), ex);
+    }
+
+    public AbstractTask<T> submitTo(ForkJoinPool pool) {
+        pool.execute(this);
+        return this;
     }
 }

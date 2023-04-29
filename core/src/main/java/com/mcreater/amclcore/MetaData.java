@@ -1,5 +1,9 @@
 package com.mcreater.amclcore;
 
+import lombok.AccessLevel;
+import lombok.NoArgsConstructor;
+
+@NoArgsConstructor(access = AccessLevel.PRIVATE)
 public class MetaData {
     /**
      * AMCL/AMCLCore azure application id
@@ -11,7 +15,4 @@ public class MetaData {
      * 客户端ID 覆盖, 使用命令行 {@code -Damclcore.oauth.clientid.override=你的客户端ID}
      */
     public static final String oauthClientIdOverridePropertyName = "amclcore.oauth.clientid.override";
-
-    private MetaData() {
-    }
 }
