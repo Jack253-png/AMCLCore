@@ -24,7 +24,7 @@
   "core.swing.api.task.clipboard.name": "clipboard copy %s task",
   "core.swing.api.task.browser.name": "open browser url %s task",
   "core.concurrent.base.event.finish.name": "Task %s finished",
-  "core.concurrent.base.event.exception.text": "Exception %s occurred",
+  "core.concurrent.base.event.exception.text": "An exception %s occurred",
   "core.net.execute.pre.text": "Requesting url %s, using method %s...",
   "core.net.execute.status.text": "Return code %s, retried for %d times",
   "core.net.execute.finish.text": "Request finished",
@@ -32,5 +32,7 @@
   "core.exceptions.oauth.timeout": "OAuth login timeout",
   "core.exceptions.oauth.user_hash": "User hash validation failed",
   "core.exceptions.oauth.fail": "OAuth login failed",
-  "core.exceptions.oauth.store_check": "Minecraft store check not passed, this Microsoft account haven't bought Minecraft yet"
+  "core.exceptions.oauth.store_check": "Minecraft store check not passed, this Microsoft account haven't bought Minecraft yet",
+  "core.exceptions.oauth.name_conflict": "Profile name change not allowed because the specified profile name is not vaild, or have been used",
+  "core.exceptions.oauth.name_change_not_allowed": "Profile name change not allowed because time not reached, last change: %s, next change allowed: %s, time left: %s days"
 }

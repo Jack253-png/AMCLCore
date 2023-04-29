@@ -8,6 +8,7 @@ import com.mcreater.amclcore.account.AbstractAccount;
 import com.mcreater.amclcore.model.oauth.session.MinecraftNameChangeableRequestModel;
 import com.mcreater.amclcore.model.oauth.session.MinecraftProfileRequestModel;
 import com.mcreater.amclcore.util.adapters.*;
+import com.mcreater.amclcore.util.date.StandardDate;
 import org.apache.http.NameValuePair;
 import org.apache.http.message.BasicNameValuePair;
 
@@ -23,6 +24,7 @@ public class JsonUtil {
             .registerTypeAdapter(MinecraftProfileRequestModel.Variant.class, VariantAdapter.INSTANCE)
             .registerTypeAdapter(MinecraftNameChangeableRequestModel.State.class, NameStateAdapter.INSTANCE)
             .registerTypeHierarchyAdapter(AbstractAccount.class, AbstractAccountAdapter.INSTANCE)
+            .registerTypeAdapter(StandardDate.class, StandardDateAdapter.INSTANCE)
             .setLenient()
             .create();
 

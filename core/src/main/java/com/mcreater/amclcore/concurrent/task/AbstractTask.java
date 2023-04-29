@@ -98,7 +98,7 @@ public abstract class AbstractTask<T> extends RecursiveTask<Optional<T>> {
 
     private void stateExc(ImmutableDoubleValueSet<Integer, Integer> lastState, Throwable e) {
         setState(TaskState.<T>builder()
-                .message(translatable("core.concurrent.base.event.exception.text", e))
+                .message(translatable("core.concurrent.base.event.exception.text", e.getClass().getName()))
                 .throwable(e)
                 .totalStage(lastState.getValue1())
                 .currentStage(lastState.getValue2())

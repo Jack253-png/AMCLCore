@@ -1,6 +1,7 @@
 package com.mcreater.amclcore.model.oauth.session;
 
 import com.mcreater.amclcore.annotations.RequestModel;
+import com.mcreater.amclcore.util.date.StandardDate;
 import lombok.Builder;
 import lombok.Data;
 
@@ -8,7 +9,7 @@ import lombok.Data;
 @Builder
 @RequestModel
 public class MinecraftNameChangedTimeRequestModel {
-    private String changedAt;
-    private String createdAt;
+    private StandardDate changedAt;
+    private StandardDate createdAt;
     private boolean nameChangeAllowed;
 }

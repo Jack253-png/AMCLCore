@@ -4,15 +4,19 @@ import com.mcreater.amclcore.account.auth.OAuth;
 import com.mcreater.amclcore.concurrent.TaskState;
 import com.mcreater.amclcore.concurrent.task.AbstractAction;
 import com.mcreater.amclcore.concurrent.task.AbstractTask;
+import com.mcreater.amclcore.exceptions.oauth.OAuthMinecraftNameChangeNotAllowedException;
+import com.mcreater.amclcore.exceptions.oauth.OAuthMinecraftNameConflictException;
 import com.mcreater.amclcore.exceptions.oauth.OAuthXBLNotFoundException;
 import com.mcreater.amclcore.i18n.Text;
 import com.mcreater.amclcore.model.oauth.DeviceCodeConverterModel;
 import com.mcreater.amclcore.model.oauth.MinecraftRequestModel;
 import com.mcreater.amclcore.model.oauth.TokenResponseModel;
+import com.mcreater.amclcore.model.oauth.session.MinecraftEnableCapeResponseModel;
 import com.mcreater.amclcore.model.oauth.session.MinecraftNameChangeableRequestModel;
 import com.mcreater.amclcore.model.oauth.session.MinecraftNameChangedTimeRequestModel;
 import com.mcreater.amclcore.model.oauth.session.MinecraftProfileRequestModel;
 import com.mcreater.amclcore.util.HttpClientWrapper;
+import com.mcreater.amclcore.util.date.StandardDate;
 import lombok.AccessLevel;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
@@ -20,12 +24,16 @@ import lombok.NoArgsConstructor;
 import org.apache.commons.lang3.tuple.ImmutablePair;
 import org.jetbrains.annotations.NotNull;
 
+import java.time.ZoneId;
+import java.time.temporal.ChronoUnit;
 import java.util.*;
 import java.util.regex.Pattern;
 
 import static com.mcreater.amclcore.i18n.I18NManager.translatable;
 import static com.mcreater.amclcore.util.FunctionUtil.genSelfFunction;
 import static com.mcreater.amclcore.util.JsonUtil.createPair;
+import static com.mcreater.amclcore.util.date.DateUtil.dateBetween;
+import static com.mcreater.amclcore.util.date.DateUtil.toDate;
 
 /**
  * API Documentation<br>API 文档<br>
@@ -396,8 +404,21 @@ public class MicrosoftAccount extends AbstractAccount {
                     .get()
                     .orElse(false);
 
+            Optional<MinecraftNameChangedTimeRequestModel> model = checkAccountNameChangedTimeAsync()
+                    .bindTo(this)
+                    .get();
 
-            if (changeable) profile = HttpClientWrapper.create(HttpClientWrapper.Method.PUT)
+            Date curr = model.map(MinecraftNameChangedTimeRequestModel::getChangedAt).orElse(StandardDate.DEFAULT).convert();
+            Date next = Date.from(curr.toInstant().plus(30, ChronoUnit.DAYS).atZone(ZoneId.systemDefault()).toInstant());
+
+            if (!changeable) throw new OAuthMinecraftNameConflictException();
+            if (!model.map(MinecraftNameChangedTimeRequestModel::isNameChangeAllowed).orElse(false))
+                throw new OAuthMinecraftNameChangeNotAllowedException(
+                        toDate(curr),
+                        toDate(next),
+                        dateBetween(next, curr));
+
+            profile = HttpClientWrapper.create(HttpClientWrapper.Method.PUT)
                     .uri(String.format(apiAccessor.getMinecraftNameChangeUrl(), newName))
                     .header(tokenHeader())
                     .timeout(5000)
@@ -417,6 +438,9 @@ public class MicrosoftAccount extends AbstractAccount {
             return HttpClientWrapper.create(HttpClientWrapper.Method.GET)
                     .uri(apiAccessor.getMinecraftNameChangeStateUrl())
                     .header(tokenHeader())
+                    .timeout(5000)
+                    .reqTimeout(5000)
+                    .retry(5)
                     .sendAndReadJson(MinecraftNameChangedTimeRequestModel.class);
         }
 
@@ -430,7 +454,18 @@ public class MicrosoftAccount extends AbstractAccount {
         private String index;
 
         protected void execute() throws Exception {
-
+            profile = HttpClientWrapper.create(HttpClientWrapper.Method.PUT)
+                    .uri(apiAccessor.getMinecraftCapeModifyUrl())
+                    .header(tokenHeader())
+                    .entityJson(
+                            MinecraftEnableCapeResponseModel.builder()
+                                    .capeId(index)
+                                    .build()
+                    )
+                    .timeout(5000)
+                    .reqTimeout(5000)
+                    .retry(5)
+                    .sendAndReadJson(MinecraftProfileRequestModel.class);
         }
 
         protected Text getTaskName() {
