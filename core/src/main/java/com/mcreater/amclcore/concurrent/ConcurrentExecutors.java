@@ -58,6 +58,16 @@ public class ConcurrentExecutors {
             true
     );
     /**
+     * OAuth event queue<br>
+     * OAuth 事件队列
+     */
+    public static final ExtendForkJoinPool OAUTH_EVENT_EXECUTOR = new ExtendForkJoinPool(
+            32,
+            ForkJoinWorkerThreadFactoryImpl.INSTANCE,
+            (t, e) -> report(e, ExceptionReporter.ExceptionType.CONCURRENT),
+            true
+    );
+    /**
      * Swing event queue(clipboard, desktop api...)<br>
      * Swing 事件队列(剪贴板，桌面API...)
      */

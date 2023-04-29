@@ -70,8 +70,15 @@ public abstract class AbstractAccount {
      * @return the created task<br>被创建的任务
      */
     public abstract AbstractAction disableAccountCapeAsync();
-    // NOT IMPLEMENTED
-    // public abstract AbstractAction enableAccountCapeAsync();
+
+    /**
+     * create enable selected cape task<br>
+     * 创建启用选定披风任务
+     *
+     * @param id the cape index<br>披风序列号
+     * @return the created task<br>被创建的任务
+     */
+    public abstract AbstractAction enableAccountCapeAsync(String id);
 
     /**
      * create check account name changeable task<br>

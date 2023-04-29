@@ -66,6 +66,10 @@ public class AbstractAccountAdapter extends TypeAdapter<AbstractAccount> {
                         return null;
                     }
 
+                    public AbstractAction enableAccountCapeAsync(String id) {
+                        return null;
+                    }
+
                     public AbstractTask<Boolean> checkAccountNameChangeableAsync(@NotNull String newName) {
                         return null;
                     }

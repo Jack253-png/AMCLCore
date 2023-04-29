@@ -118,6 +118,10 @@ public class MicrosoftAccount extends AbstractAccount {
         return new MicrosoftAccount(accessToken, refreshToken, tokenType);
     }
 
+    public boolean needFetchProfile() {
+        return profile == null;
+    }
+
     /**
      * create account refresh task<br>
      * 创建账户刷新任务
@@ -156,6 +160,17 @@ public class MicrosoftAccount extends AbstractAccount {
      */
     public DisableAccountCapeTask disableAccountCapeAsync() {
         return new DisableAccountCapeTask();
+    }
+
+    /**
+     * create enable selected cape task<br>
+     * 创建启用选定披风任务
+     *
+     * @param id the cape index<br>披风序列号
+     * @return the created task<br>被创建的任务
+     */
+    public EnableAccountCapeTask enableAccountCapeAsync(String id) {
+        return new EnableAccountCapeTask(id);
     }
 
     /**
@@ -407,6 +422,19 @@ public class MicrosoftAccount extends AbstractAccount {
 
         protected Text getTaskName() {
             return translatable("core.oauth.task.changedTime.text");
+        }
+    }
+
+    @AllArgsConstructor(access = AccessLevel.PRIVATE)
+    public class EnableAccountCapeTask extends AbstractAction {
+        private String index;
+
+        protected void execute() throws Exception {
+
+        }
+
+        protected Text getTaskName() {
+            return translatable("core.oauth.task.enable_cape.text");
         }
     }
 }

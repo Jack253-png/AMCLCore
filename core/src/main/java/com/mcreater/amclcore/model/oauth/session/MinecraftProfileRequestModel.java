@@ -43,6 +43,10 @@ public class MinecraftProfileRequestModel {
         private State state;
         private String url;
         private String alias;
+
+        public String createId() {
+            return id.toString();
+        }
     }
 
     public enum State {
