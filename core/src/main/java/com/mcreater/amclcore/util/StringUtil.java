@@ -1,6 +1,7 @@
 package com.mcreater.amclcore.util;
 
 import com.mcreater.amclcore.util.iterators.RepeatableIterable;
+import org.jetbrains.annotations.NotNull;
 
 import java.util.UUID;
 import java.util.stream.Collectors;
@@ -40,6 +41,7 @@ public class StringUtil {
     }
 
     public static boolean checkUUID(String uuid) {
+        if (uuid == null) return false;
         switch (uuid.length()) {
             case 32:
                 return internalCheckUUID(uuid);
@@ -62,6 +64,7 @@ public class StringUtil {
         return uuid.replace("-", "");
     }
 
+    @NotNull
     public static UUID toLineUUID(String uuid) {
         if (!checkUUID(uuid)) return null;
         String s1 = uuid.substring(0, 8);

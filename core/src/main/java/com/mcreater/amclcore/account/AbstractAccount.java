@@ -31,19 +31,25 @@ public abstract class AbstractAccount {
         this.accessToken = requireNonNull(accessToken);
     }
 
-    public AbstractAccount(String accountName, UUID uuid, String accessToken) {
+    public AbstractAccount(@NotNull String accountName, @NotNull UUID uuid, @NotNull String accessToken) {
         setAccountName(accountName);
         setUuid(uuid);
         setAccessToken(accessToken);
     }
 
-    public AbstractAccount(String accessToken) {
+    public AbstractAccount(@NotNull String accessToken) {
         setAccessToken(accessToken);
+    }
+
+    public AbstractAccount(@NotNull String accountName, @NotNull UUID uuid) {
+        setAccountName(accountName);
+        setUuid(uuid);
     }
 
     /**
      * create account refresh task<br>
      * 创建账户刷新任务
+     *
      * @return the created task<br>被创建的任务
      */
     public abstract AbstractAction refreshAsync();
@@ -131,5 +137,17 @@ public abstract class AbstractAccount {
 
     public final MicrosoftAccount toMicrosoftAccount() {
         return (MicrosoftAccount) this;
+    }
+
+    public final OfflineAccount toOffLineAccount() {
+        return (OfflineAccount) this;
+    }
+
+    public final boolean isMicrosoftAccount() {
+        return this instanceof MicrosoftAccount;
+    }
+
+    public final boolean isOffLineAccount() {
+        return this instanceof OfflineAccount;
     }
 }

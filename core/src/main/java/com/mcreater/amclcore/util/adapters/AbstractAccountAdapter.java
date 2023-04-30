@@ -5,6 +5,7 @@ import com.google.gson.stream.JsonReader;
 import com.google.gson.stream.JsonWriter;
 import com.mcreater.amclcore.account.AbstractAccount;
 import com.mcreater.amclcore.account.MicrosoftAccount;
+import com.mcreater.amclcore.account.OfflineAccount;
 import com.mcreater.amclcore.concurrent.task.AbstractAction;
 import com.mcreater.amclcore.concurrent.task.AbstractTask;
 import com.mcreater.amclcore.model.oauth.session.MinecraftNameChangedTimeRequestModel;
@@ -22,12 +23,18 @@ public class AbstractAccountAdapter extends TypeAdapter<AbstractAccount> {
     }
 
     public void write(JsonWriter out, AbstractAccount value) throws IOException {
-        if (value instanceof MicrosoftAccount) {
+        if (value.isMicrosoftAccount()) {
             out.beginObject()
                     .name("type").value(1)
                     .name("access_token").value(value.toMicrosoftAccount().getAccessToken())
                     .name("refresh_token").value(value.toMicrosoftAccount().getRefreshToken())
                     .name("token_type").value(value.toMicrosoftAccount().getTokenType())
+                    .endObject();
+        } else if (value.isOffLineAccount()) {
+            out.beginObject()
+                    .name("type").value(0)
+                    .name("name").value(value.toOffLineAccount().getAccountName())
+                    .name("uuid").value(value.toOffLineAccount().getUuid().toString())
                     .endObject();
         } else {
             out.beginObject()
@@ -45,7 +52,7 @@ public class AbstractAccountAdapter extends TypeAdapter<AbstractAccount> {
         }
         while (processor.processable());
         JsonUtil.MappedJson mappedJson = processor.getProcessedContent();
-        int type = mappedJson.tryGetInteger("type");
+        int type = mappedJson.tryGetInteger(-1, "type");
         switch (type) {
             default:
             case -1:
@@ -95,6 +102,11 @@ public class AbstractAccountAdapter extends TypeAdapter<AbstractAccount> {
                         return null;
                     }
                 };
+            case 0:
+                return OfflineAccount.create(
+                        mappedJson.tryGetString("name"),
+                        UUID.fromString(mappedJson.tryGetString("uuid"))
+                );
             case 1:
                 return MicrosoftAccount.create(
                         mappedJson.tryGetString("access_token"),

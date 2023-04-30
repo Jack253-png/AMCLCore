@@ -162,6 +162,14 @@ public class JsonUtil {
             return 0;
         }
 
+        default int tryGetInteger(int def, String... path) {
+            Object temp = getObject(path);
+            if (temp == null) return def;
+            if (temp instanceof Number) return ((Number) temp).intValue();
+            if (temp instanceof String) return Integer.parseInt((String) temp);
+            return def;
+        }
+
         default long tryGetLong(String... path) {
             Object temp = getObject(path);
             if (temp == null) return 0;
