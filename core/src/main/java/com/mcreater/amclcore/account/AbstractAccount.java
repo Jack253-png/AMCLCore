@@ -6,6 +6,7 @@ import com.mcreater.amclcore.model.oauth.session.MinecraftNameChangedTimeRequest
 import lombok.Getter;
 import org.jetbrains.annotations.NotNull;
 
+import java.io.File;
 import java.util.UUID;
 
 import static java.util.Objects.requireNonNull;
@@ -111,6 +112,22 @@ public abstract class AbstractAccount {
      * @return the check result<br>检查结果
      */
     public abstract boolean accountNameAllowed(String name);
+
+    /**
+     * create reset skin task<br>
+     * 创建重置皮肤任务
+     *
+     * @return the created task<br>被创建的任务
+     */
+    public abstract AbstractAction resetSkinAsync();
+
+    /**
+     * create upload skin task<br>
+     * 创建上传皮肤任务
+     *
+     * @return the created task<br>被创建的任务
+     */
+    public abstract AbstractAction uploadSkinAsync(File file, boolean isSlim);
 
     public final MicrosoftAccount toMicrosoftAccount() {
         return (MicrosoftAccount) this;

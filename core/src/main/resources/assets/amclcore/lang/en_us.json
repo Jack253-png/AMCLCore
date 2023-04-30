@@ -21,6 +21,8 @@
   "core.oauth.task.changeName.text": "profile name change task",
   "core.oauth.task.changedTime.text": "profile name changed time check task",
   "core.oauth.task.enable_cape.text": "enable cape task",
+  "core.oauth.task.reset_skin.text": "reset skin task",
+  "core.oauth.task.upload_skin.text": "upload skin task",
   "core.swing.api.task.clipboard.name": "clipboard copy %s task",
   "core.swing.api.task.browser.name": "open browser url %s task",
   "core.concurrent.base.event.finish.name": "Task %s finished",

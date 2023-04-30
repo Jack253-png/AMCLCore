@@ -21,6 +21,8 @@
   "core.oauth.task.changeName.text": "更改档案名任务",
   "core.oauth.task.changedTime.text": "档案名更改时间检测任务",
   "core.oauth.task.enable_cape.text": "启用披风任务",
+  "core.oauth.task.reset_skin.text": "重置皮肤任务",
+  "core.oauth.task.upload_skin.text": "上传皮肤任务",
   "core.swing.api.task.clipboard.name": "剪贴板复制 %s 任务",
   "core.swing.api.task.browser.name": "浏览器打开 URL %s 任务",
   "core.concurrent.base.event.finish.name": "%s完成",

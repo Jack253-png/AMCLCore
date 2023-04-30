@@ -22,8 +22,10 @@ import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import org.apache.commons.lang3.tuple.ImmutablePair;
+import org.apache.http.entity.mime.MultipartEntityBuilder;
 import org.jetbrains.annotations.NotNull;
 
+import java.io.File;
 import java.time.ZoneId;
 import java.time.temporal.ChronoUnit;
 import java.util.*;
@@ -75,6 +77,14 @@ public class MicrosoftAccount extends AbstractAccount {
             public String getMinecraftNameChangeStateUrl() {
                 throw new UnsupportedOperationException("not implemented yet");
             }
+
+            public String getMinecraftSkinResetUrl() {
+                throw new UnsupportedOperationException("not implemented yet");
+            }
+
+            public String getMinecraftSkinModifyUrl() {
+                throw new UnsupportedOperationException("not implemented yet");
+            }
         };
 
         String getMinecraftProfileUrl();
@@ -92,6 +102,10 @@ public class MicrosoftAccount extends AbstractAccount {
         String getMinecraftNameChangeUrl();
 
         String getMinecraftNameChangeStateUrl();
+
+        String getMinecraftSkinResetUrl();
+
+        String getMinecraftSkinModifyUrl();
     }
 
     private static Accessor apiAccessor = Accessor.INSTANCE;
@@ -222,6 +236,26 @@ public class MicrosoftAccount extends AbstractAccount {
     public boolean accountNameAllowed(String name) {
         if (name.length() > 16) return false;
         return !NAME_PATTERN.asPredicate().test(name);
+    }
+
+    /**
+     * create reset skin task<br>
+     * 创建重置皮肤任务
+     *
+     * @return the created task<br>被创建的任务
+     */
+    public ResetSkinTask resetSkinAsync() {
+        return new ResetSkinTask();
+    }
+
+    /**
+     * create upload skin task<br>
+     * 创建上传皮肤任务
+     *
+     * @return the created task<br>被创建的任务
+     */
+    public UploadSkinTask uploadSkinAsync(File file, boolean isSlim) {
+        return new UploadSkinTask(file, isSlim);
     }
 
     public List<MinecraftProfileRequestModel.MinecraftProfileSkinModel> getSkins() {
@@ -470,6 +504,50 @@ public class MicrosoftAccount extends AbstractAccount {
 
         protected Text getTaskName() {
             return translatable("core.oauth.task.enable_cape.text");
+        }
+    }
+
+    @AllArgsConstructor(access = AccessLevel.PRIVATE)
+    public class ResetSkinTask extends AbstractAction {
+
+        protected void execute() throws Exception {
+            profile = HttpClientWrapper.create(HttpClientWrapper.Method.DELETE)
+                    .uri(apiAccessor.getMinecraftSkinResetUrl())
+                    .header(tokenHeader())
+                    .timeout(5000)
+                    .reqTimeout(5000)
+                    .retry(5)
+                    .sendAndReadJson(MinecraftProfileRequestModel.class);
+        }
+
+        protected Text getTaskName() {
+            return translatable("core.oauth.task.reset_skin.text");
+        }
+    }
+
+    @AllArgsConstructor(access = AccessLevel.PRIVATE)
+    public class UploadSkinTask extends AbstractAction {
+        private File file;
+        private boolean isSlim;
+
+        protected void execute() throws Exception {
+            profile = HttpClientWrapper.create(HttpClientWrapper.Method.POST)
+                    .uri(apiAccessor.getMinecraftSkinModifyUrl())
+                    .header(tokenHeader())
+                    .entity(
+                            MultipartEntityBuilder.create()
+                                    .addBinaryBody("file", file)
+                                    .addTextBody("variant", isSlim ? "slim" : "classic")
+                                    .build()
+                    )
+                    .timeout(5000)
+                    .reqTimeout(5000)
+                    .retry(5)
+                    .sendAndReadJson(MinecraftProfileRequestModel.class);
+        }
+
+        protected Text getTaskName() {
+            return translatable("core.oauth.task.upload_skin.text");
         }
     }
 }

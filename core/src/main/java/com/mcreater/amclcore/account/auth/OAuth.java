@@ -22,8 +22,6 @@ import java.util.Objects;
 import java.util.Optional;
 import java.util.concurrent.TimeUnit;
 import java.util.function.Consumer;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
 
 import static com.mcreater.amclcore.MetaData.oauthClientIdOverridePropertyName;
 import static com.mcreater.amclcore.MetaData.oauthDefaultClientId;
@@ -50,13 +48,12 @@ public enum OAuth {
      */
     MICROSOFT(
             "login.microsoftonline.com/consumers/oauth2/v2.0/devicecode",
-            "login.microsoftonline.com/consumers/oauth2/v2.0/token",
-            "login.live.com/oauth20_token.srf"
+            "login.microsoftonline.com/consumers/oauth2/v2.0/token"
     );
-    OAuth(String deviceCodeUrl, String tokenUrl, String authTokenUrl) {
+
+    OAuth(String deviceCodeUrl, String tokenUrl) {
         this.deviceCodeUrl = deviceCodeUrl;
         this.tokenUrl = tokenUrl;
-        this.authTokenUrl = authTokenUrl;
         if ("MICROSOFT".equals(toString())) MicrosoftAccount.setApiAccessor(new MicrosoftAccount.Accessor() {
             @Override
             public String getMinecraftProfileUrl() {
@@ -91,28 +88,24 @@ public enum OAuth {
             public String getMinecraftNameChangeStateUrl() {
                 return minecraftNameChangeStateUrl;
             }
+
+            public String getMinecraftSkinResetUrl() {
+                return minecraftSkinResetUrl;
+            }
+
+            public String getMinecraftSkinModifyUrl() {
+                return minecraftSkinModifyUrl;
+            }
         });
     }
     private final String deviceCodeUrl;
     private final String tokenUrl;
-    private final String authTokenUrl;
-    /**
-     * Minecraft azure application id<br>
-     * Minecraft azure 应用ID
-     */
-    @Deprecated
-    private static final String minecraftAzureApplicationId = "00000000402b5328";
     /**
      * Minecraft azure login url<br>
      * Minecraft azure 登录URL
      */
     @Deprecated
     public static final String minecraftAzureLoginUrl = "https://login.live.com/oauth20_authorize.srf?client_id=00000000402b5328&response_type=code&scope=service%3A%3Auser.auth.xboxlive.com%3A%3AMBI_SSL&redirect_uri=https%3A%2F%2Flogin.live.com%2Foauth20_desktop.srf";
-    /**
-     * Azure direct login url pattern<br>
-     * Azure 直接登录URL模板
-     */
-    private static final Pattern minecraftAzureUrlPattern = Pattern.compile("https://login\\.live\\.com/oauth20_desktop\\.srf\\?code=(?<code>.*)&lc=(?<lc>.*)");
 
     /**
      * XBox token api url<br>
@@ -169,6 +162,17 @@ public enum OAuth {
      * Minecraft 档案名更改状态 URL
      */
     private static final String minecraftNameChangeStateUrl = "api.minecraftservices.com/minecraft/profile/namechange";
+    /**
+     * the skin reset url for Minecraft<br>
+     * Minecraft 皮肤重置 URL
+     */
+    private static final String minecraftSkinResetUrl = "api.minecraftservices.com/minecraft/profile/skins/active";
+    /**
+     * the skin upload url for Minecraft<br>
+     * Minecraft 皮肤上传 URL
+     */
+    private static final String minecraftSkinModifyUrl = "api.minecraftservices.com/minecraft/profile/skins";
+
 
     /**
      * Fetch device code model for auth<br>
@@ -213,54 +217,6 @@ public enum OAuth {
                 .timeout(5000)
                 .reqTimeout(5000)
                 .sendAndReadJson(TokenResponseModel.class);
-    }
-
-    /**
-     * create token from auth code<br>
-     * 从验证码创建令牌
-     *
-     * @param url the url from {@link OAuth#authTokenUrl}<br>从 {@link OAuth#authTokenUrl} 产生的URL
-     * @return the convert result<br>转换结果
-     * @throws URISyntaxException If the auth code api url is malformed<br>如果身份验证API URL 错误
-     * @throws IOException        If an I/O exception occurred<br>如果一个IO错误发生
-     */
-    @Deprecated
-    private DeviceCodeConverterModel acquireAccessToken(String url) throws URISyntaxException, IOException, NullPointerException {
-        AuthCodeModel model = HttpClientWrapper.create(HttpClientWrapper.Method.GET)
-                .uri(authTokenUrl)
-                .entityEncodedUrl(
-                        createPair("client_id", minecraftAzureApplicationId),
-                        createPair("code", parseRedirectUrl(url)),
-                        createPair("grant_type", "authorization_code"),
-                        createPair("redirect_uri", "https://login.live.com/oauth20_desktop.srf"),
-                        createPair("scope", "service::user.auth.xboxlive.com::MBI_SSL")
-                )
-                .timeout(5000)
-                .reqTimeout(5000)
-                .retry(5)
-                .sendAndReadJson(AuthCodeModel.class);
-
-        return DeviceCodeConverterModel.builder()
-                .model(
-                        TokenResponseModel.builder()
-                                .accessToken(model.getAccessToken())
-                                .refreshToken(model.getRefreshToken())
-                                .build()
-                )
-                .isDevice(false)
-                .build();
-    }
-
-    /**
-     * parse url from {@link OAuth#minecraftAzureUrlPattern} login<br>
-     * 解析从 {@link OAuth#minecraftAzureUrlPattern} 登录产生的URL
-     *
-     * @param rawUrl the redirect url<br>重定向URL
-     * @return the parsed code<br>已解析的代码
-     */
-    public String parseRedirectUrl(String rawUrl) {
-        Matcher matcher = minecraftAzureUrlPattern.matcher(rawUrl);
-        return matcher.find() ? matcher.group("code") : null;
     }
 
     /**

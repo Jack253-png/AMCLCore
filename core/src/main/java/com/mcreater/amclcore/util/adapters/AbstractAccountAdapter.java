@@ -11,6 +11,7 @@ import com.mcreater.amclcore.model.oauth.session.MinecraftNameChangedTimeRequest
 import com.mcreater.amclcore.util.JsonUtil;
 import org.jetbrains.annotations.NotNull;
 
+import java.io.File;
 import java.io.IOException;
 import java.util.UUID;
 
@@ -84,6 +85,14 @@ public class AbstractAccountAdapter extends TypeAdapter<AbstractAccount> {
 
                     public boolean accountNameAllowed(String name) {
                         return false;
+                    }
+
+                    public AbstractAction resetSkinAsync() {
+                        return null;
+                    }
+
+                    public AbstractAction uploadSkinAsync(File file, boolean isSlim) {
+                        return null;
                     }
                 };
             case 1:
