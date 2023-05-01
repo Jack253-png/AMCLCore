@@ -9,7 +9,6 @@ import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
 import java.io.FileNotFoundException;
-import java.text.ParseException;
 import java.util.Optional;
 import java.util.concurrent.ExecutionException;
 
@@ -37,7 +36,7 @@ public class Main {
                                 .readManifest(),
                         System.out
                 );
-            } catch (FileNotFoundException | ParseException e) {
+            } catch (FileNotFoundException e) {
                 e.printStackTrace();
             }
         });
