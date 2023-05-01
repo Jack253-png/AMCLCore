@@ -6,6 +6,7 @@ import com.google.gson.stream.JsonWriter;
 import com.mcreater.amclcore.model.oauth.session.MinecraftProfileRequestModel;
 
 import java.io.IOException;
+import java.util.Optional;
 
 public class VariantAdapter extends TypeAdapter<MinecraftProfileRequestModel.Variant> {
     public static final VariantAdapter INSTANCE = new VariantAdapter();
@@ -14,7 +15,11 @@ public class VariantAdapter extends TypeAdapter<MinecraftProfileRequestModel.Var
     }
 
     public void write(JsonWriter out, MinecraftProfileRequestModel.Variant value) throws IOException {
-        out.value(value.toString().toLowerCase());
+        out.value(
+                Optional.ofNullable(value)
+                        .map(Enum::toString)
+                        .orElse(null)
+        );
     }
 
     public MinecraftProfileRequestModel.Variant read(JsonReader in) throws IOException {

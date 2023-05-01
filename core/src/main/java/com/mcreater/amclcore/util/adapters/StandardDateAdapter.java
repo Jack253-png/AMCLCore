@@ -6,6 +6,7 @@ import com.google.gson.stream.JsonWriter;
 import com.mcreater.amclcore.util.date.StandardDate;
 
 import java.io.IOException;
+import java.util.Optional;
 
 public class StandardDateAdapter extends TypeAdapter<StandardDate> {
     public static final StandardDateAdapter INSTANCE = new StandardDateAdapter();
@@ -14,7 +15,11 @@ public class StandardDateAdapter extends TypeAdapter<StandardDate> {
     }
 
     public void write(JsonWriter out, StandardDate value) throws IOException {
-        out.value(value.getRawDate());
+        out.value(
+                Optional.ofNullable(value)
+                        .map(StandardDate::getRawDate)
+                        .orElse(null)
+        );
     }
 
     public StandardDate read(JsonReader in) throws IOException {

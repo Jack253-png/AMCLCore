@@ -1,8 +1,8 @@
 package com.mcreater.amclcore.util.date;
 
 import java.text.ParseException;
-import java.util.Date;
+import java.time.LocalDateTime;
 
 public interface WrappedDate {
-    Date convert() throws ParseException;
+    LocalDateTime convert() throws ParseException;
 }

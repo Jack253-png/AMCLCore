@@ -23,6 +23,7 @@ public class AbstractAccountAdapter extends TypeAdapter<AbstractAccount> {
     }
 
     public void write(JsonWriter out, AbstractAccount value) throws IOException {
+        if (value == null) return;
         if (value.isMicrosoftAccount()) {
             out.beginObject()
                     .name("type").value(1)

@@ -5,15 +5,19 @@ import com.google.gson.GsonBuilder;
 import com.google.gson.stream.JsonReader;
 import com.google.gson.stream.JsonToken;
 import com.mcreater.amclcore.account.AbstractAccount;
+import com.mcreater.amclcore.model.game.arguments.GameArgumentsModel;
+import com.mcreater.amclcore.model.game.rule.GameRuleModel;
 import com.mcreater.amclcore.model.oauth.session.MinecraftNameChangeableRequestModel;
 import com.mcreater.amclcore.model.oauth.session.MinecraftProfileRequestModel;
 import com.mcreater.amclcore.util.adapters.*;
+import com.mcreater.amclcore.util.date.GMTDate;
 import com.mcreater.amclcore.util.date.StandardDate;
 import org.apache.http.NameValuePair;
 import org.apache.http.message.BasicNameValuePair;
 
 import java.io.IOException;
 import java.util.*;
+import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 
 public class JsonUtil {
@@ -25,7 +29,11 @@ public class JsonUtil {
             .registerTypeAdapter(MinecraftNameChangeableRequestModel.State.class, NameStateAdapter.INSTANCE)
             .registerTypeHierarchyAdapter(AbstractAccount.class, AbstractAccountAdapter.INSTANCE)
             .registerTypeAdapter(StandardDate.class, StandardDateAdapter.INSTANCE)
-            .setLenient()
+            .registerTypeAdapter(GameArgumentsModel.GameArgumentsItem.class, GameArgumentsItemJsonDeserializer.INSTANCE)
+            .registerTypeAdapter(GameArgumentsModel.GameArgumentsItem.class, GameArgumentsItemJsonSerializer.INSTANCE)
+            .registerTypeAdapter(GameRuleModel.Action.class, GameRuleStateAdapter.INSTANCE)
+            .registerTypeAdapter(Pattern.class, PatternAdapter.INSTANCE)
+            .registerTypeAdapter(GMTDate.class, GMTDateAdapter.INSTANCE)
             .create();
 
     @SafeVarargs

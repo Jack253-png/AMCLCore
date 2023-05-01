@@ -4,11 +4,16 @@ import com.mcreater.amclcore.account.MicrosoftAccount;
 import com.mcreater.amclcore.account.auth.OAuth;
 import com.mcreater.amclcore.concurrent.ConcurrentExecutors;
 import com.mcreater.amclcore.concurrent.task.AbstractTask;
+import com.mcreater.amclcore.game.GameRepository;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
+import java.io.FileNotFoundException;
+import java.text.ParseException;
 import java.util.Optional;
+import java.util.concurrent.ExecutionException;
 
+import static com.mcreater.amclcore.util.JsonUtil.GSON_PARSER;
 import static com.mcreater.amclcore.util.PropertyUtil.setProperty;
 
 public class Main {
@@ -18,6 +23,24 @@ public class Main {
     private static final Logger logger = LogManager.getLogger(Main.class);
     public static void main(String[] args) throws Exception {
 //        loginTest();
+        GameRepository.of("D:\\mods\\minecraft\\.minecraft").ifPresent(repository -> {
+            try {
+                repository.updateAsync().submitTo(ConcurrentExecutors.EVENT_QUEUE_EXECUTOR).get();
+            } catch (InterruptedException | ExecutionException e) {
+                e.printStackTrace();
+            }
+
+            try {
+                GSON_PARSER.toJson(
+                        repository.getInstances().get(repository.getInstances().size() - 1)
+                                .getManifestJson()
+                                .readManifest(),
+                        System.out
+                );
+            } catch (FileNotFoundException | ParseException e) {
+                e.printStackTrace();
+            }
+        });
     }
 
     public static void loginTest() throws Exception {
@@ -34,6 +57,13 @@ public class Main {
         account.ifPresent(a -> {
             logger.info(a.getSkins());
             logger.info(a.getCapes());
+            try {
+                a.changeAccountNameAsync("StarcloudSea")
+                        .submitTo(ConcurrentExecutors.OAUTH_EVENT_EXECUTOR)
+                        .get();
+            } catch (InterruptedException | ExecutionException e) {
+                e.printStackTrace();
+            }
         });
     }
 }

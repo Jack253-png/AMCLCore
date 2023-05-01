@@ -26,6 +26,7 @@ import org.apache.http.entity.mime.MultipartEntityBuilder;
 import org.jetbrains.annotations.NotNull;
 
 import java.io.File;
+import java.time.Instant;
 import java.time.ZoneId;
 import java.time.temporal.ChronoUnit;
 import java.util.*;
@@ -442,15 +443,31 @@ public class MicrosoftAccount extends AbstractAccount {
                     .bindTo(this)
                     .get();
 
-            Date curr = model.map(MinecraftNameChangedTimeRequestModel::getChangedAt).orElse(StandardDate.DEFAULT).convert();
-            Date next = Date.from(curr.toInstant().plus(30, ChronoUnit.DAYS).atZone(ZoneId.systemDefault()).toInstant());
+            Date curr = Date.from(
+                    model.map(MinecraftNameChangedTimeRequestModel::getChangedAt)
+                            .orElse(StandardDate.DEFAULT)
+                            .convert()
+                            .atZone(ZoneId.systemDefault())
+                            .toInstant()
+            );
+            Date next = Date.from(
+                    curr.toInstant()
+                            .plus(30, ChronoUnit.DAYS)
+                            .atZone(ZoneId.systemDefault())
+                            .toInstant()
+            );
+            Date system = Date.from(
+                    Instant.now()
+                            .atZone(ZoneId.systemDefault())
+                            .toInstant()
+            );
 
             if (!changeable) throw new OAuthMinecraftNameConflictException();
             if (!model.map(MinecraftNameChangedTimeRequestModel::isNameChangeAllowed).orElse(false))
                 throw new OAuthMinecraftNameChangeNotAllowedException(
                         toDate(curr),
                         toDate(next),
-                        dateBetween(next, curr));
+                        dateBetween(next, system));
 
             profile = HttpClientWrapper.create(HttpClientWrapper.Method.PUT)
                     .uri(String.format(apiAccessor.getMinecraftNameChangeUrl(), newName))

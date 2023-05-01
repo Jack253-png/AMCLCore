@@ -5,8 +5,8 @@ import lombok.Getter;
 
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
-import java.time.Instant;
-import java.util.Date;
+import java.time.LocalDateTime;
+import java.time.ZoneOffset;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -18,16 +18,20 @@ public class StandardDate implements WrappedDate {
     @Getter
     private String rawDate;
 
-    public Date convert() throws ParseException {
+    public LocalDateTime convert() throws ParseException {
         Matcher matcher = PARSE_PATTERN.matcher(rawDate);
-        if (!matcher.find()) return Date.from(Instant.now());
-        return DATE_FORMAT.parse(String.join(" ",
-                matcher.group("year"),
-                matcher.group("month"),
-                matcher.group("day"),
-                matcher.group("hour"),
-                matcher.group("min"),
-                matcher.group("sec")
-        ));
+        if (!matcher.find()) return DEFAULT.convert();
+        return DATE_FORMAT
+                .parse(String.join(" ",
+                        matcher.group("year"),
+                        matcher.group("month"),
+                        matcher.group("day"),
+                        matcher.group("hour"),
+                        matcher.group("min"),
+                        matcher.group("sec")
+                ))
+                .toInstant()
+                .atOffset(ZoneOffset.UTC)
+                .toLocalDateTime();
     }
 }

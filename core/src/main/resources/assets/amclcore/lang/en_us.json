@@ -36,5 +36,6 @@
   "core.exceptions.oauth.fail": "OAuth login failed",
   "core.exceptions.oauth.store_check": "Minecraft store check not passed, this Microsoft account haven't bought Minecraft yet",
   "core.exceptions.oauth.name_conflict": "Profile name change not allowed because the specified profile name is not vaild, or have been used",
-  "core.exceptions.oauth.name_change_not_allowed": "Profile name change not allowed because time not reached, last change: %s, next change allowed: %s, time left: %s days"
+  "core.exceptions.oauth.name_change_not_allowed": "Profile name change not allowed because time not reached, last change: %s, next change allowed: %s, time left: %s days",
+  "core.game.repository.task.update.text": "update game instances task"
 }
