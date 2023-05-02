@@ -38,6 +38,7 @@ public class JsonUtil {
             .registerTypeAdapter(GMTDate.class, GMTDateAdapter.INSTANCE)
             .registerTypeAdapter(Sha1String.class, Sha1StringAdapter.INSTANCE)
             .registerTypeAdapter(MinecraftMirroredResourceURL.class, MinecraftMirroredResourceURLAdapter.INSTANCE)
+            .disableHtmlEscaping()
             .create();
 
     @SafeVarargs
