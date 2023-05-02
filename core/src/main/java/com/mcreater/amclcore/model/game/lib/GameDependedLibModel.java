@@ -17,6 +17,6 @@ public class GameDependedLibModel {
     private Map<String, String> natives;
     private List<GameRuleModel> rules;
     private MinecraftMirroredResourceURL url;
-    private boolean clientreq;
-    private boolean serverreq;
+    private Boolean clientreq;
+    private Boolean serverreq;
 }
