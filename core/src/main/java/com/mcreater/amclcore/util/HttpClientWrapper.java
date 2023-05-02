@@ -113,7 +113,7 @@ public class HttpClientWrapper {
     }
 
     public HttpClientWrapper uri(String host, String path) {
-        requestURI.setHost(host).setPath(path);
+        requestURI.setHost(host).setPath(path.startsWith("/") ? path.substring(1) : path);
         return this;
     }
 
