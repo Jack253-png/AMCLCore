@@ -13,6 +13,7 @@ import java.util.Map;
 public class GameDependedLibModel {
     private GameDependedLibDownloadModel downloads;
     private Map<String, GameDependedLibDownloadArtifactModel> classifiers;
+    private GameDependedLibExtractModel extract;
     private String name;
     private Map<String, String> natives;
     private List<GameRuleModel> rules;

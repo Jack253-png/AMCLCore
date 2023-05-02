@@ -5,10 +5,13 @@ import com.mcreater.amclcore.account.auth.OAuth;
 import com.mcreater.amclcore.concurrent.ConcurrentExecutors;
 import com.mcreater.amclcore.concurrent.task.AbstractTask;
 import com.mcreater.amclcore.game.GameRepository;
+import com.mcreater.amclcore.model.game.GameLibNativeReplacementModel;
+import com.mcreater.amclcore.resources.ResourceFetcher;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
 import java.io.FileNotFoundException;
+import java.io.InputStreamReader;
 import java.util.Optional;
 import java.util.concurrent.ExecutionException;
 
@@ -36,6 +39,11 @@ public class Main {
                                 .readManifest(),
                         System.out
                 );
+                GameLibNativeReplacementModel m = GSON_PARSER.fromJson(
+                        new InputStreamReader(ResourceFetcher.get("amclcore", "natives", "natives.json")),
+                        GameLibNativeReplacementModel.class
+                );
+                System.out.println(m);
             } catch (FileNotFoundException e) {
                 e.printStackTrace();
             }
