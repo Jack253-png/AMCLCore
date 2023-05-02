@@ -19,9 +19,15 @@ public class Main {
     static {
         setProperty("log4j.skipJansi", false);
     }
+
     private static final Logger logger = LogManager.getLogger(Main.class);
-    public static void main(String[] args) throws Exception {
+
+    public static void main(String[] args) {
 //        loginTest();
+        launchTest();
+    }
+
+    public static void launchTest() {
         GameRepository.of("D:\\mods\\minecraft\\.minecraft").ifPresent(repository -> {
             try {
                 repository.updateAsync().submitTo(ConcurrentExecutors.EVENT_QUEUE_EXECUTOR).get();
