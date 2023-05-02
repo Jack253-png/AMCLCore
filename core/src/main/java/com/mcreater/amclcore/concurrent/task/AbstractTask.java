@@ -3,8 +3,8 @@ package com.mcreater.amclcore.concurrent.task;
 import com.mcreater.amclcore.concurrent.TaskState;
 import com.mcreater.amclcore.exceptions.report.ExceptionReporter;
 import com.mcreater.amclcore.i18n.Text;
-import com.mcreater.amclcore.util.sets.ImmutableDoubleValueSet;
 import lombok.Getter;
+import org.apache.commons.lang3.tuple.ImmutablePair;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.jetbrains.annotations.Nullable;
@@ -86,36 +86,36 @@ public abstract class AbstractTask<T> extends RecursiveTask<Optional<T>> {
      */
     protected abstract T call() throws Exception;
 
-    private void stateFinish(ImmutableDoubleValueSet<Integer, Integer> lastState, T result) {
+    private void stateFinish(ImmutablePair<Integer, Integer> lastState, T result) {
         setState(TaskState.<T>builder()
                 .taskType(TaskState.Type.FINISHED)
-                .totalStage(lastState.getValue1())
-                .currentStage(lastState.getValue1())
+                .totalStage(lastState.getKey())
+                .currentStage(lastState.getKey())
                 .result(result)
                 .build()
         );
     }
 
-    private void stateExc(ImmutableDoubleValueSet<Integer, Integer> lastState, Throwable e) {
+    private void stateExc(ImmutablePair<Integer, Integer> lastState, Throwable e) {
         setState(TaskState.<T>builder()
                 .message(translatable("core.concurrent.base.event.exception.text", e.getClass().getName()))
                 .throwable(e)
-                .totalStage(lastState.getValue1())
-                .currentStage(lastState.getValue2())
+                .totalStage(lastState.getKey())
+                .currentStage(lastState.getValue())
                 .taskType(TaskState.Type.ERROR)
                 .build()
         );
     }
 
-    private ImmutableDoubleValueSet<Integer, Integer> fetchTaskState() {
-        return ImmutableDoubleValueSet.<Integer, Integer>builder()
-                .value1(Optional.ofNullable(state).map(TaskState::getTotalStage).orElse(1))
-                .value2(Optional.ofNullable(state).map(TaskState::getCurrentStage).orElse(1))
-                .build();
+    private ImmutablePair<Integer, Integer> fetchTaskState() {
+        return new ImmutablePair<>(
+                Optional.ofNullable(state).map(TaskState::getTotalStage).orElse(1),
+                Optional.ofNullable(state).map(TaskState::getCurrentStage).orElse(1)
+        );
     }
 
     protected Optional<T> compute() {
-        ImmutableDoubleValueSet<Integer, Integer> lastState = fetchTaskState();
+        ImmutablePair<Integer, Integer> lastState = fetchTaskState();
         try {
             T result = call();
             EVENT_LOGGER.info(translatable("core.concurrent.base.event.finish.name", this).getText());

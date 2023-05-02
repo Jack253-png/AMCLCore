@@ -12,6 +12,8 @@ import com.mcreater.amclcore.model.oauth.session.MinecraftProfileRequestModel;
 import com.mcreater.amclcore.util.adapters.*;
 import com.mcreater.amclcore.util.date.GMTDate;
 import com.mcreater.amclcore.util.date.StandardDate;
+import com.mcreater.amclcore.util.hash.Sha1String;
+import com.mcreater.amclcore.util.url.MinecraftMirroredResourceURL;
 import org.apache.http.NameValuePair;
 import org.apache.http.message.BasicNameValuePair;
 
@@ -34,6 +36,8 @@ public class JsonUtil {
             .registerTypeAdapter(GameRuleModel.Action.class, GameRuleStateAdapter.INSTANCE)
             .registerTypeAdapter(Pattern.class, PatternAdapter.INSTANCE)
             .registerTypeAdapter(GMTDate.class, GMTDateAdapter.INSTANCE)
+            .registerTypeAdapter(Sha1String.class, Sha1StringAdapter.INSTANCE)
+            .registerTypeAdapter(MinecraftMirroredResourceURL.class, MinecraftMirroredResourceURLAdapter.INSTANCE)
             .create();
 
     @SafeVarargs

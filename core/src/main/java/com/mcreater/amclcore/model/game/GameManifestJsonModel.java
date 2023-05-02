@@ -1,6 +1,7 @@
 package com.mcreater.amclcore.model.game;
 
 import com.mcreater.amclcore.model.game.arguments.GameArgumentsModel;
+import com.mcreater.amclcore.model.game.logging.GameLoggingModel;
 import com.mcreater.amclcore.util.date.GMTDate;
 import lombok.Builder;
 import lombok.Data;
@@ -18,4 +19,5 @@ public class GameManifestJsonModel {
     private int minimumLauncherVersion;
 
     private String mainClass;
+    private GameLoggingModel logging;
 }
