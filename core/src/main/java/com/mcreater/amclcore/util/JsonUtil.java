@@ -5,6 +5,7 @@ import com.google.gson.GsonBuilder;
 import com.google.gson.stream.JsonReader;
 import com.google.gson.stream.JsonToken;
 import com.mcreater.amclcore.account.AbstractAccount;
+import com.mcreater.amclcore.game.GameRepository;
 import com.mcreater.amclcore.model.game.arguments.GameArgumentsModel;
 import com.mcreater.amclcore.model.game.rule.GameRuleModel;
 import com.mcreater.amclcore.model.oauth.session.MinecraftNameChangeableRequestModel;
@@ -38,6 +39,7 @@ public class JsonUtil {
             .registerTypeAdapter(GMTDate.class, GMTDateAdapter.INSTANCE)
             .registerTypeAdapter(Sha1String.class, Sha1StringAdapter.INSTANCE)
             .registerTypeAdapter(MinecraftMirroredResourceURL.class, MinecraftMirroredResourceURLAdapter.INSTANCE)
+            .registerTypeAdapter(GameRepository.class, GameRepositoryAdapter.INSTANCE)
             .disableHtmlEscaping()
             .create();
 

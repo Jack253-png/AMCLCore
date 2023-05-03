@@ -88,7 +88,7 @@ public class GameRepository {
     }
 
     public static Optional<GameRepository> of(Path path) {
-        return of(path, path.toString());
+        return of(path, "");
     }
 
     public static Optional<GameRepository> of(String path, String name) {

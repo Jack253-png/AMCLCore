@@ -28,7 +28,7 @@ public class Main {
     }
 
     public static void launchTest() {
-        GameRepository.of("D:\\mods\\minecraft\\.minecraft").ifPresent(repository -> {
+        GameRepository.of("D:\\mods\\minecraft\\.minecraft", "My minecraft repository").ifPresent(repository -> {
             try {
                 repository.updateAsync().submitTo(ConcurrentExecutors.EVENT_QUEUE_EXECUTOR).get();
             } catch (InterruptedException | ExecutionException e) {
