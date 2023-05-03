@@ -13,12 +13,10 @@ import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
 import java.io.File;
-import java.io.FileNotFoundException;
 import java.util.Arrays;
 import java.util.Optional;
 import java.util.concurrent.ExecutionException;
 
-import static com.mcreater.amclcore.util.JsonUtil.GSON_PARSER;
 import static com.mcreater.amclcore.util.PropertyUtil.setProperty;
 
 public class Main {
@@ -44,10 +42,6 @@ public class Main {
             GameInstance gameInstance = repository.getInstances().get(repository.getInstances().size() - 1);
 
             try {
-                GSON_PARSER.toJson(
-                        gameInstance.getManifestJson().readManifest(),
-                        System.out
-                );
                 gameInstance.fetchLaunchArgsAsync(
                                 ConfigMainModel.builder()
                                         .launchConfig(
@@ -60,7 +54,7 @@ public class Main {
                         )
                         .submitTo(ConcurrentExecutors.EVENT_QUEUE_EXECUTOR)
                         .get();
-            } catch (ExecutionException | InterruptedException | FileNotFoundException e) {
+            } catch (ExecutionException | InterruptedException e) {
                 e.printStackTrace();
             }
         });
