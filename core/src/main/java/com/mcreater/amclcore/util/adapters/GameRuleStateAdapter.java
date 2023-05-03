@@ -6,7 +6,6 @@ import com.google.gson.stream.JsonWriter;
 import com.mcreater.amclcore.model.game.rule.GameRuleModel;
 
 import java.io.IOException;
-import java.util.Optional;
 
 public class GameRuleStateAdapter extends TypeAdapter<GameRuleModel.Action> {
     public static final GameRuleStateAdapter INSTANCE = new GameRuleStateAdapter();
@@ -15,11 +14,9 @@ public class GameRuleStateAdapter extends TypeAdapter<GameRuleModel.Action> {
     }
 
     public void write(JsonWriter out, GameRuleModel.Action value) throws IOException {
+        if (value == null) return;
         out.value(
-                Optional.ofNullable(value)
-                        .map(GameRuleModel.Action::toString)
-                        .map(String::toLowerCase)
-                        .orElse(null)
+                value.toString().toLowerCase()
         );
     }
 

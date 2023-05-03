@@ -7,8 +7,6 @@ import com.mcreater.amclcore.game.GameRepository;
 import com.mcreater.amclcore.util.JsonUtil;
 
 import java.io.IOException;
-import java.nio.file.Path;
-import java.util.Optional;
 
 public class GameRepositoryAdapter extends TypeAdapter<GameRepository> {
     public static final GameRepositoryAdapter INSTANCE = new GameRepositoryAdapter();
@@ -17,16 +15,13 @@ public class GameRepositoryAdapter extends TypeAdapter<GameRepository> {
     }
 
     public void write(JsonWriter out, GameRepository value) throws IOException {
+        if (value == null) return;
         out.beginObject()
                 .name("path").value(
-                        Optional.ofNullable(value)
-                                .map(GameRepository::getPath)
-                                .map(Path::toString).orElse(null)
+                        value.getPath().toString()
                 )
                 .name("name").value(
-                        Optional.ofNullable(value)
-                                .map(GameRepository::getName)
-                                .orElse("")
+                        value.getName()
                 )
                 .endObject();
     }

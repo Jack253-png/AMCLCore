@@ -6,7 +6,6 @@ import com.google.gson.stream.JsonWriter;
 import com.mcreater.amclcore.model.oauth.session.MinecraftNameChangeableRequestModel;
 
 import java.io.IOException;
-import java.util.Optional;
 
 public class NameStateAdapter extends TypeAdapter<MinecraftNameChangeableRequestModel.State> {
     public static final NameStateAdapter INSTANCE = new NameStateAdapter();
@@ -15,10 +14,9 @@ public class NameStateAdapter extends TypeAdapter<MinecraftNameChangeableRequest
     }
 
     public void write(JsonWriter out, MinecraftNameChangeableRequestModel.State value) throws IOException {
+        if (value == null) return;
         out.value(
-                Optional.ofNullable(value)
-                        .map(Enum::toString)
-                        .orElse(null)
+                value.toString()
         );
     }
 

@@ -6,7 +6,6 @@ import com.google.gson.stream.JsonWriter;
 import com.mcreater.amclcore.util.hash.Sha1String;
 
 import java.io.IOException;
-import java.util.Optional;
 
 public class Sha1StringAdapter extends TypeAdapter<Sha1String> {
     public static final Sha1StringAdapter INSTANCE = new Sha1StringAdapter();
@@ -15,10 +14,9 @@ public class Sha1StringAdapter extends TypeAdapter<Sha1String> {
     }
 
     public void write(JsonWriter out, Sha1String value) throws IOException {
+        if (value == null) return;
         out.value(
-                Optional.ofNullable(value)
-                        .map(Sha1String::getRaw)
-                        .orElse(null)
+                value.getRaw()
         );
     }
 

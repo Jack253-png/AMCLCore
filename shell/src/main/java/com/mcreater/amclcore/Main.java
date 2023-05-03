@@ -4,6 +4,7 @@ import com.mcreater.amclcore.account.MicrosoftAccount;
 import com.mcreater.amclcore.account.auth.OAuth;
 import com.mcreater.amclcore.concurrent.ConcurrentExecutors;
 import com.mcreater.amclcore.concurrent.task.AbstractTask;
+import com.mcreater.amclcore.game.GameInstance;
 import com.mcreater.amclcore.game.GameRepository;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
@@ -35,14 +36,19 @@ public class Main {
                 e.printStackTrace();
             }
 
+            GameInstance gameInstance = repository.getInstances().get(repository.getInstances().size() - 1);
+
             try {
                 GSON_PARSER.toJson(
-                        repository.getInstances().get(repository.getInstances().size() - 1)
+                        gameInstance
                                 .getManifestJson()
                                 .readManifest(),
                         System.out
                 );
-            } catch (FileNotFoundException e) {
+                gameInstance.fetchLaunchArgsAsync()
+                        .submitTo(ConcurrentExecutors.EVENT_QUEUE_EXECUTOR)
+                        .get();
+            } catch (FileNotFoundException | ExecutionException | InterruptedException e) {
                 e.printStackTrace();
             }
         });

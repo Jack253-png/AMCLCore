@@ -37,5 +37,6 @@
   "core.exceptions.oauth.store_check": "Minecraft 商店检查未通过, 此 Microsoft 账户还未购买 Minecraft",
   "core.exceptions.oauth.name_conflict": "不允许更改档案名, 因为指定的档案名不合法或已被使用",
   "core.exceptions.oauth.name_change_not_allowed": "不允许更改档案名, 因为时间未到, 上次更改: %s, 下次允许更改时间: %s, 剩余时间: %s 天",
-  "core.game.repository.task.update.text": "游戏实例刷新任务"
+  "core.game.repository.task.update.text": "游戏实例刷新任务",
+  "core.game.instance.fetchArgs.text": "获取启动参数任务"
 }

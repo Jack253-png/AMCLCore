@@ -6,7 +6,6 @@ import com.google.gson.stream.JsonWriter;
 import com.mcreater.amclcore.model.oauth.session.MinecraftProfileRequestModel;
 
 import java.io.IOException;
-import java.util.Optional;
 
 public class StateAdapter extends TypeAdapter<MinecraftProfileRequestModel.State> {
     public static final StateAdapter INSTANCE = new StateAdapter();
@@ -15,10 +14,9 @@ public class StateAdapter extends TypeAdapter<MinecraftProfileRequestModel.State
     }
 
     public void write(JsonWriter out, MinecraftProfileRequestModel.State value) throws IOException {
+        if (value == null) return;
         out.value(
-                Optional.ofNullable(value)
-                        .map(Enum::toString)
-                        .orElse(null)
+                value.toString()
         );
     }
 

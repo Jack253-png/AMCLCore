@@ -6,8 +6,6 @@ import com.google.gson.stream.JsonWriter;
 import com.mcreater.amclcore.util.url.MinecraftMirroredResourceURL;
 
 import java.io.IOException;
-import java.net.URL;
-import java.util.Optional;
 
 public class MinecraftMirroredResourceURLAdapter extends TypeAdapter<MinecraftMirroredResourceURL> {
     public static final MinecraftMirroredResourceURLAdapter INSTANCE = new MinecraftMirroredResourceURLAdapter();
@@ -16,11 +14,9 @@ public class MinecraftMirroredResourceURLAdapter extends TypeAdapter<MinecraftMi
     }
 
     public void write(JsonWriter out, MinecraftMirroredResourceURL value) throws IOException {
+        if (value == null) return;
         out.value(
-                Optional.ofNullable(value)
-                        .map(MinecraftMirroredResourceURL::getRawUrl)
-                        .map(URL::toString)
-                        .orElse(null)
+                value.getRawUrl().toString()
         );
     }
 

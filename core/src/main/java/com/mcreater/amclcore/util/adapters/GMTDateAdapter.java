@@ -6,7 +6,6 @@ import com.google.gson.stream.JsonWriter;
 import com.mcreater.amclcore.util.date.GMTDate;
 
 import java.io.IOException;
-import java.util.Optional;
 
 public class GMTDateAdapter extends TypeAdapter<GMTDate> {
     public static final GMTDateAdapter INSTANCE = new GMTDateAdapter();
@@ -15,10 +14,9 @@ public class GMTDateAdapter extends TypeAdapter<GMTDate> {
     }
 
     public void write(JsonWriter out, GMTDate value) throws IOException {
+        if (value == null) return;
         out.value(
-                Optional.ofNullable(value)
-                        .map(GMTDate::getRaw)
-                        .orElse(null)
+                value.getRaw()
         );
     }
 

@@ -5,7 +5,6 @@ import com.google.gson.stream.JsonReader;
 import com.google.gson.stream.JsonWriter;
 
 import java.io.IOException;
-import java.util.Optional;
 import java.util.regex.Pattern;
 
 public class PatternAdapter extends TypeAdapter<Pattern> {
@@ -15,10 +14,9 @@ public class PatternAdapter extends TypeAdapter<Pattern> {
     }
 
     public void write(JsonWriter out, Pattern value) throws IOException {
+        if (value == null) return;
         out.value(
-                Optional.ofNullable(value)
-                        .map(Pattern::pattern)
-                        .orElse(null)
+                value.pattern()
         );
     }
 

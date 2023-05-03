@@ -6,6 +6,7 @@ import com.google.gson.stream.JsonReader;
 import com.google.gson.stream.JsonToken;
 import com.mcreater.amclcore.account.AbstractAccount;
 import com.mcreater.amclcore.game.GameRepository;
+import com.mcreater.amclcore.java.JavaEnvironment;
 import com.mcreater.amclcore.model.game.arguments.GameArgumentsModel;
 import com.mcreater.amclcore.model.game.rule.GameRuleModel;
 import com.mcreater.amclcore.model.oauth.session.MinecraftNameChangeableRequestModel;
@@ -40,8 +41,15 @@ public class JsonUtil {
             .registerTypeAdapter(Sha1String.class, Sha1StringAdapter.INSTANCE)
             .registerTypeAdapter(MinecraftMirroredResourceURL.class, MinecraftMirroredResourceURLAdapter.INSTANCE)
             .registerTypeAdapter(GameRepository.class, GameRepositoryAdapter.INSTANCE)
-            .disableHtmlEscaping()
+            .registerTypeAdapter(JavaEnvironment.class, JavaEnvironmentAdapter.INSTANCE)
             .create();
+
+    private static final Pattern NAME_PATTERN = Pattern.compile("\"name\":\\s*\"(.+?)\"");
+    private static final Pattern UUID_PATTERN = Pattern.compile("\"id\":\\s*\"(.+?)\"");
+
+    public static String toJson(Object object) {
+        return GSON_PARSER.toJson(object);
+    }
 
     @SafeVarargs
     public static <T> List<T> createList(T... value) {

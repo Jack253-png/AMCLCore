@@ -5,7 +5,6 @@ import com.google.gson.stream.JsonReader;
 import com.google.gson.stream.JsonWriter;
 
 import java.io.IOException;
-import java.util.Optional;
 import java.util.UUID;
 
 import static com.mcreater.amclcore.util.StringUtil.*;
@@ -17,10 +16,9 @@ public class UUIDAdapter extends TypeAdapter<UUID> {
     }
 
     public void write(JsonWriter out, UUID value) throws IOException {
+        if (value == null) return;
         out.value(
-                Optional.ofNullable(value)
-                        .map(UUID::toString)
-                        .orElse(null)
+                value.toString()
         );
     }
 
