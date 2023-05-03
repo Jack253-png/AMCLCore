@@ -9,8 +9,6 @@ import java.util.regex.Pattern;
 @Builder
 public class GameRuleOsModel {
     private String name;
-    @Builder.Default
-    private Pattern version = Pattern.compile("");
-    @Builder.Default
-    private String arch = "";
+    private Pattern version;
+    private String arch;
 }
