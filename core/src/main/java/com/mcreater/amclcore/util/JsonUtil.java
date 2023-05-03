@@ -42,8 +42,10 @@ public class JsonUtil {
             .registerTypeAdapter(MinecraftMirroredResourceURL.class, MinecraftMirroredResourceURLAdapter.INSTANCE)
             .registerTypeAdapter(GameRepository.class, GameRepositoryAdapter.INSTANCE)
             .registerTypeAdapter(JavaEnvironment.class, JavaEnvironmentAdapter.INSTANCE)
+            .registerTypeAdapter(MemorySizeAdapter.class, MemorySizeAdapter.INSTANCE)
+            .serializeNulls()
+            .disableHtmlEscaping()
             .create();
-
     private static final Pattern NAME_PATTERN = Pattern.compile("\"name\":\\s*\"(.+?)\"");
     private static final Pattern UUID_PATTERN = Pattern.compile("\"id\":\\s*\"(.+?)\"");
 

@@ -1,8 +1,13 @@
 package com.mcreater.amclcore.game;
 
+import com.mcreater.amclcore.command.CommandArg;
 import com.mcreater.amclcore.concurrent.task.AbstractAction;
+import com.mcreater.amclcore.exceptions.launch.ConfigCorruptException;
+import com.mcreater.amclcore.exceptions.launch.ManifestJsonCorruptException;
 import com.mcreater.amclcore.exceptions.report.ExceptionReporter;
 import com.mcreater.amclcore.i18n.Text;
+import com.mcreater.amclcore.java.JavaEnvironment;
+import com.mcreater.amclcore.model.config.ConfigMainModel;
 import com.mcreater.amclcore.model.game.GameManifestJsonModel;
 import com.mcreater.amclcore.model.game.assets.GameAssetsIndexFileModel;
 import lombok.AccessLevel;
@@ -13,6 +18,8 @@ import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.FileReader;
 import java.nio.file.Path;
+import java.util.List;
+import java.util.Vector;
 
 import static com.mcreater.amclcore.i18n.I18NManager.translatable;
 import static com.mcreater.amclcore.util.JsonUtil.GSON_PARSER;
@@ -39,16 +46,27 @@ public class GameInstance {
         }
     }
 
-    public AbstractAction fetchLaunchArgsAsync() {
-        return new FetchLaunchArgsTask();
+    public AbstractAction fetchLaunchArgsAsync(ConfigMainModel config) {
+        return new FetchLaunchArgsTask(config);
     }
 
     @AllArgsConstructor(access = AccessLevel.PRIVATE)
     public class FetchLaunchArgsTask extends AbstractAction {
+        private ConfigMainModel config;
 
         protected void execute() throws Exception {
-            GameManifestJsonModel model = manifestJson.readManifest();
+            List<CommandArg> args = new Vector<>();
 
+            if (config.getLaunchConfig() == null) throw new ConfigCorruptException();
+            // TODO load java environment
+            {
+                JavaEnvironment env = config.getLaunchConfig().getEnv();
+                args.add(CommandArg.create(env != null ? env.getExecutable().getPath() : "java"));
+            }
+
+            if (!checkIsValid()) throw new ManifestJsonCorruptException();
+            GameManifestJsonModel model = manifestJson.readManifest();
+            System.out.println(model);
         }
 
         private GameAssetsIndexFileModel getAssetsIndex(GameManifestJsonModel model) throws FileNotFoundException {

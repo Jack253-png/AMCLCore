@@ -37,6 +37,8 @@
   "core.exceptions.oauth.store_check": "Minecraft store check not passed, this Microsoft account haven't bought Minecraft yet",
   "core.exceptions.oauth.name_conflict": "Profile name change not allowed because the specified profile name is not valid, or have been used",
   "core.exceptions.oauth.name_change_not_allowed": "Profile name change not allowed because time not reached, last change: %s, next change allowed: %s, time left: %s days",
+  "core.exceptions.launch.config_corrupt": "Unable to launch because config is corrupt",
+  "core.exceptions.launch.manifest_corrupt": "Unable to launch because Version json corrupt",
   "core.game.repository.task.update.text": "update game instances task",
   "core.game.instance.fetchArgs.text": "fetch launch args task"
 }

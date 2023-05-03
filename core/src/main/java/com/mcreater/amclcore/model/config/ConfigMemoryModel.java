@@ -1,6 +1,7 @@
 package com.mcreater.amclcore.model.config;
 
 import com.mcreater.amclcore.annotations.ConfigModel;
+import com.mcreater.amclcore.java.MemorySize;
 import lombok.Builder;
 import lombok.Data;
 
@@ -8,6 +9,6 @@ import lombok.Data;
 @Builder
 @ConfigModel
 public class ConfigMemoryModel {
-    private long minMemory;
-    private long maxMemory;
+    private MemorySize minMemory;
+    private MemorySize maxMemory;
 }

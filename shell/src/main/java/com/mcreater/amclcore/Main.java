@@ -6,14 +6,17 @@ import com.mcreater.amclcore.concurrent.ConcurrentExecutors;
 import com.mcreater.amclcore.concurrent.task.AbstractTask;
 import com.mcreater.amclcore.game.GameInstance;
 import com.mcreater.amclcore.game.GameRepository;
+import com.mcreater.amclcore.java.JavaEnvironment;
+import com.mcreater.amclcore.model.config.ConfigLaunchModel;
+import com.mcreater.amclcore.model.config.ConfigMainModel;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
-import java.io.FileNotFoundException;
+import java.io.File;
+import java.util.Arrays;
 import java.util.Optional;
 import java.util.concurrent.ExecutionException;
 
-import static com.mcreater.amclcore.util.JsonUtil.GSON_PARSER;
 import static com.mcreater.amclcore.util.PropertyUtil.setProperty;
 
 public class Main {
@@ -39,16 +42,19 @@ public class Main {
             GameInstance gameInstance = repository.getInstances().get(repository.getInstances().size() - 1);
 
             try {
-                GSON_PARSER.toJson(
-                        gameInstance
-                                .getManifestJson()
-                                .readManifest(),
-                        System.out
-                );
-                gameInstance.fetchLaunchArgsAsync()
+                gameInstance.fetchLaunchArgsAsync(
+                                ConfigMainModel.builder()
+                                        .launchConfig(
+                                                ConfigLaunchModel.builder()
+                                                        .environments(Arrays.asList(JavaEnvironment.create(new File("C:\\Program Files\\Java\\jdk-17.0.1\\bin\\java.exe"))))
+                                                        .selectedEnvironment(0)
+                                                        .build()
+                                        )
+                                        .build()
+                        )
                         .submitTo(ConcurrentExecutors.EVENT_QUEUE_EXECUTOR)
                         .get();
-            } catch (FileNotFoundException | ExecutionException | InterruptedException e) {
+            } catch (ExecutionException | InterruptedException e) {
                 e.printStackTrace();
             }
         });
