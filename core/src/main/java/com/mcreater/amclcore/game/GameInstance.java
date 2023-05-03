@@ -56,6 +56,7 @@ public class GameInstance {
 
         protected void execute() throws Exception {
             List<CommandArg> args = new Vector<>();
+            GameManifestJsonModel model;
 
             if (config.getLaunchConfig() == null) throw new ConfigCorruptException();
             // TODO load java environment
@@ -63,9 +64,11 @@ public class GameInstance {
                 JavaEnvironment env = config.getLaunchConfig().getEnv();
                 args.add(CommandArg.create(env != null ? env.getExecutable().getPath() : "java"));
             }
-
-            if (!checkIsValid()) throw new ManifestJsonCorruptException();
-            GameManifestJsonModel model = manifestJson.readManifest();
+            // TODO check and load manifest json
+            {
+                if (!checkIsValid()) throw new ManifestJsonCorruptException();
+                model = manifestJson.readManifest();
+            }
             System.out.println(model);
         }
 
