@@ -62,7 +62,11 @@ public class GameInstance {
             // TODO load java environment
             {
                 JavaEnvironment env = config.getLaunchConfig().getEnv();
-                args.add(CommandArg.create(env != null ? env.getExecutable().getPath() : "java"));
+                args.add(CommandArg.create(
+                        env != null ?
+                                env.getExecutable().getPath() :
+                                "java") // fall back to default java in $PATH env var
+                );
             }
             // TODO check and load manifest json
             {
