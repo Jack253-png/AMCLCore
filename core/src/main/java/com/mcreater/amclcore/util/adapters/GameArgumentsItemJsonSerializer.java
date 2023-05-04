@@ -12,6 +12,7 @@ public class GameArgumentsItemJsonSerializer implements JsonSerializer<GameArgum
     }
 
     public JsonElement serialize(GameArgumentsModel.GameArgumentsItem src, Type typeOfSrc, JsonSerializationContext context) {
+        if (src == null) return JsonNull.INSTANCE;
         if (src.getRules() == null || src.getRules().size() == 0) {
             if (src.getValue().size() == 1) return new JsonPrimitive(src.getValue().get(0));
             else {

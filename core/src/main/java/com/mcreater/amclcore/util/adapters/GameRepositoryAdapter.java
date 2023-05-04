@@ -2,6 +2,7 @@ package com.mcreater.amclcore.util.adapters;
 
 import com.google.gson.TypeAdapter;
 import com.google.gson.stream.JsonReader;
+import com.google.gson.stream.JsonToken;
 import com.google.gson.stream.JsonWriter;
 import com.mcreater.amclcore.game.GameRepository;
 import com.mcreater.amclcore.util.JsonUtil;
@@ -15,7 +16,10 @@ public class GameRepositoryAdapter extends TypeAdapter<GameRepository> {
     }
 
     public void write(JsonWriter out, GameRepository value) throws IOException {
-        if (value == null) return;
+        if (value == null) {
+            out.nullValue();
+            return;
+        }
         out.beginObject()
                 .name("path").value(
                         value.getPath().toString()
@@ -27,6 +31,10 @@ public class GameRepositoryAdapter extends TypeAdapter<GameRepository> {
     }
 
     public GameRepository read(JsonReader in) throws IOException {
+        if (in.peek() == JsonToken.NULL) {
+            in.nextNull();
+            return null;
+        }
         JsonUtil.JsonToMapProcessor processor = new JsonUtil.JsonToMapProcessor(in);
         while (processor.processable()) processor.process();
         JsonUtil.MappedJson mappedJson = processor.getProcessedContent();

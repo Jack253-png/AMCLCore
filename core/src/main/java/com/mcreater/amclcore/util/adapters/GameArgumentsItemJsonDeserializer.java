@@ -17,6 +17,7 @@ public class GameArgumentsItemJsonDeserializer implements JsonDeserializer<GameA
     }
 
     public GameArgumentsModel.GameArgumentsItem deserialize(JsonElement json, Type typeOfT, JsonDeserializationContext context) throws JsonParseException {
+        if (json.isJsonNull()) return null;
         if (json.isJsonPrimitive()) return GameArgumentsModel.GameArgumentsItem.builder()
                 .value(Collections.singletonList(json.getAsString()))
                 .build();

@@ -2,6 +2,7 @@ package com.mcreater.amclcore.util.adapters;
 
 import com.google.gson.TypeAdapter;
 import com.google.gson.stream.JsonReader;
+import com.google.gson.stream.JsonToken;
 import com.google.gson.stream.JsonWriter;
 import com.mcreater.amclcore.account.AbstractAccount;
 import com.mcreater.amclcore.account.MicrosoftAccount;
@@ -23,7 +24,10 @@ public class AbstractAccountAdapter extends TypeAdapter<AbstractAccount> {
     }
 
     public void write(JsonWriter out, AbstractAccount value) throws IOException {
-        if (value == null) return;
+        if (value == null) {
+            out.nullValue();
+            return;
+        }
         if (value.isMicrosoftAccount()) {
             out.beginObject()
                     .name("type").value(1)
@@ -47,6 +51,10 @@ public class AbstractAccountAdapter extends TypeAdapter<AbstractAccount> {
     }
 
     public AbstractAccount read(JsonReader in) throws IOException {
+        if (in.peek() == JsonToken.NULL) {
+            in.nextNull();
+            return null;
+        }
         JsonUtil.JsonToMapProcessor processor = new JsonUtil.JsonToMapProcessor(in);
         do {
             processor.process();

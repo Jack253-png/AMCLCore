@@ -43,7 +43,6 @@ public class JsonUtil {
             .registerTypeAdapter(GameRepository.class, GameRepositoryAdapter.INSTANCE)
             .registerTypeAdapter(JavaEnvironment.class, JavaEnvironmentAdapter.INSTANCE)
             .registerTypeAdapter(MemorySizeAdapter.class, MemorySizeAdapter.INSTANCE)
-            .serializeNulls()
             .disableHtmlEscaping()
             .create();
     private static final Pattern NAME_PATTERN = Pattern.compile("\"name\":\\s*\"(.+?)\"");

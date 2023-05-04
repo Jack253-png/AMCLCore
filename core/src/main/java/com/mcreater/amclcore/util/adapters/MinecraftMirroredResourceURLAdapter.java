@@ -2,6 +2,7 @@ package com.mcreater.amclcore.util.adapters;
 
 import com.google.gson.TypeAdapter;
 import com.google.gson.stream.JsonReader;
+import com.google.gson.stream.JsonToken;
 import com.google.gson.stream.JsonWriter;
 import com.mcreater.amclcore.util.url.MinecraftMirroredResourceURL;
 
@@ -14,13 +15,20 @@ public class MinecraftMirroredResourceURLAdapter extends TypeAdapter<MinecraftMi
     }
 
     public void write(JsonWriter out, MinecraftMirroredResourceURL value) throws IOException {
-        if (value == null) return;
+        if (value == null) {
+            out.nullValue();
+            return;
+        }
         out.value(
                 value.getRawUrl().toString()
         );
     }
 
     public MinecraftMirroredResourceURL read(JsonReader in) throws IOException {
+        if (in.peek() == JsonToken.NULL) {
+            in.nextNull();
+            return null;
+        }
         try {
             return MinecraftMirroredResourceURL.create(in.nextString());
         } catch (Exception e) {

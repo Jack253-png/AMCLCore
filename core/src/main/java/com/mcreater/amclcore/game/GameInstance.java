@@ -69,7 +69,7 @@ public class GameInstance {
                 if (!checkIsValid()) throw new ManifestJsonCorruptException();
                 model = manifestJson.readManifest();
             }
-            System.out.println(model);
+
         }
 
         private GameAssetsIndexFileModel getAssetsIndex(GameManifestJsonModel model) throws FileNotFoundException {
