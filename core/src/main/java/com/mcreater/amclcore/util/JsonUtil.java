@@ -62,6 +62,12 @@ public class JsonUtil {
         return new BasicNameValuePair(key, value);
     }
 
+    public static Map<String, Object> createSingleMap(String s, Object o) {
+        return new HashMap<String, Object>() {{
+            put(s, o);
+        }};
+    }
+
     public static abstract class JsonProcessor {
         JsonReader reader;
         Stack<Object> objectStack = new Stack<>();

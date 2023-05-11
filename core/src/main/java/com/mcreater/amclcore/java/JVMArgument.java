@@ -1,16 +1,8 @@
 package com.mcreater.amclcore.java;
 
 import com.mcreater.amclcore.command.CommandArg;
-import lombok.AccessLevel;
-import lombok.AllArgsConstructor;
-import org.jetbrains.annotations.NotNull;
 
-import java.util.HashMap;
-import java.util.Map;
-import java.util.concurrent.atomic.AtomicReference;
-
-@AllArgsConstructor(access = AccessLevel.PRIVATE)
-public class JVMArgument {
+public class JVMArgument extends CommandArg {
     public static final JVMArgument FILE_ENCODING = create("-Dfile.encoding=${encoding}");
     public static final JVMArgument MINECRAFT_CLIENT_JAR = create("-Dminecraft.client.jar=${jar_path}");
     public static final JVMArgument UNLOCK_EXPERIMENTAL_OPTIONS = create("-XX:+UnlockExperimentalVMOptions");
@@ -37,22 +29,14 @@ public class JVMArgument {
     public static final JVMArgument MINECRAFT_LAUNCHER_BRAND = create("-Dminecraft.launcher.brand=${launcher_brand}");
     public static final JVMArgument MINECRAFT_LAUNCHER_VERSION = create("-Dminecraft.launcher.version=${launcher_version}");
     public static final JVMArgument JAVA_LIBRARY_PATH = create("-Djava.library.path=${lib_path}");
+    public static final JVMArgument CLASSPATH = create("-cp");
     private String raw;
+
+    protected JVMArgument(String command) {
+        super(command);
+    }
 
     public static JVMArgument create(String raw) {
         return new JVMArgument(raw);
-    }
-
-    public CommandArg toCommandArg() {
-        return toCommandArg(new HashMap<>());
-    }
-
-    public CommandArg toCommandArg(@NotNull Map<String, Object> parseMap) {
-        AtomicReference<String> result = new AtomicReference<>(raw);
-        parseMap.forEach((s, o) -> {
-            String rep = String.format("${%s}", s);
-            if (raw.contains(rep)) result.set(raw.replace(rep, o.toString()));
-        });
-        return CommandArg.create(result.get());
     }
 }

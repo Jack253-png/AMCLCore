@@ -12,21 +12,22 @@ public class MemorySize {
     }
 
     public static MemorySize create(String mem) {
+        long bytes = Long.parseLong(mem.substring(0, mem.length() - 1));
         switch (mem.charAt(mem.length() - 1)) {
             default:
                 return new MemorySize(Long.parseLong(mem));
             case 'B':
             case 'b':
-                return new MemorySize(Long.parseLong(mem.substring(0, mem.length() - 1)));
+                return new MemorySize(bytes);
             case 'K':
             case 'k':
-                return new MemorySize(Long.parseLong(mem.substring(0, mem.length() - 1)) * 1024);
+                return new MemorySize(bytes * 1024);
             case 'M':
             case 'm':
-                return new MemorySize(Long.parseLong(mem.substring(0, mem.length() - 1)) * 1024 * 1024);
+                return new MemorySize(bytes * 1024 * 1024);
             case 'G':
             case 'g':
-                return new MemorySize(Long.parseLong(mem.substring(0, mem.length() - 1)) * 1024 * 1024 * 1024);
+                return new MemorySize(bytes * 1024 * 1024 * 1024);
         }
     }
 
