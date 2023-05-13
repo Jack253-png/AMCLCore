@@ -6,6 +6,7 @@ import lombok.Builder;
 import lombok.Data;
 
 import java.util.List;
+import java.util.concurrent.atomic.AtomicBoolean;
 
 @Data
 @Builder
@@ -24,9 +25,9 @@ public class GameArgumentsModel {
         public boolean valid() {
             if (rules == null) return true;
             else {
-                final boolean[] isValid = {false};
-                rules.forEach(gameRuleModel -> isValid[0] = isValid[0] || gameRuleModel.valid());
-                return isValid[0];
+                AtomicBoolean isValid = new AtomicBoolean(false);
+                rules.forEach(gameRuleModel -> isValid.set(isValid.get() || gameRuleModel.valid()));
+                return isValid.get();
             }
         }
     }
