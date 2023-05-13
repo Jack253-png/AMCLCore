@@ -40,5 +40,6 @@
   "core.exceptions.launch.config_corrupt": "设置项缺失，无法启动",
   "core.exceptions.launch.manifest_corrupt": "版本 Json 缺失，无法启动",
   "core.game.repository.task.update.text": "游戏实例刷新任务",
-  "core.game.instance.fetchArgs.text": "获取启动参数任务"
+  "core.game.instance.fetchArgs.text": "获取启动参数任务",
+  "core.exceptions.launch.mainjar_corrupt": "Minecraft jar 缺失或未加载，启动失败"
 }

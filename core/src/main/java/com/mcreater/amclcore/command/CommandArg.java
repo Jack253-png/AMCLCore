@@ -21,4 +21,8 @@ public class CommandArg {
         });
         return this;
     }
+
+    public String toString() {
+        return command;
+    }
 }

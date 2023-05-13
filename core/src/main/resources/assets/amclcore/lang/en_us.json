@@ -40,5 +40,6 @@
   "core.exceptions.launch.config_corrupt": "Unable to launch because config is corrupt",
   "core.exceptions.launch.manifest_corrupt": "Unable to launch because Version json corrupt",
   "core.game.repository.task.update.text": "update game instances task",
-  "core.game.instance.fetchArgs.text": "fetch launch args task"
+  "core.game.instance.fetchArgs.text": "fetch launch args task",
+  "core.exceptions.launch.mainjar_corrupt": "Minecraft jar missed or not loaded, launch failed"
 }

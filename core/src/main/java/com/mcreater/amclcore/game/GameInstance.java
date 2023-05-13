@@ -3,6 +3,7 @@ package com.mcreater.amclcore.game;
 import com.mcreater.amclcore.command.CommandArg;
 import com.mcreater.amclcore.concurrent.task.AbstractAction;
 import com.mcreater.amclcore.exceptions.launch.ConfigCorruptException;
+import com.mcreater.amclcore.exceptions.launch.MainJarCorruptException;
 import com.mcreater.amclcore.exceptions.launch.ManifestJsonCorruptException;
 import com.mcreater.amclcore.exceptions.report.ExceptionReporter;
 import com.mcreater.amclcore.i18n.Text;
@@ -64,6 +65,8 @@ public class GameInstance {
             List<CommandArg> args = new Vector<>();
             GameManifestJsonModel model;
 
+            File minecraftMainJar;
+
             if (config.getLaunchConfig() == null) throw new ConfigCorruptException();
             // TODO load java environment
             {
@@ -79,6 +82,11 @@ public class GameInstance {
                 if (!checkIsValid()) throw new ManifestJsonCorruptException();
                 model = manifestJson.readManifest();
             }
+            // TODO check main jar and fetch path
+            {
+                minecraftMainJar = instancePath.resolve(instanceName + ".jar").toFile();
+                if (!minecraftMainJar.exists()) throw new MainJarCorruptException();
+            }
             // TODO check and load java arguments
             {
                 if (model.getArguments() == null || model.getArguments().getJvmArguments() == null) {
@@ -89,7 +97,7 @@ public class GameInstance {
                                     ),
                                     // TODO to be done
                                     JVMArgument.MINECRAFT_CLIENT_JAR.parseMap(
-                                            JsonUtil.createSingleMap("jar_path", null)
+                                            JsonUtil.createSingleMap("jar_path", minecraftMainJar)
                                     ),
                                     JVMArgument.UNLOCK_EXPERIMENTAL_OPTIONS,
 
@@ -166,7 +174,7 @@ public class GameInstance {
                                     ),
                                     // TODO to be done
                                     JVMArgument.MINECRAFT_CLIENT_JAR.parseMap(
-                                            JsonUtil.createSingleMap("jar_path", "null")
+                                            JsonUtil.createSingleMap("jar_path", minecraftMainJar)
                                     ),
                                     JVMArgument.UNLOCK_EXPERIMENTAL_OPTIONS,
 
@@ -221,6 +229,8 @@ public class GameInstance {
                     });
                 }
             }
+
+            args.forEach(System.out::println);
         }
 
         private GameAssetsIndexFileModel getAssetsIndex(GameManifestJsonModel model) throws FileNotFoundException {
