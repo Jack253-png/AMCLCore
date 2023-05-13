@@ -148,7 +148,10 @@ public class GameInstance {
                             )
                     );
                 } else {
-                    model.getArguments().getJvmArguments().forEach(System.out::println);
+                    model.getArguments().getJvmArguments().forEach(a -> {
+                        System.out.println(a);
+                        System.out.println(a.valid());
+                    });
                 }
             }
         }
