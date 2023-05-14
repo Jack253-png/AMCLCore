@@ -23,13 +23,11 @@ import java.util.Optional;
 import java.util.concurrent.TimeUnit;
 import java.util.function.Consumer;
 
-import static com.mcreater.amclcore.MetaData.oauthClientIdOverridePropertyName;
-import static com.mcreater.amclcore.MetaData.oauthDefaultClientId;
+import static com.mcreater.amclcore.MetaData.getOauthDefaultClientId;
 import static com.mcreater.amclcore.i18n.I18NManager.translatable;
 import static com.mcreater.amclcore.util.JsonUtil.createList;
 import static com.mcreater.amclcore.util.JsonUtil.createPair;
 import static com.mcreater.amclcore.util.NetUtil.buildScopeString;
-import static com.mcreater.amclcore.util.PropertyUtil.readProperty;
 import static com.mcreater.amclcore.util.SwingUtil.copyContentAsync;
 import static com.mcreater.amclcore.util.SwingUtil.openBrowserAsync;
 import static com.mcreater.amclcore.util.concurrent.ConcurrentUtil.sleepTime;
@@ -66,7 +64,7 @@ public enum OAuth {
             }
 
             public String createClientID() {
-                return OAuth.createClientID();
+                return getOauthDefaultClientId();
             }
 
             public String getTokenUrl() {
@@ -186,7 +184,7 @@ public enum OAuth {
     private DeviceCodeModel fetchDeviceToken(Consumer<DeviceCodeModel> requestHandler) throws URISyntaxException, IOException, NullPointerException {
         DeviceCodeModel model = HttpClientWrapper.create(HttpClientWrapper.Method.GET)
                 .uri(deviceCodeUrl)
-                .uriParam("client_id", createClientID())
+                .uriParam("client_id", getOauthDefaultClientId())
                 .uriParam("scope", buildScopeString(" ", "XboxLive.signin", "offline_access"))
                 .timeout(5000)
                 .reqTimeout(5000)
@@ -211,7 +209,7 @@ public enum OAuth {
                 .uri(tokenUrl)
                 .entityEncodedUrl(
                         createPair("grant_type", buildScopeString(":", "urn", "ietf", "params", "oauth", "grant-type", "device_code")),
-                        createPair("client_id", createClientID()),
+                        createPair("client_id", getOauthDefaultClientId()),
                         createPair("code", deviceCode)
                 )
                 .timeout(5000)
@@ -394,10 +392,6 @@ public enum OAuth {
      */
     public OAuthLoginTask deviceCodeLoginAsync(Consumer<DeviceCodeModel> requestHandler) {
         return new OAuthLoginTask(requestHandler);
-    }
-
-    private static String createClientID() {
-        return readProperty(oauthClientIdOverridePropertyName, oauthDefaultClientId);
     }
 
     @AllArgsConstructor(access = AccessLevel.PRIVATE)

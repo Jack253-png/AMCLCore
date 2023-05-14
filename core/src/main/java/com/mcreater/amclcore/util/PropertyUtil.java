@@ -41,6 +41,14 @@ public class PropertyUtil {
         }
     }
 
+    public static <E extends Enum<E>> E readPropertyEnum(Class<E> clazz, String key) {
+        try {
+            return Enum.valueOf(clazz, readProperty(key).toUpperCase());
+        } catch (Exception e) {
+            return null;
+        }
+    }
+
     public static void setProperty(String key, String value) {
         System.setProperty(key, value);
     }
@@ -55,5 +63,9 @@ public class PropertyUtil {
 
     public static void setProperty(String key, long value) {
         System.setProperty(key, String.valueOf(value));
+    }
+
+    public static <E extends Enum<E>> void setProperty(String key, E value) {
+        System.setProperty(key, value.name().toLowerCase());
     }
 }

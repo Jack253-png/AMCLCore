@@ -28,6 +28,7 @@ import java.util.Map;
 import java.util.Vector;
 import java.util.stream.Collectors;
 
+import static com.mcreater.amclcore.MetaData.getLauncherFullVersion;
 import static com.mcreater.amclcore.i18n.I18NManager.translatable;
 import static com.mcreater.amclcore.util.JsonUtil.GSON_PARSER;
 
@@ -62,6 +63,7 @@ public class GameInstance {
         private ConfigMainModel config;
 
         protected void execute() throws Exception {
+            System.out.println(getLauncherFullVersion());
             List<CommandArg> args = new Vector<>();
             GameManifestJsonModel model;
 
