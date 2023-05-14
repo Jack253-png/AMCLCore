@@ -1,5 +1,6 @@
 package com.mcreater.amclcore.game;
 
+import com.mcreater.amclcore.MetaData;
 import com.mcreater.amclcore.command.CommandArg;
 import com.mcreater.amclcore.concurrent.task.AbstractAction;
 import com.mcreater.amclcore.exceptions.launch.ConfigCorruptException;
@@ -12,6 +13,7 @@ import com.mcreater.amclcore.java.JavaEnvironment;
 import com.mcreater.amclcore.java.MemorySize;
 import com.mcreater.amclcore.model.config.ConfigMainModel;
 import com.mcreater.amclcore.model.game.GameManifestJsonModel;
+import com.mcreater.amclcore.model.game.arguments.GameArgumentsModel;
 import com.mcreater.amclcore.model.game.assets.GameAssetsIndexFileModel;
 import com.mcreater.amclcore.util.JsonUtil;
 import lombok.AccessLevel;
@@ -26,7 +28,6 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Vector;
-import java.util.stream.Collectors;
 
 import static com.mcreater.amclcore.i18n.I18NManager.translatable;
 import static com.mcreater.amclcore.util.JsonUtil.GSON_PARSER;
@@ -141,11 +142,11 @@ public class GameInstance {
                                     ),
                                     // TODO to be done
                                     JVMArgument.MINECRAFT_LAUNCHER_BRAND.parseMap(
-                                            JsonUtil.createSingleMap("launcher_brand", "null")
+                                            JsonUtil.createSingleMap("launcher_brand", MetaData.getLauncherName())
                                     ),
                                     // TODO to be done
                                     JVMArgument.MINECRAFT_LAUNCHER_VERSION.parseMap(
-                                            JsonUtil.createSingleMap("launcher_version", "null")
+                                            JsonUtil.createSingleMap("launcher_version", MetaData.getLauncherFullVersion())
                                     ),
                                     JVMArgument.STDOUT_ENCODING.parseMap(
                                             JsonUtil.createSingleMap("encoding", "UTF-8")
@@ -161,10 +162,10 @@ public class GameInstance {
                 } else {
                     Map<String, Object> metadata = new HashMap<String, Object>() {{
                         // TODO to be implemented
-                        put("${natives_directory}", "null");
-                        put("${launcher_name}", "null");
-                        put("${launcher_version}", "null");
-                        put("${classpath}", "null");
+                        put("natives_directory", "null");
+                        put("launcher_name", MetaData.getLauncherName());
+                        put("launcher_version", MetaData.getLauncherFullVersion());
+                        put("classpath", "null");
                     }};
 
                     args.addAll(
@@ -220,13 +221,12 @@ public class GameInstance {
                             )
                     );
 
-                    model.getArguments().getJvmArguments().forEach(a -> {
-                        if (a.valid()) args.addAll(
-                                a.getValue().stream()
-                                        .map(s -> JVMArgument.create(s).parseMap(metadata))
-                                        .collect(Collectors.toList())
-                        );
-                    });
+                    model.getArguments().getJvmArguments().stream()
+                            .filter(GameArgumentsModel.GameArgumentsItem::valid)
+                            .flatMap(gameArgumentsItem -> gameArgumentsItem.getValue().stream())
+                            .map(JVMArgument::create)
+                            .map(jvmArgument -> jvmArgument.parseMap(metadata))
+                            .forEach(args::add);
                 }
             }
 
