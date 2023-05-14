@@ -42,10 +42,14 @@ public class PropertyUtil {
     }
 
     public static <E extends Enum<E>> E readPropertyEnum(Class<E> clazz, String key) {
+        return readPropertyEnum(clazz, key, null);
+    }
+
+    public static <E extends Enum<E>> E readPropertyEnum(Class<E> clazz, String key, E def) {
         try {
             return Enum.valueOf(clazz, readProperty(key).toUpperCase());
         } catch (Exception e) {
-            return null;
+            return def;
         }
     }
 

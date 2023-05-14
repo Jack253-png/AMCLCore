@@ -80,8 +80,7 @@ public class MetaData {
     public static final String launcherBuildChannelOverridePropertyName = "amclcore.version.build.channel.override";
 
     public static Channel getLauncherBuildChannel() {
-        Channel c = PropertyUtil.readPropertyEnum(Channel.class, launcherBuildChannelOverridePropertyName);
-        return c == null ? launcherBuildChannel : c;
+        return PropertyUtil.readPropertyEnum(Channel.class, launcherBuildChannelOverridePropertyName, launcherBuildChannel);
     }
 
     /**
@@ -91,8 +90,7 @@ public class MetaData {
     public static final String launcherBuildInternalVersionOverridePropertyName = "amclcore.version.build.internal.override";
 
     public static int getLauncherBuildInternalVersion() {
-        int b = PropertyUtil.readPropertyInteger(launcherBuildInternalVersionOverridePropertyName, 1);
-        return Math.max(b, 1);
+        return Math.max(PropertyUtil.readPropertyInteger(launcherBuildInternalVersionOverridePropertyName, 1), 1);
     }
 
     public static String getLauncherFullVersion() {
