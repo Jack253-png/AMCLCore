@@ -5,9 +5,6 @@ import com.mcreater.amclcore.util.platform.OperatingSystem;
 import lombok.Builder;
 import lombok.Data;
 
-import java.util.Optional;
-import java.util.concurrent.atomic.AtomicBoolean;
-
 @Data
 @Builder
 public class GameRuleModel {
@@ -17,19 +14,29 @@ public class GameRuleModel {
 
     // TODO to be implemented
     public boolean valid(GameRuleFeatureModel data) {
+        if (features != null && data != null) {
+            Boolean featuresDemoUserValid = null;
+            Boolean featuresHasRes = null;
+
+            if (features.getIsDemoUser() != null && data.getIsDemoUser() != null) {
+                featuresDemoUserValid = features.getIsDemoUser() == data.getIsDemoUser();
+            }
+
+            if (features.getHasCustomResolution() != null && data.getHasCustomResolution() != null) {
+                featuresHasRes = features.getHasCustomResolution() == data.getHasCustomResolution();
+            }
+
+            boolean dem = featuresDemoUserValid != null && featuresDemoUserValid;
+            boolean hasRes = featuresHasRes != null && featuresHasRes;
+
+            return dem || hasRes;
+        }
+
         if (os == null) return true;
         boolean osValid = os.getName() == null || OperatingSystem.CURRENT_OS.getCheckedName().equals(os.getName());
         boolean archValid = os.getArch() == null || Architecture.CURRENT_ARCH.getDisplayName().equals(os.getArch());
 
-        AtomicBoolean featuresValid = new AtomicBoolean(true);
-        Optional.ofNullable(data).ifPresent(m -> {
-            if (data.getHasCustomResolution() != null && features.getHasCustomResolution() != null)
-                featuresValid.set(featuresValid.get() && data.getHasCustomResolution() == features.getHasCustomResolution());
-            if (data.getIsDemoUser() != null && features.getIsDemoUser() != null)
-                featuresValid.set(featuresValid.get() && data.getIsDemoUser() == features.getIsDemoUser());
-        });
-
-        return osValid && archValid && os.getVersion() == null && featuresValid.get();
+        return osValid && archValid && os.getVersion() == null;
     }
 
     public boolean valid() {

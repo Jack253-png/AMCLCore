@@ -15,7 +15,9 @@ import com.mcreater.amclcore.model.game.GameManifestJsonModel;
 import com.mcreater.amclcore.model.game.arguments.GameArgumentsModel;
 import com.mcreater.amclcore.model.game.assets.GameAssetsIndexFileModel;
 import com.mcreater.amclcore.model.game.lib.GameDependedLibModel;
+import com.mcreater.amclcore.model.game.rule.GameRuleFeatureModel;
 import com.mcreater.amclcore.util.JsonUtil;
+import com.mcreater.amclcore.util.platform.OperatingSystem;
 import lombok.AccessLevel;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
@@ -24,12 +26,11 @@ import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.FileReader;
 import java.nio.file.Path;
-import java.nio.file.Paths;
 import java.util.*;
+import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
-import static com.mcreater.amclcore.MetaData.getLauncherFullVersion;
-import static com.mcreater.amclcore.MetaData.getLauncherName;
+import static com.mcreater.amclcore.MetaData.*;
 import static com.mcreater.amclcore.i18n.I18NManager.translatable;
 import static com.mcreater.amclcore.util.JsonUtil.GSON_PARSER;
 
@@ -72,14 +73,29 @@ public class GameInstance {
 
             File minecraftMainJar;
             Path libPath = GameInstance.this.repository.getLibrariesDirectory();
+            String classpath;
+
+            Map<String, Object> gameArgMetaData = new HashMap<String, Object>() {{
+                // show rule: F3 debug -> {launcher_brand}/{version_name}/{version_type}
+                put("version_name", instanceName);
+                put("version_type", getLauncherFullName());
+                put("resolution_width", 640);
+                put("resolution_height", 480);
+            }};
+
+            GameRuleFeatureModel features = GameRuleFeatureModel.builder()
+                    .hasCustomResolution(true)
+                    .build();
 
             if (config.getLaunchConfig() == null) throw new ConfigCorruptException();
             // TODO load java environment
             {
-                JavaEnvironment env = config.getLaunchConfig().getEnv();
                 args.add(CommandArg.create(
-                        env != null ? env.getExecutable().getPath() :
-                                "java") // fall back to default java in $PATH env var
+                                config.getLaunchConfig().getEnv()
+                                        .map(JavaEnvironment::getExecutable)
+                                        .map(File::getPath)
+                                        .orElse("java") // fall back to java in $PATH env var
+                        )
                 );
             }
             // TODO check and load manifest json
@@ -94,7 +110,7 @@ public class GameInstance {
             }
             // TODO check and load libs
             {
-                model.getLibraries().stream()
+                classpath = model.getLibraries().stream()
                         .filter(GameDependedLibModel::valid)
                         .flatMap(gameDependedLibModel -> {
                             if (gameDependedLibModel.getName().getPlatform() != null) return Stream.empty();
@@ -106,8 +122,7 @@ public class GameInstance {
                         .map(libPath::resolve)
                         .map(Path::toString)
                         .distinct()
-                        .map(Paths::get)
-                        .forEach(System.out::println);
+                        .collect(Collectors.joining(OperatingSystem.PATH_SEPARATOR));
             }
             // TODO check and load java arguments
             {
@@ -177,8 +192,7 @@ public class GameInstance {
                                             JsonUtil.createSingleMap("encoding", "UTF-8")
                                     ),
                                     JVMArgument.CLASSPATH,
-                                    // TODO to be done
-                                    null
+                                    CommandArg.create(classpath)
                             )
                     );
                 } else {
@@ -187,7 +201,7 @@ public class GameInstance {
                         put("natives_directory", "null");
                         put("launcher_name", nameOverride.orElse(getLauncherName()));
                         put("launcher_version", versionOverride.orElse(getLauncherFullVersion()));
-                        put("classpath", "null");
+                        put("classpath", CommandArg.create(classpath));
                     }};
 
                     args.addAll(
@@ -249,6 +263,27 @@ public class GameInstance {
                             .flatMap(Collection::stream)
                             .map(JVMArgument::create)
                             .map(jvmArgument -> jvmArgument.parseMap(metadata))
+                            .forEach(args::add);
+                }
+            }
+            // TODO load main class
+            {
+                args.add(CommandArg.create(model.getMainClass()));
+            }
+            // TODO load game args
+            {
+                if (model.getArguments() != null && model.getArguments().getGameArguments() != null) {
+                    model.getArguments().getGameArguments().stream()
+                            .filter(i -> i.valid(features))
+                            .map(GameArgumentsModel.GameArgumentsItem::getValue)
+                            .flatMap(Collection::stream)
+                            .map(CommandArg::create)
+                            .map(a -> a.parseMap(gameArgMetaData))
+                            .forEach(args::add);
+                } else if (model.getMinecraftArguments() != null) {
+                    Arrays.stream(model.getMinecraftArguments().split(" "))
+                            .map(CommandArg::create)
+                            .map(a -> a.parseMap(gameArgMetaData))
                             .forEach(args::add);
                 }
             }

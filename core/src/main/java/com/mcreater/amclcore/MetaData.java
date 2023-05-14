@@ -99,4 +99,8 @@ public class MetaData {
         }
         return String.format("%s-%s%d", getLauncherVersion(), getLauncherBuildChannel().name, getLauncherBuildInternalVersion());
     }
+
+    public static String getLauncherFullName() {
+        return String.join(" ", getLauncherName(), getLauncherFullVersion());
+    }
 }

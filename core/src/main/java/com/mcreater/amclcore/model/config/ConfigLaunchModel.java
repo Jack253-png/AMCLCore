@@ -6,6 +6,7 @@ import lombok.Builder;
 import lombok.Data;
 
 import java.util.List;
+import java.util.Optional;
 
 @Data
 @Builder
@@ -18,9 +19,10 @@ public class ConfigLaunchModel {
     private String launcherNameOverride;
     private String launcherVersionOverride;
 
-    public JavaEnvironment getEnv() {
-        if (selectedEnvironment < environments.size()) return environments.get(selectedEnvironment);
-        if (environments.size() > 0) return environments.get(0);
-        return null;
+    public Optional<JavaEnvironment> getEnv() {
+        if (selectedEnvironment < environments.size())
+            return Optional.ofNullable(environments.get(selectedEnvironment));
+        if (environments.size() > 0) return Optional.ofNullable(environments.get(0));
+        return Optional.empty();
     }
 }
