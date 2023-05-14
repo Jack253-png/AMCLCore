@@ -15,6 +15,9 @@ public class ConfigLaunchModel {
     private List<JavaEnvironment> environments;
     private int selectedEnvironment;
 
+    private String launcherNameOverride;
+    private String launcherVersionOverride;
+
     public JavaEnvironment getEnv() {
         if (selectedEnvironment < environments.size()) return environments.get(selectedEnvironment);
         if (environments.size() > 0) return environments.get(0);

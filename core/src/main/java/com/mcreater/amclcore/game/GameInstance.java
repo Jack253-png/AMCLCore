@@ -1,6 +1,5 @@
 package com.mcreater.amclcore.game;
 
-import com.mcreater.amclcore.MetaData;
 import com.mcreater.amclcore.command.CommandArg;
 import com.mcreater.amclcore.concurrent.task.AbstractAction;
 import com.mcreater.amclcore.exceptions.launch.ConfigCorruptException;
@@ -15,6 +14,7 @@ import com.mcreater.amclcore.model.config.ConfigMainModel;
 import com.mcreater.amclcore.model.game.GameManifestJsonModel;
 import com.mcreater.amclcore.model.game.arguments.GameArgumentsModel;
 import com.mcreater.amclcore.model.game.assets.GameAssetsIndexFileModel;
+import com.mcreater.amclcore.model.game.lib.GameDependedLibModel;
 import com.mcreater.amclcore.util.JsonUtil;
 import lombok.AccessLevel;
 import lombok.AllArgsConstructor;
@@ -24,11 +24,10 @@ import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.FileReader;
 import java.nio.file.Path;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.Vector;
+import java.util.*;
 
+import static com.mcreater.amclcore.MetaData.getLauncherFullVersion;
+import static com.mcreater.amclcore.MetaData.getLauncherName;
 import static com.mcreater.amclcore.i18n.I18NManager.translatable;
 import static com.mcreater.amclcore.util.JsonUtil.GSON_PARSER;
 
@@ -63,6 +62,9 @@ public class GameInstance {
         private ConfigMainModel config;
 
         protected void execute() throws Exception {
+            final Optional<String> nameOverride = Optional.ofNullable(config.getLaunchConfig().getLauncherNameOverride());
+            final Optional<String> versionOverride = Optional.ofNullable(config.getLaunchConfig().getLauncherVersionOverride());
+
             List<CommandArg> args = new Vector<>();
             GameManifestJsonModel model;
 
@@ -73,8 +75,7 @@ public class GameInstance {
             {
                 JavaEnvironment env = config.getLaunchConfig().getEnv();
                 args.add(CommandArg.create(
-                        env != null ?
-                                env.getExecutable().getPath() :
+                        env != null ? env.getExecutable().getPath() :
                                 "java") // fall back to default java in $PATH env var
                 );
             }
@@ -88,8 +89,15 @@ public class GameInstance {
                 minecraftMainJar = instancePath.resolve(instanceName + ".jar").toFile();
                 if (!minecraftMainJar.exists()) throw new MainJarCorruptException();
             }
+            // TODO check and load libs
+            {
+                model.getLibraries().stream()
+                        .map(GameDependedLibModel::getName)
+                        .forEach(System.out::println);
+            }
             // TODO check and load java arguments
             {
+                // version < 1.14
                 if (model.getArguments() == null || model.getArguments().getJvmArguments() == null) {
                     args.addAll(
                             JsonUtil.createList(
@@ -142,11 +150,11 @@ public class GameInstance {
                                     ),
                                     // TODO to be done
                                     JVMArgument.MINECRAFT_LAUNCHER_BRAND.parseMap(
-                                            JsonUtil.createSingleMap("launcher_brand", MetaData.getLauncherName())
+                                            JsonUtil.createSingleMap("launcher_brand", nameOverride.orElse(getLauncherName()))
                                     ),
                                     // TODO to be done
                                     JVMArgument.MINECRAFT_LAUNCHER_VERSION.parseMap(
-                                            JsonUtil.createSingleMap("launcher_version", MetaData.getLauncherFullVersion())
+                                            JsonUtil.createSingleMap("launcher_version", versionOverride.orElse(getLauncherFullVersion()))
                                     ),
                                     JVMArgument.STDOUT_ENCODING.parseMap(
                                             JsonUtil.createSingleMap("encoding", "UTF-8")
@@ -163,8 +171,8 @@ public class GameInstance {
                     Map<String, Object> metadata = new HashMap<String, Object>() {{
                         // TODO to be implemented
                         put("natives_directory", "null");
-                        put("launcher_name", MetaData.getLauncherName());
-                        put("launcher_version", MetaData.getLauncherFullVersion());
+                        put("launcher_name", nameOverride.orElse(getLauncherName()));
+                        put("launcher_version", versionOverride.orElse(getLauncherFullVersion()));
                         put("classpath", "null");
                     }};
 
@@ -223,7 +231,8 @@ public class GameInstance {
 
                     model.getArguments().getJvmArguments().stream()
                             .filter(GameArgumentsModel.GameArgumentsItem::valid)
-                            .flatMap(gameArgumentsItem -> gameArgumentsItem.getValue().stream())
+                            .map(GameArgumentsModel.GameArgumentsItem::getValue)
+                            .flatMap(Collection::stream)
                             .map(JVMArgument::create)
                             .map(jvmArgument -> jvmArgument.parseMap(metadata))
                             .forEach(args::add);

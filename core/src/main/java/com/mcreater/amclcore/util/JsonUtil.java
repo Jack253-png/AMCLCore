@@ -15,6 +15,7 @@ import com.mcreater.amclcore.util.adapters.*;
 import com.mcreater.amclcore.util.date.GMTDate;
 import com.mcreater.amclcore.util.date.StandardDate;
 import com.mcreater.amclcore.util.hash.Sha1String;
+import com.mcreater.amclcore.util.maven.MavenLibName;
 import com.mcreater.amclcore.util.url.MinecraftMirroredResourceURL;
 import org.apache.http.NameValuePair;
 import org.apache.http.message.BasicNameValuePair;
@@ -43,6 +44,7 @@ public class JsonUtil {
             .registerTypeAdapter(GameRepository.class, GameRepositoryAdapter.INSTANCE)
             .registerTypeAdapter(JavaEnvironment.class, JavaEnvironmentAdapter.INSTANCE)
             .registerTypeAdapter(MemorySizeAdapter.class, MemorySizeAdapter.INSTANCE)
+            .registerTypeAdapter(MavenLibName.class, MavenLibNameAdapter.INSTANCE)
             .disableHtmlEscaping()
             .create();
     private static final Pattern NAME_PATTERN = Pattern.compile("\"name\":\\s*\"(.+?)\"");
