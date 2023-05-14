@@ -24,7 +24,9 @@ import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.FileReader;
 import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.util.*;
+import java.util.stream.Stream;
 
 import static com.mcreater.amclcore.MetaData.getLauncherFullVersion;
 import static com.mcreater.amclcore.MetaData.getLauncherName;
@@ -69,6 +71,7 @@ public class GameInstance {
             GameManifestJsonModel model;
 
             File minecraftMainJar;
+            Path libPath = GameInstance.this.repository.getLibrariesDirectory();
 
             if (config.getLaunchConfig() == null) throw new ConfigCorruptException();
             // TODO load java environment
@@ -92,7 +95,18 @@ public class GameInstance {
             // TODO check and load libs
             {
                 model.getLibraries().stream()
-                        .map(GameDependedLibModel::getName)
+                        .filter(GameDependedLibModel::valid)
+                        .flatMap(gameDependedLibModel -> {
+                            if (gameDependedLibModel.getName().getPlatform() != null) return Stream.empty();
+                            if (gameDependedLibModel.getDownloads() != null &&
+                                    gameDependedLibModel.getDownloads().getArtifact() != null)
+                                return Stream.of(libPath.resolve(gameDependedLibModel.getDownloads().getArtifact().getPath()));
+                            else return Stream.of(gameDependedLibModel.getName().toPath());
+                        })
+                        .map(libPath::resolve)
+                        .map(Path::toString)
+                        .distinct()
+                        .map(Paths::get)
                         .forEach(System.out::println);
             }
             // TODO check and load java arguments

@@ -8,7 +8,7 @@ import lombok.Data;
 @Builder
 public class GameRuleFeatureModel {
     @SerializedName("is_demo_user")
-    private boolean isDemoUser;
+    private Boolean isDemoUser;
     @SerializedName("has_custom_resolution")
-    private boolean hasCustomResolution;
+    private Boolean hasCustomResolution;
 }

@@ -8,7 +8,6 @@ public class ResourceFetcher {
     }
 
     public static InputStream get(String path) {
-        System.out.println(path);
         return ResourceFetcher.class.getClassLoader().getResourceAsStream(path);
     }
 }
