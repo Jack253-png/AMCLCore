@@ -126,18 +126,18 @@ public class GameInstance {
             }
             // TODO check and load libs
             {
-                classpath = Stream.concat(model.getLibraries().stream()
-                                .filter(GameDependedLibModel::valid)
-                                .flatMap(gameDependedLibModel -> {
-                                    if (gameDependedLibModel.getName().getPlatform() != null) return Stream.empty();
-                                    if (gameDependedLibModel.getDownloads() != null &&
-                                            gameDependedLibModel.getDownloads().getArtifact() != null)
-                                        return Stream.of(libPath.resolve(gameDependedLibModel.getDownloads().getArtifact().getPath()));
-                                    else {
-                                        return Stream.of(gameDependedLibModel.getName().toPath());
-                                    }
-                                })
-                                .map(libPath::resolve), Stream.of(minecraftMainJar.toPath()))
+                classpath = Stream.concat(
+                                model.getLibraries().stream()
+                                        .filter(GameDependedLibModel::valid)
+                                        .flatMap(gameDependedLibModel -> {
+                                            if (gameDependedLibModel.getName().getPlatform() != null) return Stream.empty();
+                                            if (gameDependedLibModel.getDownloads() != null && gameDependedLibModel.getDownloads().getArtifact() != null)
+                                                return Stream.of(libPath.resolve(gameDependedLibModel.getDownloads().getArtifact().getPath()));
+                                            else return Stream.of(gameDependedLibModel.getName().toPath());
+                                        })
+                                        .map(libPath::resolve),
+                                Stream.of(minecraftMainJar.toPath())
+                        )
                         .map(Path::toString)
                         .distinct()
                         .collect(Collectors.joining(OperatingSystem.PATH_SEPARATOR));
