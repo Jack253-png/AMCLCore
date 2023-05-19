@@ -30,7 +30,7 @@ public class MavenLibName {
     }
 
     public Path toPath() {
-        List<String> names = Arrays.stream(groupId.split(".")).collect(Collectors.toList());
+        List<String> names = Arrays.stream(groupId.split("\\.")).collect(Collectors.toList());
         names.addAll(createList(artifactId, version, String.format(
                 "%s-%s%s.jar",
                 artifactId,

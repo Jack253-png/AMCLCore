@@ -126,16 +126,18 @@ public class GameInstance {
             }
             // TODO check and load libs
             {
-                classpath = model.getLibraries().stream()
-                        .filter(GameDependedLibModel::valid)
-                        .flatMap(gameDependedLibModel -> {
-                            if (gameDependedLibModel.getName().getPlatform() != null) return Stream.empty();
-                            if (gameDependedLibModel.getDownloads() != null &&
-                                    gameDependedLibModel.getDownloads().getArtifact() != null)
-                                return Stream.of(libPath.resolve(gameDependedLibModel.getDownloads().getArtifact().getPath()));
-                            else return Stream.of(gameDependedLibModel.getName().toPath());
-                        })
-                        .map(libPath::resolve)
+                classpath = Stream.concat(model.getLibraries().stream()
+                                .filter(GameDependedLibModel::valid)
+                                .flatMap(gameDependedLibModel -> {
+                                    if (gameDependedLibModel.getName().getPlatform() != null) return Stream.empty();
+                                    if (gameDependedLibModel.getDownloads() != null &&
+                                            gameDependedLibModel.getDownloads().getArtifact() != null)
+                                        return Stream.of(libPath.resolve(gameDependedLibModel.getDownloads().getArtifact().getPath()));
+                                    else {
+                                        return Stream.of(gameDependedLibModel.getName().toPath());
+                                    }
+                                })
+                                .map(libPath::resolve), Stream.of(minecraftMainJar.toPath()))
                         .map(Path::toString)
                         .distinct()
                         .collect(Collectors.joining(OperatingSystem.PATH_SEPARATOR));
@@ -306,7 +308,8 @@ public class GameInstance {
                 }
             }
 
-            args.forEach(System.out::println);
+            System.out.print("& ");
+            args.forEach(commandArg -> System.out.print("\"" + commandArg + "\" "));
         }
 
         private GameAssetsIndexFileModel getAssetsIndex(GameManifestJsonModel model) throws FileNotFoundException {
