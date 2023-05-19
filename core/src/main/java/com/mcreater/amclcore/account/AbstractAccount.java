@@ -12,6 +12,11 @@ import java.util.UUID;
 import static java.util.Objects.requireNonNull;
 
 public abstract class AbstractAccount {
+    public enum UserType {
+        MOJANG,
+        OFFLINE
+    }
+
     @Getter
     private String accountName;
     @Getter

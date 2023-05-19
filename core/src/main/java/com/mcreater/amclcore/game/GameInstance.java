@@ -1,7 +1,9 @@
 package com.mcreater.amclcore.game;
 
+import com.mcreater.amclcore.account.AbstractAccount;
 import com.mcreater.amclcore.command.CommandArg;
 import com.mcreater.amclcore.concurrent.task.AbstractAction;
+import com.mcreater.amclcore.exceptions.launch.AccountNotSelectedException;
 import com.mcreater.amclcore.exceptions.launch.ConfigCorruptException;
 import com.mcreater.amclcore.exceptions.launch.MainJarCorruptException;
 import com.mcreater.amclcore.exceptions.launch.ManifestJsonCorruptException;
@@ -33,6 +35,7 @@ import java.util.stream.Stream;
 import static com.mcreater.amclcore.MetaData.*;
 import static com.mcreater.amclcore.i18n.I18NManager.translatable;
 import static com.mcreater.amclcore.util.JsonUtil.GSON_PARSER;
+import static com.mcreater.amclcore.util.StringUtil.toNoLineUUID;
 
 @Getter
 @AllArgsConstructor(access = AccessLevel.PRIVATE)
@@ -74,14 +77,12 @@ public class GameInstance {
             File minecraftMainJar;
             Path libPath = GameInstance.this.repository.getLibrariesDirectory();
             String classpath;
+            Optional<AbstractAccount> account = config.getSelectedAccount();
+            if (!account.isPresent()) throw new AccountNotSelectedException();
 
-            Map<String, Object> gameArgMetaData = new HashMap<String, Object>() {{
-                // show rule: F3 debug -> {launcher_brand}/{version_name}/{version_type}
-                put("version_name", instanceName);
-                put("version_type", getLauncherFullName());
-                put("resolution_width", 640);
-                put("resolution_height", 480);
-            }};
+            Path gameDir = config.getLaunchConfig().isUseSelfGamePath() ? instancePath : repository.getPath();
+
+            Map<String, Object> gameArgMetaData;
 
             GameRuleFeatureModel features = GameRuleFeatureModel.builder()
                     .hasCustomResolution(true)
@@ -91,7 +92,7 @@ public class GameInstance {
             // TODO load java environment
             {
                 args.add(CommandArg.create(
-                                config.getLaunchConfig().getEnv()
+                        config.getLaunchConfig().getEnv()
                                         .map(JavaEnvironment::getExecutable)
                                         .map(File::getPath)
                                         .orElse("java") // fall back to java in $PATH env var
@@ -102,6 +103,21 @@ public class GameInstance {
             {
                 if (!checkIsValid()) throw new ManifestJsonCorruptException();
                 model = manifestJson.readManifest();
+
+                gameArgMetaData = new HashMap<String, Object>() {{
+                    // show rule: F3 debug -> {launcher_brand}/{version_name}/{version_type}
+                    put("version_name", instanceName);
+                    put("version_type", getLauncherFullName());
+                    put("resolution_width", 640);
+                    put("resolution_height", 480);
+                    put("auth_player_name", account.get().getAccountName());
+                    put("auth_access_token", account.get().getAccessToken());
+                    put("auth_uuid", toNoLineUUID(account.get().getUuid()));
+                    put("user_type", AbstractAccount.UserType.MOJANG);
+                    put("game_directory", gameDir);
+                    put("assets_root", repository.getAssetsDirectory());
+                    put("assets_index_name", model.getAssets());
+                }};
             }
             // TODO check main jar and fetch path
             {
@@ -226,7 +242,9 @@ public class GameInstance {
                                             JsonUtil.createSingleMap("millis", 50)
                                     ),
                                     JVMArgument.HEAP_REGION_SIZE.parseMap(
-                                            JsonUtil.createSingleMap("size", MemorySize.create("16m"))
+                                            JsonUtil.createSingleMap("size",
+                                                    MemorySize.create(16, MemorySize.MemoryUnit.MEGABYTES)
+                                            )
                                     ),
                                     JVMArgument.ADAPTIVE_SIZE_POLICY,
                                     JVMArgument.STACK_TRACE_FAST_THROW,

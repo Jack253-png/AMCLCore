@@ -26,7 +26,7 @@ public class GameRepository {
         this.name = name;
     }
 
-    private List<GameInstance> instances = new Vector<>();
+    private final List<GameInstance> instances = new Vector<>();
 
     public final void init() throws IOException {
         Files.createDirectories(path);

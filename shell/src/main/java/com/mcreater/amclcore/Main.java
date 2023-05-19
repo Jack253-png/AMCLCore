@@ -1,6 +1,8 @@
 package com.mcreater.amclcore;
 
+import com.mcreater.amclcore.account.AbstractAccount;
 import com.mcreater.amclcore.account.MicrosoftAccount;
+import com.mcreater.amclcore.account.OfflineAccount;
 import com.mcreater.amclcore.account.auth.OAuth;
 import com.mcreater.amclcore.concurrent.ConcurrentExecutors;
 import com.mcreater.amclcore.concurrent.task.AbstractTask;
@@ -13,8 +15,9 @@ import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
 import java.io.File;
-import java.util.Arrays;
+import java.util.Collections;
 import java.util.Optional;
+import java.util.Vector;
 import java.util.concurrent.ExecutionException;
 
 import static com.mcreater.amclcore.util.PropertyUtil.setProperty;
@@ -46,10 +49,15 @@ public class Main {
                                 ConfigMainModel.builder()
                                         .launchConfig(
                                                 ConfigLaunchModel.builder()
-                                                        .environments(Arrays.asList(JavaEnvironment.create(new File("C:\\Program Files\\Java\\jdk-17.0.1\\bin\\java.exe"))))
+                                                        .environments(Collections.singletonList(JavaEnvironment.create(new File("C:\\Program Files\\Java\\jdk-17.0.1\\bin\\java.exe"))))
                                                         .selectedEnvironment(0)
+                                                        .useSelfGamePath(true)
                                                         .build()
                                         )
+                                        .accounts(new Vector<AbstractAccount>() {{
+                                            add(OfflineAccount.create("test", OfflineAccount.STEVE));
+                                        }})
+                                        .selectedAccountIndex(0)
                                         .build()
                         )
                         .submitTo(ConcurrentExecutors.EVENT_QUEUE_EXECUTOR)

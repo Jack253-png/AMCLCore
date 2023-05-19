@@ -2,13 +2,31 @@ package com.mcreater.amclcore.java;
 
 import lombok.AccessLevel;
 import lombok.AllArgsConstructor;
+import lombok.Getter;
 
 @AllArgsConstructor(access = AccessLevel.PRIVATE)
 public class MemorySize {
+    public enum MemoryUnit {
+        BYTES("b"),
+        KILOBYTES("k"),
+        MEGABYTES("m"),
+        GIGABYTES("g");
+        @Getter
+        private final String name;
+
+        MemoryUnit(String name) {
+            this.name = name;
+        }
+    }
+
     private long mem;
 
     public static MemorySize create(long mem) {
         return new MemorySize(mem);
+    }
+
+    public static MemorySize create(long mem, MemoryUnit type) {
+        return create(mem + type.getName());
     }
 
     public static MemorySize create(String mem) {

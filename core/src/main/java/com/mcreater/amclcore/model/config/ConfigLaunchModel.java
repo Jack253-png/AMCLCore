@@ -18,6 +18,7 @@ public class ConfigLaunchModel {
 
     private String launcherNameOverride;
     private String launcherVersionOverride;
+    private boolean useSelfGamePath;
 
     public Optional<JavaEnvironment> getEnv() {
         if (selectedEnvironment < environments.size())

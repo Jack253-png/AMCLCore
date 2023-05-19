@@ -12,12 +12,14 @@ import org.jetbrains.annotations.NotNull;
 import java.io.File;
 import java.util.UUID;
 
+import static com.mcreater.amclcore.util.StringUtil.toNoLineUUID;
+
 public class OfflineAccount extends AbstractAccount {
     public static final UUID STEVE = StringUtil.toLineUUID("000000000000300a9d83f9ec9e7fae8e");
     public static final UUID ALEX = StringUtil.toLineUUID("000000000000300a9d83f9ec9e7fae8d");
 
     private OfflineAccount(@NotNull String accountName, @NotNull UUID uuid) {
-        super(accountName, uuid);
+        super(accountName, uuid, toNoLineUUID(uuid));
     }
 
     public static OfflineAccount create(@NotNull String accountName, @NotNull UUID uuid) {

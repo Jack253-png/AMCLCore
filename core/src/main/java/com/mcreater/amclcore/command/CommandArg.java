@@ -5,6 +5,7 @@ import lombok.AllArgsConstructor;
 import org.jetbrains.annotations.NotNull;
 
 import java.util.Map;
+import java.util.Objects;
 
 @AllArgsConstructor(access = AccessLevel.PROTECTED)
 public class CommandArg {
@@ -17,7 +18,7 @@ public class CommandArg {
     public CommandArg parseMap(@NotNull Map<String, Object> base) {
         base.forEach((s, o) -> {
             String rep = String.format("${%s}", s);
-            if (command.contains(rep)) command = command.replace(rep, o.toString());
+            if (command.contains(rep)) command = command.replace(rep, Objects.toString(o));
         });
         return this;
     }
