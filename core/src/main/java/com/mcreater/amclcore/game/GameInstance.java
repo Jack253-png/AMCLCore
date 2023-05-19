@@ -81,6 +81,7 @@ public class GameInstance {
             if (!account.isPresent()) throw new AccountNotSelectedException();
 
             Path gameDir = config.getLaunchConfig().isUseSelfGamePath() ? instancePath : repository.getPath();
+            Path nativePath = instancePath.resolve(instanceName + "-natives");
 
             Map<String, Object> gameArgMetaData;
 
@@ -108,7 +109,7 @@ public class GameInstance {
                     // show rule: F3 debug -> {launcher_brand}/{version_name}/{version_type}
                     put("version_name", instanceName);
                     put("version_type", getLauncherFullName());
-                    put("resolution_width", 640);
+                    put("resolution_width", 854);
                     put("resolution_height", 480);
                     put("auth_player_name", account.get().getAccountName());
                     put("auth_access_token", account.get().getAccessToken());
@@ -192,7 +193,7 @@ public class GameInstance {
                                     JVMArgument.INTEL_PERFORMANCE,
                                     // TODO to be done
                                     JVMArgument.JAVA_LIBRARY_PATH.parseMap(
-                                            JsonUtil.createSingleMap("lib_path", "null")
+                                            JsonUtil.createSingleMap("lib_path", nativePath)
                                     ),
                                     JVMArgument.MINECRAFT_LAUNCHER_BRAND.parseMap(
                                             JsonUtil.createSingleMap("launcher_brand", nameOverride.orElse(getLauncherName()))
@@ -213,7 +214,7 @@ public class GameInstance {
                 } else {
                     Map<String, Object> metadata = new HashMap<String, Object>() {{
                         // TODO to be implemented
-                        put("natives_directory", "null");
+                        put("natives_directory", nativePath);
                         put("launcher_name", nameOverride.orElse(getLauncherName()));
                         put("launcher_version", versionOverride.orElse(getLauncherFullVersion()));
                         put("classpath", CommandArg.create(classpath));
