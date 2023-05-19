@@ -151,7 +151,6 @@ public class GameInstance {
                                     JVMArgument.FILE_ENCODING.parseMap(
                                             JsonUtil.createSingleMap("encoding", "UTF-8")
                                     ),
-                                    // TODO to be done
                                     JVMArgument.MINECRAFT_CLIENT_JAR.parseMap(
                                             JsonUtil.createSingleMap("jar_path", minecraftMainJar)
                                     ),
@@ -195,11 +194,9 @@ public class GameInstance {
                                     JVMArgument.JAVA_LIBRARY_PATH.parseMap(
                                             JsonUtil.createSingleMap("lib_path", "null")
                                     ),
-                                    // TODO to be done
                                     JVMArgument.MINECRAFT_LAUNCHER_BRAND.parseMap(
                                             JsonUtil.createSingleMap("launcher_brand", nameOverride.orElse(getLauncherName()))
                                     ),
-                                    // TODO to be done
                                     JVMArgument.MINECRAFT_LAUNCHER_VERSION.parseMap(
                                             JsonUtil.createSingleMap("launcher_version", versionOverride.orElse(getLauncherFullVersion()))
                                     ),
