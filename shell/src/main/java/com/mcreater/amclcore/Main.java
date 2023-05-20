@@ -45,7 +45,7 @@ public class Main {
             repository.getInstances().forEach(gameInstance -> System.out.println(gameInstance.getInstanceName()));
 
             // repository.getInstances().size() - 1
-            GameInstance gameInstance = repository.getInstances().get(3);
+            GameInstance gameInstance = repository.getInstances().get(13);
 
             try {
                 gameInstance.fetchLaunchArgsAsync(

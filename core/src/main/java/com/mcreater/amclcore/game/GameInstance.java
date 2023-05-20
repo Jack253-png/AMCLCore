@@ -128,6 +128,7 @@ public class GameInstance {
                     put("user_type", AbstractAccount.UserType.MOJANG);
                     put("game_directory", gameDir);
                     put("assets_root", repository.getAssetsDirectory());
+                    put("game_assets", gameDir.resolve("resources"));
                     put("assets_index_name", model.getAssets());
                 }};
             }
