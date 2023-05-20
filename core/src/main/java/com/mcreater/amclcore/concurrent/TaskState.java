@@ -18,7 +18,7 @@ public class TaskState<R> {
     private Text message;
 
     public double getStageDouble() {
-        return (double) currentStage / totalStage;
+        return totalStage != 0 ? (double) currentStage / totalStage : 0;
     }
 
     public int getStateInt() {

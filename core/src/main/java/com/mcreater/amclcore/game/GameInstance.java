@@ -2,6 +2,7 @@ package com.mcreater.amclcore.game;
 
 import com.mcreater.amclcore.account.AbstractAccount;
 import com.mcreater.amclcore.command.CommandArg;
+import com.mcreater.amclcore.concurrent.TaskState;
 import com.mcreater.amclcore.concurrent.task.AbstractAction;
 import com.mcreater.amclcore.exceptions.launch.AccountNotSelectedException;
 import com.mcreater.amclcore.exceptions.launch.ConfigCorruptException;
@@ -69,6 +70,13 @@ public class GameInstance {
         private ConfigMainModel config;
 
         protected void execute() throws Exception {
+            setState(
+                    TaskState.<Void>builder()
+                            .currentStage(0)
+                            .totalStage(1)
+                            .message(translatable("core.game.task.launch.pre_launching"))
+                            .build()
+            );
             final Optional<String> nameOverride = Optional.ofNullable(config.getLaunchConfig().getLauncherNameOverride());
             final Optional<String> versionOverride = Optional.ofNullable(config.getLaunchConfig().getLauncherVersionOverride());
 
@@ -234,6 +242,9 @@ public class GameInstance {
                         put("natives_directory", nativePath);
                         put("launcher_name", nameOverride.orElse(getLauncherName()));
                         put("launcher_version", versionOverride.orElse(getLauncherFullVersion()));
+                        put("version_name", instanceName);
+                        put("library_directory", libPath);
+                        put("classpath_separator", OperatingSystem.PATH_SEPARATOR);
                         put("classpath", CommandArg.create(classpath));
                     }};
 
