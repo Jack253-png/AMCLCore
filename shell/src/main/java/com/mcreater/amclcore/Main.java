@@ -42,7 +42,10 @@ public class Main {
                 e.printStackTrace();
             }
 
-            GameInstance gameInstance = repository.getInstances().get(repository.getInstances().size() - 1);
+            repository.getInstances().forEach(gameInstance -> System.out.println(gameInstance.getInstanceName()));
+
+            // repository.getInstances().size() - 1
+            GameInstance gameInstance = repository.getInstances().get(9);
 
             try {
                 gameInstance.fetchLaunchArgsAsync(

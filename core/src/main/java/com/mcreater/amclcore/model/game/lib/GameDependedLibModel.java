@@ -7,6 +7,8 @@ import com.mcreater.amclcore.util.url.MinecraftMirroredResourceURL;
 import lombok.Builder;
 import lombok.Data;
 
+import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.atomic.AtomicBoolean;
@@ -15,7 +17,6 @@ import java.util.concurrent.atomic.AtomicBoolean;
 @Data
 public class GameDependedLibModel {
     private GameDependedLibDownloadModel downloads;
-    private Map<String, GameDependedLibDownloadArtifactModel> classifiers;
     private GameDependedLibExtractModel extract;
     private MavenLibName name;
     private Map<String, String> natives;
@@ -37,5 +38,19 @@ public class GameDependedLibModel {
 
     public boolean valid() {
         return valid(null);
+    }
+
+    public boolean isNormalLib() {
+        return this.getName().getPlatform() == null;
+    }
+
+    public boolean hasNatives() {
+        return (this.natives != null && this.downloads != null && this.downloads.getClassifiers() != null) || !isNormalLib();
+    }
+
+    public Path getJarPath() {
+        if (getDownloads() != null && getDownloads().getArtifact() != null)
+            return Paths.get(getDownloads().getArtifact().getPath());
+        else return getName().toPath();
     }
 }

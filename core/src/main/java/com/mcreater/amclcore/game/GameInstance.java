@@ -28,6 +28,7 @@ import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.FileReader;
 import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.util.*;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
@@ -77,6 +78,8 @@ public class GameInstance {
             File minecraftMainJar;
             Path libPath = GameInstance.this.repository.getLibrariesDirectory();
             String classpath;
+            List<Path> nativeLibs;
+
             Optional<AbstractAccount> account = config.getSelectedAccount();
             if (!account.isPresent()) throw new AccountNotSelectedException();
 
@@ -130,18 +133,32 @@ public class GameInstance {
                 classpath = Stream.concat(
                                 model.getLibraries().stream()
                                         .filter(GameDependedLibModel::valid)
-                                        .flatMap(gameDependedLibModel -> {
-                                            if (gameDependedLibModel.getName().getPlatform() != null) return Stream.empty();
-                                            if (gameDependedLibModel.getDownloads() != null && gameDependedLibModel.getDownloads().getArtifact() != null)
-                                                return Stream.of(libPath.resolve(gameDependedLibModel.getDownloads().getArtifact().getPath()));
-                                            else return Stream.of(gameDependedLibModel.getName().toPath());
-                                        })
+                                        .filter(GameDependedLibModel::isNormalLib)
+                                        .map(GameDependedLibModel::getJarPath)
                                         .map(libPath::resolve),
                                 Stream.of(minecraftMainJar.toPath())
                         )
                         .map(Path::toString)
                         .distinct()
                         .collect(Collectors.joining(OperatingSystem.PATH_SEPARATOR));
+
+                nativeLibs = model.getLibraries().stream()
+                        .filter(GameDependedLibModel::valid)
+                        .filter(GameDependedLibModel::hasNatives)
+                        .map(lib -> {
+                            if (lib.isNormalLib()) {
+                                String nativeId = lib.getNatives().get(OperatingSystem.CURRENT_OS.getCheckedName());
+                                return lib.getDownloads()
+                                        .getClassifiers()
+                                        .get(nativeId)
+                                        .getJarPath();
+                            } else return lib.getJarPath();
+                        })
+                        .map(libPath::resolve)
+                        .map(Path::toString)
+                        .distinct()
+                        .map(Paths::get)
+                        .collect(Collectors.toList());
             }
             // TODO check and load java arguments
             {

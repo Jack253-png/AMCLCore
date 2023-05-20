@@ -5,6 +5,9 @@ import com.mcreater.amclcore.util.url.MinecraftMirroredResourceURL;
 import lombok.Builder;
 import lombok.Data;
 
+import java.nio.file.Path;
+import java.nio.file.Paths;
+
 @Builder
 @Data
 public class GameDependedLibDownloadArtifactModel {
@@ -12,4 +15,8 @@ public class GameDependedLibDownloadArtifactModel {
     private Sha1String sha1;
     private long size;
     private MinecraftMirroredResourceURL url;
+
+    public Path getJarPath() {
+        return Paths.get(path);
+    }
 }
