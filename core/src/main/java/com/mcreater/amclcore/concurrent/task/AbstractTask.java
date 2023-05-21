@@ -118,7 +118,8 @@ public abstract class AbstractTask<T> extends RecursiveTask<Optional<T>> {
         ImmutablePair<Integer, Integer> lastState = fetchTaskState();
         try {
             T result = call();
-            EVENT_LOGGER.info(translatable("core.concurrent.base.event.finish.name", this).getText());
+            if (!"".equals(this.toString()))
+                EVENT_LOGGER.info(translatable("core.concurrent.base.event.finish.name", this).getText());
             stateFinish(lastState, result);
             return Optional.ofNullable(result);
         } catch (Exception e) {

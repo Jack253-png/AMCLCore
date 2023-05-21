@@ -29,6 +29,22 @@ public class MemorySize {
         return create(mem + type.getName());
     }
 
+    public static MemorySize createBytes(long bytes) {
+        return create(bytes, MemoryUnit.BYTES);
+    }
+
+    public static MemorySize createKiloBytes(long kiloBytes) {
+        return create(kiloBytes, MemoryUnit.KILOBYTES);
+    }
+
+    public static MemorySize createMegaBytes(long megaBytes) {
+        return create(megaBytes, MemoryUnit.MEGABYTES);
+    }
+
+    public static MemorySize createGigaBytes(long gigaBytes) {
+        return create(gigaBytes, MemoryUnit.GIGABYTES);
+    }
+
     public static MemorySize create(String mem) {
         long bytes = Long.parseLong(mem.substring(0, mem.length() - 1));
         switch (mem.charAt(mem.length() - 1)) {

@@ -43,5 +43,7 @@
   "core.game.instance.fetchArgs.text": "获取启动参数任务",
   "core.exceptions.launch.mainjar_corrupt": "Minecraft jar 缺失或未加载，启动失败",
   "core.exceptions.launch.account_not_sel": "账户未选择",
-  "core.game.task.launch.pre_launching": "准备启动..."
+  "core.task.process.name": "进程启动任务",
+  "core.game.instance.task.launch.name": "启动任务",
+  "core.game.instance.launch.pre_launching": "准备启动..."
 }

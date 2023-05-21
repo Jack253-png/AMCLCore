@@ -6,6 +6,6 @@ import static com.mcreater.amclcore.i18n.I18NManager.translatable;
 
 public class AccountNotSelectedException extends IOException {
     public String toString() {
-        return translatable("core.exceptions.launch.account_not_sel").getText();
+        return translatable("core.exceptions.launchAsync.account_not_sel").getText();
     }
 }

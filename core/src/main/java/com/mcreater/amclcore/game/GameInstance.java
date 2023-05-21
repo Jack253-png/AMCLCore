@@ -2,8 +2,10 @@ package com.mcreater.amclcore.game;
 
 import com.mcreater.amclcore.account.AbstractAccount;
 import com.mcreater.amclcore.command.CommandArg;
+import com.mcreater.amclcore.command.StartProcessTask;
 import com.mcreater.amclcore.concurrent.TaskState;
 import com.mcreater.amclcore.concurrent.task.AbstractAction;
+import com.mcreater.amclcore.concurrent.task.AbstractTask;
 import com.mcreater.amclcore.exceptions.launch.AccountNotSelectedException;
 import com.mcreater.amclcore.exceptions.launch.ConfigCorruptException;
 import com.mcreater.amclcore.exceptions.launch.MainJarCorruptException;
@@ -61,20 +63,45 @@ public class GameInstance {
         }
     }
 
-    public AbstractAction fetchLaunchArgsAsync(ConfigMainModel config) {
+    public FetchLaunchArgsTask fetchLaunchArgsAsync(ConfigMainModel config) {
         return new FetchLaunchArgsTask(config);
     }
 
+    public LaunchTask launchAsync(ConfigMainModel config) {
+        return new LaunchTask(config);
+    }
+
     @AllArgsConstructor(access = AccessLevel.PRIVATE)
-    public class FetchLaunchArgsTask extends AbstractAction {
+    public class LaunchTask extends AbstractAction {
         private ConfigMainModel config;
 
         protected void execute() throws Exception {
+            List<CommandArg> command = fetchLaunchArgsAsync(config)
+                    .bindTo(this)
+                    .get()
+                    .orElseThrow(NullPointerException::new);
+
+            StartProcessTask.create(command)
+                    .setStartPath(getGameDir(config.getLaunchConfig().isUseSelfGamePath()))
+                    .bindTo(this)
+                    .get();
+        }
+
+        protected Text getTaskName() {
+            return translatable("core.game.instance.task.launch.name");
+        }
+    }
+
+    @AllArgsConstructor(access = AccessLevel.PRIVATE)
+    public class FetchLaunchArgsTask extends AbstractTask<List<CommandArg>> {
+        private ConfigMainModel config;
+
+        protected List<CommandArg> call() throws Exception {
             setState(
-                    TaskState.<Void>builder()
+                    TaskState.<List<CommandArg>>builder()
                             .currentStage(0)
                             .totalStage(1)
-                            .message(translatable("core.game.task.launch.pre_launching"))
+                            .message(translatable("core.game.instance.launchAsync.pre_launching"))
                             .build()
             );
             final Optional<String> nameOverride = Optional.ofNullable(config.getLaunchConfig().getLauncherNameOverride());
@@ -91,7 +118,7 @@ public class GameInstance {
             Optional<AbstractAccount> account = config.getSelectedAccount();
             if (!account.isPresent()) throw new AccountNotSelectedException();
 
-            Path gameDir = config.getLaunchConfig().isUseSelfGamePath() ? instancePath : repository.getPath();
+            Path gameDir = getGameDir(config.getLaunchConfig().isUseSelfGamePath());
             Path nativePath = instancePath.resolve(instanceName + "-natives");
 
             Map<String, Object> gameArgMetaData;
@@ -104,7 +131,7 @@ public class GameInstance {
             // TODO load java environment
             {
                 args.add(CommandArg.create(
-                        config.getLaunchConfig().getEnv()
+                                config.getLaunchConfig().getEnv()
                                         .map(JavaEnvironment::getExecutable)
                                         .map(File::getPath)
                                         .orElse("java") // fall back to java in $PATH env var
@@ -194,7 +221,9 @@ public class GameInstance {
                                             JsonUtil.createSingleMap("millis", 50)
                                     ),
                                     JVMArgument.HEAP_REGION_SIZE.parseMap(
-                                            JsonUtil.createSingleMap("size", MemorySize.create("16m"))
+                                            JsonUtil.createSingleMap("size",
+                                                    MemorySize.create(16, MemorySize.MemoryUnit.MEGABYTES)
+                                            )
                                     ),
                                     JVMArgument.ADAPTIVE_SIZE_POLICY,
                                     JVMArgument.STACK_TRACE_FAST_THROW,
@@ -234,7 +263,13 @@ public class GameInstance {
                                             JsonUtil.createSingleMap("encoding", "UTF-8")
                                     ),
                                     JVMArgument.CLASSPATH,
-                                    CommandArg.create(classpath)
+                                    CommandArg.create(classpath),
+                                    JVMArgument.MAX_HEAP_SIZE.parseMap(
+                                            JsonUtil.createSingleMap("size", config.getLaunchConfig().getMemory().getMaxMemory())
+                                    ),
+                                    JVMArgument.MIN_HEAP_SIZE.parseMap(
+                                            JsonUtil.createSingleMap("size", config.getLaunchConfig().getMemory().getMinMemory())
+                                    )
                             )
                     );
                 } else {
@@ -311,6 +346,17 @@ public class GameInstance {
                             .map(JVMArgument::create)
                             .map(jvmArgument -> jvmArgument.parseMap(metadata))
                             .forEach(args::add);
+
+                    args.addAll(
+                            JsonUtil.createList(
+                                    JVMArgument.MAX_HEAP_SIZE.parseMap(
+                                            JsonUtil.createSingleMap("size", config.getLaunchConfig().getMemory().getMaxMemory())
+                                    ),
+                                    JVMArgument.MIN_HEAP_SIZE.parseMap(
+                                            JsonUtil.createSingleMap("size", config.getLaunchConfig().getMemory().getMinMemory())
+                                    )
+                            )
+                    );
                 }
             }
             // TODO load main class
@@ -335,26 +381,29 @@ public class GameInstance {
                 }
             }
 
-            System.out.print("& ");
-            args.forEach(commandArg -> System.out.print("\"" + commandArg + "\" "));
-        }
-
-        private GameAssetsIndexFileModel getAssetsIndex(GameManifestJsonModel model) throws FileNotFoundException {
-            return GSON_PARSER.fromJson(
-                    new FileReader(getAssetsIndexFile(model)),
-                    GameAssetsIndexFileModel.class
-            );
-        }
-
-        private File getAssetsIndexFile(GameManifestJsonModel model) {
-            return repository.getAssetsDirectory()
-                    .resolve("indexes")
-                    .resolve(model.getAssets() + ".json")
-                    .toFile();
+            return args;
         }
 
         protected Text getTaskName() {
             return translatable("core.game.instance.fetchArgs.text");
         }
+    }
+
+    private GameAssetsIndexFileModel getAssetsIndex(GameManifestJsonModel model) throws FileNotFoundException {
+        return GSON_PARSER.fromJson(
+                new FileReader(getAssetsIndexFile(model)),
+                GameAssetsIndexFileModel.class
+        );
+    }
+
+    private File getAssetsIndexFile(GameManifestJsonModel model) {
+        return repository.getAssetsDirectory()
+                .resolve("indexes")
+                .resolve(model.getAssets() + ".json")
+                .toFile();
+    }
+
+    private Path getGameDir(boolean useSelfDic) {
+        return useSelfDic ? instancePath : repository.getPath();
     }
 }

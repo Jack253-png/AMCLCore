@@ -43,5 +43,7 @@
   "core.game.instance.fetchArgs.text": "fetch launch args task",
   "core.exceptions.launch.mainjar_corrupt": "Minecraft jar missed or not loaded, launch failed",
   "core.exceptions.launch.account_not_sel": "Account not selected",
-  "core.game.task.launch.pre_launching": "Prepare launching..."
+  "core.task.process.name": "starting process task",
+  "core.game.instance.task.launch.name": "launching task",
+  "core.game.instance.launch.pre_launching": "Prepare launching..."
 }

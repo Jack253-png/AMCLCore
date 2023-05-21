@@ -9,8 +9,10 @@ import com.mcreater.amclcore.concurrent.task.AbstractTask;
 import com.mcreater.amclcore.game.GameInstance;
 import com.mcreater.amclcore.game.GameRepository;
 import com.mcreater.amclcore.java.JavaEnvironment;
+import com.mcreater.amclcore.java.MemorySize;
 import com.mcreater.amclcore.model.config.ConfigLaunchModel;
 import com.mcreater.amclcore.model.config.ConfigMainModel;
+import com.mcreater.amclcore.model.config.ConfigMemoryModel;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
@@ -44,17 +46,22 @@ public class Main {
 
             repository.getInstances().forEach(gameInstance -> System.out.println(gameInstance.getInstanceName()));
 
-            // repository.getInstances().size() - 1
-            GameInstance gameInstance = repository.getInstances().get(13);
+            GameInstance gameInstance = repository.getInstances().get(repository.getInstances().size() - 1);
 
             try {
-                gameInstance.fetchLaunchArgsAsync(
+                gameInstance.launchAsync(
                                 ConfigMainModel.builder()
                                         .launchConfig(
                                                 ConfigLaunchModel.builder()
                                                         .environments(Collections.singletonList(JavaEnvironment.create(new File("C:\\Program Files\\Java\\jdk-17.0.1\\bin\\java.exe"))))
                                                         .selectedEnvironment(0)
                                                         .useSelfGamePath(true)
+                                                        .memory(
+                                                                ConfigMemoryModel.builder()
+                                                                        .maxMemory(MemorySize.createMegaBytes(8192))
+                                                                        .minMemory(MemorySize.createMegaBytes(128))
+                                                                        .build()
+                                                        )
                                                         .build()
                                         )
                                         .accounts(new Vector<AbstractAccount>() {{
@@ -63,7 +70,7 @@ public class Main {
                                         .selectedAccountIndex(0)
                                         .build()
                         )
-                        .submitTo(ConcurrentExecutors.EVENT_QUEUE_EXECUTOR)
+                        .submitTo(ConcurrentExecutors.LAUNCH_EVENT_EXECUTOR)
                         .get();
             } catch (ExecutionException | InterruptedException e) {
                 e.printStackTrace();

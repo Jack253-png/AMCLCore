@@ -6,6 +6,6 @@ import static com.mcreater.amclcore.i18n.I18NManager.translatable;
 
 public class ManifestJsonCorruptException extends IOException {
     public String toString() {
-        return translatable("core.exceptions.launch.manifest_corrupt").getText();
+        return translatable("core.exceptions.launchAsync.manifest_corrupt").getText();
     }
 }

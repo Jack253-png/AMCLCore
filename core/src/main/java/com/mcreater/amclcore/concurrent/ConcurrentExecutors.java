@@ -27,14 +27,26 @@ public class ConcurrentExecutors {
         }
     }
 
+    public static final Thread.UncaughtExceptionHandler excHandler = (t, e) -> report(e, ExceptionReporter.ExceptionType.CONCURRENT);
+
     /**
-     * Main event queue(launch, task shells...)<br>
+     * Main event queue(launchAsync, task shells...)<br>
      * 主要事件队列(启动，任务外壳...)
      */
     public static final ExtendForkJoinPool EVENT_QUEUE_EXECUTOR = new ExtendForkJoinPool(
             32,
-            new ForkJoinWorkerThreadFactoryImpl(),
-            (t, e) -> report(e, ExceptionReporter.ExceptionType.CONCURRENT),
+            ForkJoinWorkerThreadFactoryImpl.INSTANCE,
+            excHandler,
+            true
+    );
+    /**
+     * Launch event queue<br>
+     * 启动时间队列
+     */
+    public static final ExtendForkJoinPool LAUNCH_EVENT_EXECUTOR = new ExtendForkJoinPool(
+            32,
+            ForkJoinWorkerThreadFactoryImpl.INSTANCE,
+            excHandler,
             true
     );
     /**
@@ -44,7 +56,7 @@ public class ConcurrentExecutors {
     public static final ExtendForkJoinPool DOWNLOAD_QUEUE_EXECUTOR = new ExtendForkJoinPool(
             32,
             ForkJoinWorkerThreadFactoryImpl.INSTANCE,
-            (t, e) -> report(e, ExceptionReporter.ExceptionType.CONCURRENT),
+            excHandler,
             true
     );
     /**
@@ -54,7 +66,7 @@ public class ConcurrentExecutors {
     public static final ExtendForkJoinPool OAUTH_LOGIN_EXECUTOR = new ExtendForkJoinPool(
             8,
             ForkJoinWorkerThreadFactoryImpl.INSTANCE,
-            (t, e) -> report(e, ExceptionReporter.ExceptionType.CONCURRENT),
+            excHandler,
             true
     );
     /**
@@ -64,7 +76,7 @@ public class ConcurrentExecutors {
     public static final ExtendForkJoinPool OAUTH_EVENT_EXECUTOR = new ExtendForkJoinPool(
             32,
             ForkJoinWorkerThreadFactoryImpl.INSTANCE,
-            (t, e) -> report(e, ExceptionReporter.ExceptionType.CONCURRENT),
+            excHandler,
             true
     );
     /**
@@ -74,7 +86,7 @@ public class ConcurrentExecutors {
     public static final ExtendForkJoinPool AWT_EVENT_EXECUTOR = new ExtendForkJoinPool(
             8,
             ForkJoinWorkerThreadFactoryImpl.INSTANCE,
-            (t, e) -> report(e, ExceptionReporter.ExceptionType.CONCURRENT),
+            excHandler,
             true
     );
     /**
@@ -87,7 +99,7 @@ public class ConcurrentExecutors {
         return new ForkJoinPool(
                 1,
                 ForkJoinWorkerThreadFactoryImpl.INSTANCE,
-                (t, e) -> report(e, ExceptionReporter.ExceptionType.CONCURRENT),
+                excHandler,
                 true
         );
     }

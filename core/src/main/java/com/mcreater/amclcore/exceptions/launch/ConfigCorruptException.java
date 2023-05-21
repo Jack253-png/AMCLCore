@@ -6,6 +6,6 @@ import static com.mcreater.amclcore.i18n.I18NManager.translatable;
 
 public class ConfigCorruptException extends IOException {
     public String toString() {
-        return translatable("core.exceptions.launch.config_corrupt").getText();
+        return translatable("core.exceptions.launchAsync.config_corrupt").getText();
     }
 }
