@@ -77,7 +77,8 @@ public class StartProcessTask extends AbstractTask<Integer> {
 
         do {
 
-        } while (process.isAlive());
+        }
+        while (process.isAlive());
 
         return process.exitValue();
     }

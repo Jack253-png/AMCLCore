@@ -45,5 +45,8 @@
   "core.exceptions.launch.account_not_sel": "Account not selected",
   "core.task.process.name": "starting process task",
   "core.game.instance.task.launch.name": "launching task",
-  "core.game.instance.launch.pre_launching": "Prepare launching..."
+  "core.game.instance.launch.pre_launching": "Prepare launching...",
+  "core.script.powershell.desc": "Powershell format script",
+  "core.script.cmdlet.desc": "Windows legacy format script",
+  "core.script.sh.desc": "Like UNIX shell format script"
 }
