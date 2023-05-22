@@ -26,7 +26,7 @@
   "core.swing.api.task.clipboard.name": "clipboard copy %s task",
   "core.swing.api.task.browser.name": "open browser url %s task",
   "core.concurrent.base.event.finish.name": "Task %s finished",
-  "core.concurrent.base.event.exception.text": "An exception %s occurred",
+  "core.concurrent.base.event.exception.text": "An exception %s occurred, task %s failed",
   "core.net.execute.pre.text": "Requesting url %s, using method %s...",
   "core.net.execute.status.text": "Return code %s, retried for %d times",
   "core.net.execute.finish.text": "Request finished",
