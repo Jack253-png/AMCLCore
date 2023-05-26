@@ -46,7 +46,7 @@ public class I18NLib extends TwoArgFunction {
                 return LuaValue.NIL;
             }
         });
-        env.set("coreapi_i18n", library);
+        env.set("amclcore_api/i18n", library);
         return library;
     }
 }
