@@ -1,0 +1,1 @@
+require("amclcore_api/i18n")._amclcore_i18n_addcustom("test", "aee", "test")

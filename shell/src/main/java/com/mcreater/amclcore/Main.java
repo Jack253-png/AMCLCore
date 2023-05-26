@@ -8,11 +8,13 @@ import com.mcreater.amclcore.concurrent.ConcurrentExecutors;
 import com.mcreater.amclcore.concurrent.task.AbstractTask;
 import com.mcreater.amclcore.game.GameInstance;
 import com.mcreater.amclcore.game.GameRepository;
+import com.mcreater.amclcore.i18n.I18NManager;
 import com.mcreater.amclcore.java.JavaEnvironment;
 import com.mcreater.amclcore.java.MemorySize;
 import com.mcreater.amclcore.model.config.ConfigLaunchModel;
 import com.mcreater.amclcore.model.config.ConfigMainModel;
 import com.mcreater.amclcore.model.config.ConfigMemoryModel;
+import com.mcreater.amclcore.plugin.lua.LuaBaseApiLoader;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
@@ -75,6 +77,11 @@ public class Main {
             } catch (ExecutionException | InterruptedException e) {
                 e.printStackTrace();
             }
+
+            LuaBaseApiLoader.init();
+            LuaBaseApiLoader.load();
+
+            System.out.println(I18NManager.translatable("aee").getText());
         });
     }
 

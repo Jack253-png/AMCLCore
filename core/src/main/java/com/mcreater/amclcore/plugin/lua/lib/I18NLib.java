@@ -26,9 +26,9 @@ public class I18NLib extends TwoArgFunction {
         LuaValue library = tableOf();
         library.set("_amclcore_i18n_addcustom", new ThreeArgFunction() {
             public LuaValue call(LuaValue loc, LuaValue key, LuaValue value) {
-                if (isnil(1)) argerror(1, translatable("core.api.lua.i18n.add_custom_translate.arg.1").getText());
-                if (isnil(2)) argerror(2, translatable("core.api.lua.i18n.add_custom_translate.arg.2").getText());
-                if (isnil(3)) argerror(3, translatable("core.api.lua.i18n.add_custom_translate.arg.3").getText());
+                if (loc.isnil()) argerror(1, translatable("core.api.lua.i18n.add_custom_translate.arg.1").getText());
+                if (key.isnil()) argerror(2, translatable("core.api.lua.i18n.add_custom_translate.arg.2").getText());
+                if (value.isnil()) argerror(3, translatable("core.api.lua.i18n.add_custom_translate.arg.3").getText());
 
                 String jloc = loc.checkjstring();
                 String jkey = key.checkjstring();
@@ -47,6 +47,7 @@ public class I18NLib extends TwoArgFunction {
             }
         });
         env.set("amclcore_api/i18n", library);
+        env.get("package").get("loaded").set("amclcore_api/i18n", library);
         return library;
     }
 }
