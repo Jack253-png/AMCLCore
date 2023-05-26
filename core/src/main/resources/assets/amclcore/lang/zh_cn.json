@@ -48,5 +48,8 @@
   "core.game.instance.launch.pre_launching": "准备启动...",
   "core.script.powershell.desc": "Powershell 格式脚本",
   "core.script.cmdlet.desc": "Windows 传统格式脚本",
-  "core.script.sh.desc": "类 UNIX shell 格式脚本"
+  "core.script.sh.desc": "类 UNIX shell 格式脚本",
+  "core.api.lua.i18n.add_custom_translate.arg.1": "参数 \"locate\" 不应该为 nil",
+  "core.api.lua.i18n.add_custom_translate.arg.2": "参数 \"key\" 不应该为 nil",
+  "core.api.lua.i18n.add_custom_translate.arg.3": "参数 \"value\" 不应该为 nil"
 }

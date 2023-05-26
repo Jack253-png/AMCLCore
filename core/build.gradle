@@ -51,6 +51,7 @@ dependencies {
     implementation "com.moandjiezana.toml:toml4j:0.7.2"
     implementation "org.luaj:luaj-jse:3.0.1"
     implementation 'org.projectlombok:lombok:1.18.26'
+    implementation "org.fusesource.jansi:jansi:2.4.0"
     annotationProcessor 'org.projectlombok:lombok:1.18.26'
 }
 

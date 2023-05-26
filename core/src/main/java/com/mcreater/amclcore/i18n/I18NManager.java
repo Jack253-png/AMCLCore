@@ -4,6 +4,7 @@ import com.google.gson.reflect.TypeToken;
 import com.mcreater.amclcore.exceptions.report.ExceptionReporter;
 import com.mcreater.amclcore.model.i18n.LangIndexModel;
 import com.mcreater.amclcore.model.i18n.LangIndexNameModel;
+import com.mcreater.amclcore.resources.ResourceFetcher;
 import com.mcreater.amclcore.util.IOStreamUtil;
 import org.apache.commons.lang3.tuple.ImmutablePair;
 
@@ -35,7 +36,7 @@ public class I18NManager {
     private static void reloadIndex() {
         try {
             packNames.clear();
-            parsedIndexes = Collections.list(I18NManager.class.getClassLoader().getResources("lang-index.json"))
+            parsedIndexes = ResourceFetcher.getFiles("lang-index.json")
                     .stream()
                     .map(IOStreamUtil::tryOpenStream)
                     .filter(Objects::nonNull)
@@ -104,10 +105,14 @@ public class I18NManager {
         reloadTransition();
     }
 
-    private static String parseI18N(Locale locale) {
+    public static String parseI18N(Locale locale) {
         return locale.getLanguage() +
                 "_" +
                 locale.getCountry();
+    }
+
+    public static void addCusTranslate(Locale loc, String key, String value) {
+        Optional.ofNullable(transitionMap.get(loc)).ifPresent(map -> map.put(key, value));
     }
 
     private static String getNotNull(Locale locale, String key, Object... args) throws NullPointerException {

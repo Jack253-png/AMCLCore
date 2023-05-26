@@ -9,10 +9,12 @@ import com.mcreater.amclcore.i18n.Text;
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
+import java.io.PrintStream;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Path;
 import java.util.List;
 import java.util.Optional;
+import java.util.function.BiConsumer;
 import java.util.stream.Collectors;
 
 import static com.mcreater.amclcore.concurrent.ConcurrentExecutors.excHandler;
@@ -55,10 +57,17 @@ public class StartProcessTask extends AbstractTask<Integer> {
         BufferedReader in = new BufferedReader(new InputStreamReader(process.getInputStream(), StandardCharsets.UTF_8));
         BufferedReader err = new BufferedReader(new InputStreamReader(process.getErrorStream(), StandardCharsets.UTF_8));
 
+        BiConsumer<String, PrintStream> consumer = (s, ps) -> {
+
+        };
+
         RunnableAction.of(() -> {
             do {
                 try {
-                    Optional.ofNullable(in.readLine()).ifPresent(System.out::println);
+                    Optional.ofNullable(in.readLine()).ifPresent(a -> {
+                        System.out.println(a);
+                        consumer.accept(a, System.out);
+                    });
                 } catch (IOException ignored) {
                 }
             }
@@ -68,7 +77,10 @@ public class StartProcessTask extends AbstractTask<Integer> {
         RunnableAction.of(() -> {
             do {
                 try {
-                    Optional.ofNullable(err.readLine()).ifPresent(System.err::println);
+                    Optional.ofNullable(err.readLine()).ifPresent(a -> {
+                        System.err.println(a);
+                        consumer.accept(a, System.err);
+                    });
                 } catch (IOException ignored) {
                 }
             }
@@ -76,7 +88,7 @@ public class StartProcessTask extends AbstractTask<Integer> {
         }).submitTo(pool);
 
         do {
-
+            process.destroy();
         }
         while (process.isAlive());
 

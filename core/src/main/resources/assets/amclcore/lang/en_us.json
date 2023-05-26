@@ -48,5 +48,8 @@
   "core.game.instance.launch.pre_launching": "Prepare launching...",
   "core.script.powershell.desc": "Powershell format script",
   "core.script.cmdlet.desc": "Windows legacy format script",
-  "core.script.sh.desc": "Like UNIX shell format script"
+  "core.script.sh.desc": "Like UNIX shell format script",
+  "core.api.lua.i18n.add_custom_translate.arg.1": "Arg \"locate\" shouldn't be nil",
+  "core.api.lua.i18n.add_custom_translate.arg.2": "Arg \"key\" shouldn't be nil",
+  "core.api.lua.i18n.add_custom_translate.arg.3": "Arg \"value\" shouldn't be nil"
 }

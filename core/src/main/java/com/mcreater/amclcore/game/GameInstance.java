@@ -67,6 +67,12 @@ public class GameInstance {
         return new FetchLaunchArgsTask(config);
     }
 
+    /**
+     * launch with config<br>使用给定的设置启动
+     *
+     * @param config the config model<br>设置数据模型
+     * @return ths created launch task<br>创建的启动任务
+     */
     public LaunchTask launchAsync(ConfigMainModel config) {
         return new LaunchTask(config);
     }
