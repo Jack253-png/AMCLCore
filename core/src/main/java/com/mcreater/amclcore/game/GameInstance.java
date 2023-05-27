@@ -19,6 +19,7 @@ import com.mcreater.amclcore.model.config.ConfigMainModel;
 import com.mcreater.amclcore.model.game.GameManifestJsonModel;
 import com.mcreater.amclcore.model.game.arguments.GameArgumentsModel;
 import com.mcreater.amclcore.model.game.assets.GameAssetsIndexFileModel;
+import com.mcreater.amclcore.model.game.jar.GameJarVersionModel;
 import com.mcreater.amclcore.model.game.lib.GameDependedLibModel;
 import com.mcreater.amclcore.model.game.rule.GameRuleFeatureModel;
 import com.mcreater.amclcore.util.JsonUtil;
@@ -26,15 +27,20 @@ import com.mcreater.amclcore.util.platform.OperatingSystem;
 import lombok.AccessLevel;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
+import org.jenkinsci.constant_pool_scanner.ConstantPool;
+import org.jenkinsci.constant_pool_scanner.ConstantPoolScanner;
+import org.jenkinsci.constant_pool_scanner.ConstantType;
+import org.jenkinsci.constant_pool_scanner.StringConstant;
 
-import java.io.File;
-import java.io.FileNotFoundException;
-import java.io.FileReader;
+import java.io.*;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.*;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
+import java.util.stream.StreamSupport;
+import java.util.zip.ZipEntry;
+import java.util.zip.ZipFile;
 
 import static com.mcreater.amclcore.MetaData.*;
 import static com.mcreater.amclcore.i18n.I18NManager.translatable;
@@ -63,6 +69,12 @@ public class GameInstance {
         }
     }
 
+    /**
+     * generate launch config<br>使用给定的设置获取启动参数
+     *
+     * @param config the config model<br>设置数据模型
+     * @return ths created launch task<br>创建的获取启动参数任务
+     */
     public FetchLaunchArgsTask fetchLaunchArgsAsync(ConfigMainModel config) {
         return new FetchLaunchArgsTask(config);
     }
@@ -75,6 +87,75 @@ public class GameInstance {
      */
     public LaunchTask launchAsync(ConfigMainModel config) {
         return new LaunchTask(config);
+    }
+
+    public Optional<String> fetchMinecraftVersion() throws Exception {
+        try (ZipFile file = new ZipFile(getCoreJar().toString())) {
+            ZipEntry versionJson = file.getEntry("version.json");
+            if (versionJson != null) {
+                GameJarVersionModel version = GSON_PARSER.fromJson(new InputStreamReader(file.getInputStream(versionJson)), GameJarVersionModel.class);
+                return Optional.ofNullable(version.getName());
+            }
+
+            ZipEntry minecraft = file.getEntry("net/minecraft/client/Minecraft.class");
+            if (minecraft != null) {
+                try (InputStream ins = file.getInputStream(minecraft)) {
+                    ConstantPool pool = ConstantPoolScanner.parse(ins, ConstantType.STRING);
+                    return StreamSupport.stream(pool.list(StringConstant.class).spliterator(), false)
+                            .map(StringConstant::get)
+                            .filter(s -> s.startsWith("Minecraft Minecraft "))
+                            .map(s -> s.substring("Minecraft Minecraft ".length()))
+                            .findFirst();
+                }
+            }
+
+            ZipEntry minecraftServer = file.getEntry("net/minecraft/server/MinecraftServer.class");
+            if (minecraftServer != null) {
+                try (InputStream is = file.getInputStream(minecraftServer)) {
+                    ConstantPool pool = ConstantPoolScanner.parse(is, ConstantType.STRING);
+
+                    List<String> list = StreamSupport.stream(pool.list(StringConstant.class).spliterator(), false)
+                            .map(StringConstant::get)
+                            .collect(Collectors.toList());
+
+                    int idx = -1;
+
+                    for (int i = 0; i < list.size(); ++i)
+                        if (list.get(i).startsWith("Can't keep up!")) {
+                            idx = i;
+                            break;
+                        }
+
+                    for (int i = idx - 1; i >= 0; --i)
+                        if (list.get(i).matches(".*[0-9].*"))
+                            return Optional.of(list.get(i));
+
+                    return Optional.empty();
+                }
+            }
+        }
+
+        return Optional.empty();
+    }
+
+    public void refreshVersionType() throws FileNotFoundException {
+        GameManifestJsonModel json = manifestJson.readManifest();
+        List<GameAddon> addons = new Vector<>();
+
+        json.getLibraries().forEach(lib -> {
+            switch (lib.getName().getGroupId()) {
+                case "net.minecraftforge":
+
+                case "com.mumfrey":
+
+                case "net.fabricmc":
+
+                case "org.quiltmc":
+
+                case "optifine":
+
+            }
+        });
     }
 
     @AllArgsConstructor(access = AccessLevel.PRIVATE)
@@ -187,7 +268,7 @@ public class GameInstance {
             }
             // TODO check main jar and fetch path
             {
-                minecraftMainJar = instancePath.resolve(instanceName + ".jar").toFile();
+                minecraftMainJar = getCoreJar().toFile();
                 if (!minecraftMainJar.exists()) throw new MainJarCorruptException();
             }
             // TODO check and load libs
@@ -420,6 +501,10 @@ public class GameInstance {
                 new FileReader(getAssetsIndexFile(model)),
                 GameAssetsIndexFileModel.class
         );
+    }
+
+    private Path getCoreJar() {
+        return instancePath.resolve(instanceName + ".jar");
     }
 
     private File getAssetsIndexFile(GameManifestJsonModel model) {

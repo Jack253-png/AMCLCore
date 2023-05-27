@@ -15,6 +15,7 @@ import java.util.List;
 @Data
 @Builder
 public class GameManifestJsonModel {
+    private String name;
     private GameArgumentsModel arguments;
     private String minecraftArguments;
 
