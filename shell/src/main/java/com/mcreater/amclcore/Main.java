@@ -37,14 +37,14 @@ public class Main {
 
             repository.getInstances().forEach(gameInstance -> System.out.println(gameInstance.getInstanceName()));
 
-            GameInstance gameInstance = repository.getInstances().get(repository.getInstances().size() - 4);
+            GameInstance gameInstance = repository.getInstances().get(repository.getInstances().size() - 5);
 
             /*try {
                 gameInstance.launchAsync(
                                 ConfigMainModel.builder()
                                         .launchConfig(
                                                 ConfigLaunchModel.builder()
-                                                        .environments(Collections.singletonList(JavaEnvironment.create(new File("C:\\Program Files\\Java\\jdk-17.0.1\\bin\\java.exe"))))
+                                                        .environments(Collections.singletonList(JavaEnvironment.create(new File("C:\\Program Files\\Java\\jre1.8.0_351\\bin\\java.exe"))))
                                                         .selectedEnvironment(0)
                                                         .useSelfGamePath(true)
                                                         .memory(
@@ -67,13 +67,14 @@ public class Main {
                 e.printStackTrace();
             }*/
 
-            try {
-//                gameInstance.refreshVersionType();
-//                System.out.println(gameInstance.getManifestJson().readManifest().getName());
-                System.out.println(gameInstance.fetchMinecraftVersion());
-            } catch (Exception e) {
-                e.printStackTrace();
-            }
+            repository.getInstances().forEach(a -> {
+                try {
+                    System.out.println(a.getInstanceName());
+                    System.out.println(a.fetchAddonsAsync().submitTo(ConcurrentExecutors.EVENT_QUEUE_EXECUTOR).get());
+                } catch (Exception e) {
+                    e.printStackTrace();
+                }
+            });
 
             /*LuaBaseApiLoader.init();
             LuaBaseApiLoader.load();

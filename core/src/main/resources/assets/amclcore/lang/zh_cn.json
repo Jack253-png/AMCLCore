@@ -54,5 +54,7 @@
   "core.api.lua.i18n.add_custom_translate.arg.3": "参数 \"value\" 不应该为 nil",
   "core.process.exit": "进程以代码 %d 退出",
   "core.game.instance.launch.exit.normal": "游戏正常退出",
-  "core.game.instance.launch.exit.crash": "游戏崩溃"
+  "core.game.instance.launch.exit.crash": "游戏崩溃",
+  "core.game.instance.task.fetch_addon": "获取 Addon 任务",
+  "core.game.instance.task.fetch_version": "获取版本任务"
 }

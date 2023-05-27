@@ -23,6 +23,7 @@ import com.mcreater.amclcore.model.game.jar.GameJarVersionModel;
 import com.mcreater.amclcore.model.game.lib.GameDependedLibModel;
 import com.mcreater.amclcore.model.game.rule.GameRuleFeatureModel;
 import com.mcreater.amclcore.util.JsonUtil;
+import com.mcreater.amclcore.util.platform.Architecture;
 import com.mcreater.amclcore.util.platform.OperatingSystem;
 import lombok.AccessLevel;
 import lombok.AllArgsConstructor;
@@ -89,73 +90,160 @@ public class GameInstance {
         return new LaunchTask(config);
     }
 
-    public Optional<String> fetchMinecraftVersion() throws Exception {
-        try (ZipFile file = new ZipFile(getCoreJar().toString())) {
-            ZipEntry versionJson = file.getEntry("version.json");
-            if (versionJson != null) {
-                GameJarVersionModel version = GSON_PARSER.fromJson(new InputStreamReader(file.getInputStream(versionJson)), GameJarVersionModel.class);
-                return Optional.ofNullable(version.getName());
-            }
-
-            ZipEntry minecraft = file.getEntry("net/minecraft/client/Minecraft.class");
-            if (minecraft != null) {
-                try (InputStream ins = file.getInputStream(minecraft)) {
-                    ConstantPool pool = ConstantPoolScanner.parse(ins, ConstantType.STRING);
-                    return StreamSupport.stream(pool.list(StringConstant.class).spliterator(), false)
-                            .map(StringConstant::get)
-                            .filter(s -> s.startsWith("Minecraft Minecraft "))
-                            .map(s -> s.substring("Minecraft Minecraft ".length()))
-                            .findFirst();
-                }
-            }
-
-            ZipEntry minecraftServer = file.getEntry("net/minecraft/server/MinecraftServer.class");
-            if (minecraftServer != null) {
-                try (InputStream is = file.getInputStream(minecraftServer)) {
-                    ConstantPool pool = ConstantPoolScanner.parse(is, ConstantType.STRING);
-
-                    List<String> list = StreamSupport.stream(pool.list(StringConstant.class).spliterator(), false)
-                            .map(StringConstant::get)
-                            .collect(Collectors.toList());
-
-                    int idx = -1;
-
-                    for (int i = 0; i < list.size(); ++i)
-                        if (list.get(i).startsWith("Can't keep up!")) {
-                            idx = i;
-                            break;
-                        }
-
-                    for (int i = idx - 1; i >= 0; --i)
-                        if (list.get(i).matches(".*[0-9].*"))
-                            return Optional.of(list.get(i));
-
-                    return Optional.empty();
-                }
-            }
-        }
-
-        return Optional.empty();
+    /**
+     * create a fetch version task<br>创建一个获取版本任务
+     *
+     * @return the created task<br>被创建的任务
+     */
+    public FetchGameVersionTask fetchVersionAsync() {
+        return new FetchGameVersionTask();
     }
 
-    public void refreshVersionType() throws FileNotFoundException {
-        GameManifestJsonModel json = manifestJson.readManifest();
-        List<GameAddon> addons = new Vector<>();
+    /**
+     * create a fetch addon task<br>创建一个获取 Addon 任务
+     *
+     * @return the created task<br>被创建的任务
+     */
+    public FetchInstanceAddonTask fetchAddonsAsync() {
+        return new FetchInstanceAddonTask();
+    }
 
-        json.getLibraries().forEach(lib -> {
-            switch (lib.getName().getGroupId()) {
-                case "net.minecraftforge":
+    @AllArgsConstructor(access = AccessLevel.PRIVATE)
+    public class FetchGameVersionTask extends AbstractTask<String> {
 
-                case "com.mumfrey":
+        protected String call() throws Exception {
+            try (ZipFile file = new ZipFile(getCoreJar().toString())) {
+                ZipEntry versionJson = file.getEntry("version.json");
+                if (versionJson != null) {
+                    GameJarVersionModel version = GSON_PARSER.fromJson(new InputStreamReader(file.getInputStream(versionJson)), GameJarVersionModel.class);
+                    return version.getName();
+                }
 
-                case "net.fabricmc":
+                ZipEntry minecraft = file.getEntry("net/minecraft/client/Minecraft.class");
+                if (minecraft != null) {
+                    try (InputStream ins = file.getInputStream(minecraft)) {
+                        ConstantPool pool = ConstantPoolScanner.parse(ins, ConstantType.STRING);
+                        return StreamSupport.stream(pool.list(StringConstant.class).spliterator(), false)
+                                .map(StringConstant::get)
+                                .filter(s -> s.startsWith("Minecraft Minecraft "))
+                                .map(s -> s.substring("Minecraft Minecraft ".length()))
+                                .findFirst()
+                                .orElse(null);
+                    }
+                }
 
-                case "org.quiltmc":
+                ZipEntry minecraftServer = file.getEntry("net/minecraft/server/MinecraftServer.class");
+                if (minecraftServer != null) {
+                    try (InputStream is = file.getInputStream(minecraftServer)) {
+                        ConstantPool pool = ConstantPoolScanner.parse(is, ConstantType.STRING);
 
-                case "optifine":
+                        List<String> list = StreamSupport.stream(pool.list(StringConstant.class).spliterator(), false)
+                                .map(StringConstant::get)
+                                .collect(Collectors.toList());
 
+                        int idx = -1;
+
+                        for (int i = 0; i < list.size(); ++i)
+                            if (list.get(i).startsWith("Can't keep up!")) {
+                                idx = i;
+                                break;
+                            }
+
+                        for (int i = idx - 1; i >= 0; --i)
+                            if (list.get(i).matches(".*[0-9].*"))
+                                return list.get(i);
+
+                        return null;
+                    }
+                }
             }
-        });
+
+            return null;
+        }
+
+        protected Text getTaskName() {
+            return translatable("core.game.instance.task.fetch_version");
+        }
+    }
+
+    @AllArgsConstructor(access = AccessLevel.PRIVATE)
+    public class FetchInstanceAddonTask extends AbstractTask<List<GameAddon>> {
+        protected List<GameAddon> call() throws Exception {
+            GameManifestJsonModel json = manifestJson.readManifest();
+            List<GameAddon> addons = new Vector<>();
+
+            json.getLibraries().forEach(lib -> {
+                switch (lib.getName().getGroupId()) {
+                    case "net.minecraftforge":
+                        if ("forge".equalsIgnoreCase(lib.getName().getArtifactId()) ||
+                                "minecraftforge".equalsIgnoreCase(lib.getName().getArtifactId()) ||
+                                "fmlloader".equalsIgnoreCase(lib.getName().getArtifactId())
+                        ) {
+                            String forgeVer = lib.getName().getVersion();
+                            addons.add(GameAddon.builder()
+                                    .addonType(GameAddon.Type.FORGE)
+                                    .version(forgeVer.contains("-") ?
+                                            forgeVer.split("-")[1] :
+                                            forgeVer
+                                    )
+                                    .build()
+                            );
+                        }
+                        break;
+                    case "com.mumfrey":
+                        if ("liteloader".equalsIgnoreCase(lib.getName().getArtifactId())) {
+                            addons.add(GameAddon.builder()
+                                    .addonType(GameAddon.Type.LITELOADER)
+                                    .version(lib.getName().getVersion())
+                                    .build()
+                            );
+                        }
+                        break;
+                    case "net.fabricmc":
+                        if ("fabric-loader".equalsIgnoreCase(lib.getName().getArtifactId())) {
+                            addons.add(GameAddon.builder()
+                                    .addonType(GameAddon.Type.FABRIC)
+                                    .version(lib.getName().getVersion())
+                                    .build()
+                            );
+                        }
+                        break;
+                    case "org.quiltmc":
+                        if ("quilt-loader".equalsIgnoreCase(lib.getName().getArtifactId())) {
+                            addons.add(GameAddon.builder()
+                                    .addonType(GameAddon.Type.QUILT)
+                                    .version(lib.getName().getVersion())
+                                    .build()
+                            );
+                        }
+                        break;
+                    case "optifine":
+                        if ("optifine".equalsIgnoreCase(lib.getName().getArtifactId())) {
+                            String optVer = lib.getName().getVersion();
+                            addons.add(GameAddon.builder()
+                                    .addonType(GameAddon.Type.OPTIFINE)
+                                    .version(
+                                            optVer.contains("_") ?
+                                                    Arrays.stream(optVer.split("_"))
+                                                            .filter(a -> !a.contains("."))
+                                                            .collect(Collectors.joining("-")) :
+                                                    optVer
+                                    )
+                                    .build()
+                            );
+                        }
+                        break;
+                    default:
+                        break;
+                }
+            });
+
+            return addons;
+        }
+
+        protected Text getTaskName() {
+            return translatable("core.game.instance.task.fetch_addon");
+        }
     }
 
     @AllArgsConstructor(access = AccessLevel.PRIVATE)
@@ -264,6 +352,7 @@ public class GameInstance {
                     put("assets_root", repository.getAssetsDirectory());
                     put("game_assets", gameDir.resolve("resources"));
                     put("assets_index_name", model.getAssets());
+                    put("user_properties", "{}");
                 }};
             }
             // TODO check main jar and fetch path
@@ -290,7 +379,10 @@ public class GameInstance {
                         .filter(GameDependedLibModel::hasNatives)
                         .map(lib -> {
                             if (lib.isNormalLib()) {
-                                String nativeId = lib.getNatives().get(OperatingSystem.CURRENT_OS.getCheckedName());
+                                String nativeId = lib
+                                        .getNatives()
+                                        .get(OperatingSystem.CURRENT_OS.getCheckedName())
+                                        .replace("${arch}", Architecture.CURRENT_ARCH.getBits().getBit());
                                 return lib.getDownloads()
                                         .getClassifiers()
                                         .get(nativeId)

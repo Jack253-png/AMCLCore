@@ -54,5 +54,7 @@
   "core.api.lua.i18n.add_custom_translate.arg.3": "Arg \"value\" shouldn't be nil",
   "core.process.exit": "Process exited with code %d",
   "core.game.instance.launch.exit.normal": "Game exit normally",
-  "core.game.instance.launch.exit.crash": "Game crashed"
+  "core.game.instance.launch.exit.crash": "Game crashed",
+  "core.game.instance.task.fetch_addon": "fetch addon task",
+  "core.game.instance.task.fetch_version": "fetch version task"
 }

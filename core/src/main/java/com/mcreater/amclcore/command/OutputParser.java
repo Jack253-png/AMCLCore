@@ -17,6 +17,7 @@ public class OutputParser {
     @Setter
     private static ColorTheme colorTheme = new DefaultTheme();
     private static final Pattern MC_DEFAULT_FORMAT = Pattern.compile("\\[(?<time>.*)] \\[(?<thread>.*)/(?<type>.*)]: (?<message>.*)");
+    private static final Pattern JAVA_EXC_MAIN = Pattern.compile("Exception in thread \"(?<thread>.*)\" (?<excname>.*): (?<message>.*)");
     private static final Pattern JAVA_EXC_NAME = Pattern.compile("(?<excname>.*): (?<message>.*)");
     private static final Pattern JAVA_EXC_STACK = Pattern.compile("\tat (?<method>.*)((?<source>.*):(?<line>.*)) ~\\[(?<jar>.*):(?<moudle>.*)]");
     private static final Pattern JAVA_EXC_STACK2 = Pattern.compile("\tat (?<method>.*)((?<source>.*):(?<line>.*)) \\[(?<jar>.*):(?<moudle>.*)]");
@@ -43,7 +44,8 @@ public class OutputParser {
             Matcher matcher = parse();
             if (!matcher.find()) {
                 if (
-                        JAVA_EXC_NAME.matcher(data).find() ||
+                        JAVA_EXC_MAIN.matcher(data).find() ||
+                                JAVA_EXC_NAME.matcher(data).find() ||
                                 JAVA_EXC_STACK.matcher(data).find() ||
                                 JAVA_EXC_STACK2.matcher(data).find() ||
                                 JAVA_EXC_STACK_BASE.matcher(data).find() ||
