@@ -24,8 +24,8 @@ public class MetaData {
      */
     public static final String oauthDefaultClientId = "1a969022-f24f-4492-a91c-6f4a6fcb373c";
     /**
-     * client id override, using command line {@code -Damclcore.oauth.clientid.override=YOUR_CLIENTID}<br>
-     * 客户端ID 覆盖, 使用命令行 {@code -Damclcore.oauth.clientid.override=你的客户端ID}
+     * client id override, using command line -Damclcore.oauth.clientid.override=YOUR_CLIENTID<br>
+     * 客户端ID 覆盖, 使用命令行 -Damclcore.oauth.clientid.override=你的客户端ID
      */
     public static final String oauthClientIdOverridePropertyName = "amclcore.oauth.clientid.override";
 
@@ -54,8 +54,8 @@ public class MetaData {
      */
     public static final int launcherBuildInternalVersion = 1;
     /**
-     * launcher name override, using command line {@code -Damclcore.name.override=YOUR_LAUNCHERNAME}<br>
-     * 启动器名称覆盖，使用命令行 {@code -Damclcore.name.override=你的启动器名称}
+     * launcher name override, using command line -Damclcore.name.override=YOUR_LAUNCHERNAME<br>
+     * 启动器名称覆盖，使用命令行 -Damclcore.name.override=你的启动器名称
      */
     public static final String launcherNameOverridePropertyName = "amclcore.name.override";
 
@@ -64,8 +64,8 @@ public class MetaData {
     }
 
     /**
-     * launcher version override, using command line {@code -Damclcore.version.override=YOUR_LAUNCHERVERSION}<br>
-     * 启动器版本覆盖，使用命令行 {@code -Damclcore.version.override=你的启动器版本}
+     * launcher version override, using command line -Damclcore.version.override=YOUR_LAUNCHERVERSION<br>
+     * 启动器版本覆盖，使用命令行 -Damclcore.version.override=你的启动器版本
      */
     public static final String launcherVersionOverridePropertyName = "amclcore.version.override";
 
@@ -74,8 +74,8 @@ public class MetaData {
     }
 
     /**
-     * launcher build channel override, using command line {@code -Damclcore.build.channel=YOUR_LAUNCHERBUILDCHANNEL}<br>
-     * 启动器版本类型覆盖，使用命令行 {@code -Damclcore.build.channel=你的启动器版本类型}
+     * launcher build channel override, using command line -Damclcore.build.channel=YOUR_LAUNCHERBUILDCHANNEL<br>
+     * 启动器版本类型覆盖，使用命令行 -Damclcore.build.channel=你的启动器版本类型
      */
     public static final String launcherBuildChannelOverridePropertyName = "amclcore.version.build.channel.override";
 
@@ -84,8 +84,8 @@ public class MetaData {
     }
 
     /**
-     * launcher build interal version override, using command line {@code -Damclcore.build.internal.override=YOUR_LAUNCHERBUILDINTERNALVERSION}<br>
-     * 启动器内部构建版本覆盖，使用命令行 {@code -Damclcore.build.internal.override=你的内部构建版本号}
+     * launcher build interal version override, using command line -Damclcore.build.internal.override=YOUR_LAUNCHERBUILDINTERNALVERSION<br>
+     * 启动器内部构建版本覆盖，使用命令行 -Damclcore.build.internal.override=你的内部构建版本号
      */
     public static final String launcherBuildInternalVersionOverridePropertyName = "amclcore.version.build.internal.override";
 
@@ -102,5 +102,14 @@ public class MetaData {
 
     public static String getLauncherFullName() {
         return String.join(" ", getLauncherName(), getLauncherFullVersion());
+    }
+
+    /**
+     * ansi enable override, using command line -Damclcore.ansi.override=BOOLEAN<br>启用ANSI覆盖, 使用命令行 -Damclcore.ansi.override=BOOLEAN
+     */
+    public static final String useAnsiOutputOverridePropertyName = "amclcore.ansi.override";
+
+    public static boolean isUseAnsiOutputOverride() {
+        return PropertyUtil.readPropertyBoolean(useAnsiOutputOverridePropertyName, true);
     }
 }

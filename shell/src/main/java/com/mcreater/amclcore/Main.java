@@ -8,13 +8,11 @@ import com.mcreater.amclcore.concurrent.ConcurrentExecutors;
 import com.mcreater.amclcore.concurrent.task.AbstractTask;
 import com.mcreater.amclcore.game.GameInstance;
 import com.mcreater.amclcore.game.GameRepository;
-import com.mcreater.amclcore.i18n.I18NManager;
 import com.mcreater.amclcore.java.JavaEnvironment;
 import com.mcreater.amclcore.java.MemorySize;
 import com.mcreater.amclcore.model.config.ConfigLaunchModel;
 import com.mcreater.amclcore.model.config.ConfigMainModel;
 import com.mcreater.amclcore.model.config.ConfigMemoryModel;
-import com.mcreater.amclcore.plugin.lua.LuaBaseApiLoader;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
@@ -24,11 +22,12 @@ import java.util.Optional;
 import java.util.Vector;
 import java.util.concurrent.ExecutionException;
 
+import static com.mcreater.amclcore.MetaData.isUseAnsiOutputOverride;
 import static com.mcreater.amclcore.util.PropertyUtil.setProperty;
 
 public class Main {
     static {
-        setProperty("log4j.skipJansi", false);
+        if (isUseAnsiOutputOverride()) setProperty("log4j.skipJansi", false);
     }
 
     private static final Logger logger = LogManager.getLogger(Main.class);
@@ -49,6 +48,11 @@ public class Main {
             repository.getInstances().forEach(gameInstance -> System.out.println(gameInstance.getInstanceName()));
 
             GameInstance gameInstance = repository.getInstances().get(repository.getInstances().size() - 1);
+
+            logger.info("test");
+            logger.warn("test");
+            logger.error("test");
+            logger.fatal("test");
 
             try {
                 gameInstance.launchAsync(
@@ -78,10 +82,10 @@ public class Main {
                 e.printStackTrace();
             }
 
-            LuaBaseApiLoader.init();
+            /*LuaBaseApiLoader.init();
             LuaBaseApiLoader.load();
 
-            System.out.println(I18NManager.translatable("aee").getText());
+            System.out.println(I18NManager.translatable("aee").getText());*/
         });
     }
 

@@ -58,14 +58,13 @@ public class StartProcessTask extends AbstractTask<Integer> {
         BufferedReader err = new BufferedReader(new InputStreamReader(process.getErrorStream(), StandardCharsets.UTF_8));
 
         BiConsumer<String, PrintStream> consumer = (s, ps) -> {
-
+            OutputParser.OutputLine.create(s, ps).printAnsi();
         };
 
         RunnableAction.of(() -> {
             do {
                 try {
                     Optional.ofNullable(in.readLine()).ifPresent(a -> {
-                        System.out.println(a);
                         consumer.accept(a, System.out);
                     });
                 } catch (IOException ignored) {
@@ -78,7 +77,6 @@ public class StartProcessTask extends AbstractTask<Integer> {
             do {
                 try {
                     Optional.ofNullable(err.readLine()).ifPresent(a -> {
-                        System.err.println(a);
                         consumer.accept(a, System.err);
                     });
                 } catch (IOException ignored) {
@@ -88,7 +86,7 @@ public class StartProcessTask extends AbstractTask<Integer> {
         }).submitTo(pool);
 
         do {
-
+//            process.destroy();
         }
         while (process.isAlive());
 
