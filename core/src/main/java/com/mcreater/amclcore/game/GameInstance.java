@@ -87,10 +87,30 @@ public class GameInstance {
                     .get()
                     .orElseThrow(NullPointerException::new);
 
-            StartProcessTask.create(command)
-                    .setStartPath(getGameDir(config.getLaunchConfig().isUseSelfGamePath()))
-                    .bindTo(this)
-                    .get();
+            StartProcessTask task = StartProcessTask.create(command)
+                    .setStartPath(getGameDir(config.getLaunchConfig().isUseSelfGamePath()));
+
+            Optional<Integer> exit = task.bindTo(this).get();
+            int exitRes = exit.orElse(-1);
+
+            if (exitRes != 0) {
+                setState(
+                        TaskState.<Void>builder()
+                                .totalStage(1)
+                                .currentStage(1)
+                                .message(translatable("core.game.instance.launch.exit.crash"))
+                                .taskType(TaskState.Type.ERROR)
+                                .build()
+                );
+            } else {
+                setState(
+                        TaskState.<Void>builder()
+                                .totalStage(1)
+                                .currentStage(1)
+                                .message(translatable("core.game.instance.launch.exit.normal"))
+                                .build()
+                );
+            }
         }
 
         protected Text getTaskName() {

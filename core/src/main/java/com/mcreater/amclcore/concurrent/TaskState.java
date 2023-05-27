@@ -13,8 +13,10 @@ public class TaskState<R> {
     private Type taskType = Type.EXECUTING;
     private Throwable throwable;
     private R result;
-    private int totalStage;
-    private int currentStage;
+    @Builder.Default
+    private int totalStage = 1;
+    @Builder.Default
+    private int currentStage = 1;
     private Text message;
 
     public double getStageDouble() {

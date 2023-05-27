@@ -51,5 +51,8 @@
   "core.script.sh.desc": "Like UNIX shell format script",
   "core.api.lua.i18n.add_custom_translate.arg.1": "Arg \"locate\" shouldn't be nil",
   "core.api.lua.i18n.add_custom_translate.arg.2": "Arg \"key\" shouldn't be nil",
-  "core.api.lua.i18n.add_custom_translate.arg.3": "Arg \"value\" shouldn't be nil"
+  "core.api.lua.i18n.add_custom_translate.arg.3": "Arg \"value\" shouldn't be nil",
+  "core.process.exit": "Process exited with code %d",
+  "core.game.instance.launch.exit.normal": "Game exit normally",
+  "core.game.instance.launch.exit.crash": "Game crashed"
 }

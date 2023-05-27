@@ -2,9 +2,11 @@ package com.mcreater.amclcore.command;
 
 import com.mcreater.amclcore.concurrent.ConcurrentExecutors;
 import com.mcreater.amclcore.concurrent.ExtendForkJoinPool;
+import com.mcreater.amclcore.concurrent.TaskState;
 import com.mcreater.amclcore.concurrent.task.AbstractTask;
 import com.mcreater.amclcore.concurrent.task.model.RunnableAction;
 import com.mcreater.amclcore.i18n.Text;
+import lombok.Getter;
 
 import java.io.BufferedReader;
 import java.io.IOException;
@@ -14,10 +16,12 @@ import java.nio.charset.StandardCharsets;
 import java.nio.file.Path;
 import java.util.List;
 import java.util.Optional;
+import java.util.Vector;
 import java.util.function.BiConsumer;
 import java.util.stream.Collectors;
 
 import static com.mcreater.amclcore.concurrent.ConcurrentExecutors.excHandler;
+import static com.mcreater.amclcore.i18n.I18NManager.fixed;
 import static com.mcreater.amclcore.i18n.I18NManager.translatable;
 
 public class StartProcessTask extends AbstractTask<Integer> {
@@ -32,6 +36,8 @@ public class StartProcessTask extends AbstractTask<Integer> {
     private final List<CommandArg> args;
     private Path startPath;
     private Process process;
+    @Getter
+    private final List<OutputParser.OutputLine> logLines = new Vector<>();
     private final ExtendForkJoinPool pool = new ExtendForkJoinPool(
             2,
             ConcurrentExecutors.ForkJoinWorkerThreadFactoryImpl.INSTANCE,
@@ -45,6 +51,12 @@ public class StartProcessTask extends AbstractTask<Integer> {
     }
 
     protected Integer call() throws Exception {
+        setState(
+                TaskState.<Integer>builder()
+                        .totalStage(2)
+                        .currentStage(0)
+                        .build()
+        );
         process = new ProcessBuilder().command(
                         args.stream()
                                 .map(CommandArg::toString)
@@ -58,7 +70,17 @@ public class StartProcessTask extends AbstractTask<Integer> {
         BufferedReader err = new BufferedReader(new InputStreamReader(process.getErrorStream(), StandardCharsets.UTF_8));
 
         BiConsumer<String, PrintStream> consumer = (s, ps) -> {
-            OutputParser.OutputLine.create(s, ps).printAnsi();
+            Optional.of(OutputParser.OutputLine.create(s, ps)).map(a -> {
+                logLines.add(a);
+                return a;
+            }).get().printAnsi();
+            setState(
+                    TaskState.<Integer>builder()
+                            .totalStage(2)
+                            .currentStage(1)
+                            .message(fixed(s))
+                            .build()
+            );
         };
 
         RunnableAction.of(() -> {
@@ -89,6 +111,14 @@ public class StartProcessTask extends AbstractTask<Integer> {
 
         }
         while (process.isAlive());
+
+        setState(
+                TaskState.<Integer>builder()
+                        .totalStage(2)
+                        .currentStage(2)
+                        .message(translatable("core.process.exit", process.exitValue()))
+                        .build()
+        );
 
         return process.exitValue();
     }
