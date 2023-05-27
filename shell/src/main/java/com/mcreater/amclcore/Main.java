@@ -49,11 +49,6 @@ public class Main {
 
             GameInstance gameInstance = repository.getInstances().get(repository.getInstances().size() - 1);
 
-            logger.info("test");
-            logger.warn("test");
-            logger.error("test");
-            logger.fatal("test");
-
             try {
                 gameInstance.launchAsync(
                                 ConfigMainModel.builder()

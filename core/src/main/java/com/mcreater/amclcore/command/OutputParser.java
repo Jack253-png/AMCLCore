@@ -17,6 +17,11 @@ public class OutputParser {
     @Setter
     private static ColorTheme colorTheme = new DefaultTheme();
     private static final Pattern MC_DEFAULT_FORMAT = Pattern.compile("\\[(?<time>.*)] \\[(?<thread>.*)/(?<type>.*)]: (?<message>.*)");
+    private static final Pattern JAVA_EXC_NAME = Pattern.compile("(?<excname>.*): (?<message>.*)");
+    private static final Pattern JAVA_EXC_STACK = Pattern.compile("\tat (?<method>.*)((?<source>.*):(?<line>.*)) ~\\[(?<jar>.*):(?<moudle>.*)]");
+    private static final Pattern JAVA_EXC_STACK2 = Pattern.compile("\tat (?<method>.*)((?<source>.*):(?<line>.*)) \\[(?<jar>.*):(?<moudle>.*)]");
+    private static final Pattern JAVA_EXC_STACK_BASE = Pattern.compile("\tat (?<stack>.*)");
+    private static final Pattern JAVA_EXC_END = Pattern.compile("\t\\.\\.\\. (?<stacks>.*) more");
 
     public enum OutputType {
         STDOUT,
@@ -30,17 +35,30 @@ public class OutputParser {
         private final OutputType type;
 
         public void printAnsi() {
+            System.out.print("\r");
             if (!isUseAnsiOutputOverride()) {
                 System.out.println(data);
                 return;
             }
             Matcher matcher = parse();
             if (!matcher.find()) {
-                System.out.println(ansi()
-                        .apply(colorTheme.apply(type == OutputType.STDERR ? colorTheme.getWarning() : colorTheme.getInfo()))
-                        .a(data)
-                        .reset()
-                );
+                if (
+                        JAVA_EXC_NAME.matcher(data).find() ||
+                                JAVA_EXC_STACK.matcher(data).find() ||
+                                JAVA_EXC_STACK2.matcher(data).find() ||
+                                JAVA_EXC_STACK_BASE.matcher(data).find() ||
+                                JAVA_EXC_END.matcher(data).find()) {
+                    System.out.println(ansi()
+                            .apply(colorTheme.applyError())
+                            .a(data)
+                            .reset());
+                } else {
+                    System.out.println(ansi()
+                            .apply(type == OutputType.STDERR ? colorTheme.applyWarning() : colorTheme.applyInfo())
+                            .a(data)
+                            .reset()
+                    );
+                }
                 return;
             }
             String logType = matcher.group("type");
@@ -51,34 +69,37 @@ public class OutputParser {
                 case STDOUT:
                     switch (logType.toLowerCase()) {
                         case "fatal":
-                            c = colorTheme.apply(colorTheme.getFatal());
+                            c = colorTheme.applyFatal();
                             break;
                         case "error":
-                            c = colorTheme.apply(colorTheme.getError());
+                            c = colorTheme.applyError();
                             break;
                         case "warn":
-                            c = colorTheme.apply(colorTheme.getWarning());
+                            c = colorTheme.applyWarning();
                             break;
                         default:
                         case "info":
-                            c = colorTheme.apply(colorTheme.getInfo());
+                            c = colorTheme.applyInfo();
                             break;
                         case "debug":
-                            c = colorTheme.apply(colorTheme.getDebug());
+                            c = colorTheme.applyDebug();
+                            break;
+                        case "trace":
+                            c = colorTheme.applyTrace();
                             break;
                     }
                     break;
                 case STDERR:
                     switch (logType.toLowerCase()) {
                         case "fatal":
-                            c = colorTheme.apply(colorTheme.getFatal());
+                            c = colorTheme.applyFatal();
                             break;
                         case "error":
-                            c = colorTheme.apply(colorTheme.getError());
+                            c = colorTheme.applyError();
                             break;
                         default:
                         case "warn":
-                            c = colorTheme.apply(colorTheme.getWarning());
+                            c = colorTheme.applyWarning();
                             break;
                     }
                     break;
