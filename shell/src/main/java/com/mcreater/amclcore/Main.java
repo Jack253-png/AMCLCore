@@ -1,15 +1,25 @@
 package com.mcreater.amclcore;
 
+import com.mcreater.amclcore.account.AbstractAccount;
 import com.mcreater.amclcore.account.MicrosoftAccount;
+import com.mcreater.amclcore.account.OfflineAccount;
 import com.mcreater.amclcore.account.auth.OAuth;
 import com.mcreater.amclcore.concurrent.ConcurrentExecutors;
 import com.mcreater.amclcore.concurrent.task.AbstractTask;
 import com.mcreater.amclcore.game.GameInstance;
 import com.mcreater.amclcore.game.GameRepository;
+import com.mcreater.amclcore.java.JavaEnvironment;
+import com.mcreater.amclcore.java.MemorySize;
+import com.mcreater.amclcore.model.config.ConfigLaunchModel;
+import com.mcreater.amclcore.model.config.ConfigMainModel;
+import com.mcreater.amclcore.model.config.ConfigMemoryModel;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
+import java.io.File;
+import java.util.Collections;
 import java.util.Optional;
+import java.util.Vector;
 import java.util.concurrent.ExecutionException;
 
 import static com.mcreater.amclcore.MetaData.isUseAnsiOutputOverride;
@@ -37,44 +47,44 @@ public class Main {
 
             repository.getInstances().forEach(gameInstance -> System.out.println(gameInstance.getInstanceName()));
 
-            GameInstance gameInstance = repository.getInstances().get(repository.getInstances().size() - 5);
+            GameInstance gameInstance = repository.getInstances().get(repository.getInstances().size() - 4);
 
-            /*try {
+            try {
                 gameInstance.launchAsync(
-                                ConfigMainModel.builder()
-                                        .launchConfig(
-                                                ConfigLaunchModel.builder()
-                                                        .environments(Collections.singletonList(JavaEnvironment.create(new File("C:\\Program Files\\Java\\jre1.8.0_351\\bin\\java.exe"))))
-                                                        .selectedEnvironment(0)
-                                                        .useSelfGamePath(true)
-                                                        .memory(
-                                                                ConfigMemoryModel.builder()
-                                                                        .maxMemory(MemorySize.createMegaBytes(8192))
-                                                                        .minMemory(MemorySize.createMegaBytes(128))
-                                                                        .build()
-                                                        )
-                                                        .build()
-                                        )
-                                        .accounts(new Vector<AbstractAccount>() {{
-                                            add(OfflineAccount.create("test", OfflineAccount.STEVE));
-                                        }})
-                                        .selectedAccountIndex(0)
-                                        .build()
-                        )
-                        .submitTo(ConcurrentExecutors.LAUNCH_EVENT_EXECUTOR)
-                        .get();
-            } catch (ExecutionException | InterruptedException e) {
+                        ConfigMainModel.builder()
+                                .launchConfig(
+                                        ConfigLaunchModel.builder()
+                                                .environments(Collections.singletonList(JavaEnvironment.create(new File("C:\\Program Files\\Java\\jre1.8.0_351\\bin\\java.exe"))))
+                                                .selectedEnvironment(0)
+                                                .useSelfGamePath(true)
+                                                .memory(
+                                                        ConfigMemoryModel.builder()
+                                                                .maxMemory(MemorySize.createMegaBytes(8192))
+                                                                .minMemory(MemorySize.createMegaBytes(128))
+                                                                .build()
+                                                )
+                                                .build()
+                                )
+                                .accounts(new Vector<AbstractAccount>() {{
+                                    add(OfflineAccount.create("test", OfflineAccount.STEVE));
+                                }})
+                                .selectedAccountIndex(0)
+                                .build()
+                );
+//                        .submitTo(ConcurrentExecutors.LAUNCH_EVENT_EXECUTOR)
+//                        .get();
+            } catch (Exception e) {
                 e.printStackTrace();
-            }*/
+            }
 
-            repository.getInstances().forEach(a -> {
+            /*repository.getInstances().forEach(a -> {
                 try {
                     System.out.println(a.getInstanceName());
                     System.out.println(a.fetchAddonsAsync().submitTo(ConcurrentExecutors.EVENT_QUEUE_EXECUTOR).get());
                 } catch (Exception e) {
                     e.printStackTrace();
                 }
-            });
+            });*/
 
             /*LuaBaseApiLoader.init();
             LuaBaseApiLoader.load();

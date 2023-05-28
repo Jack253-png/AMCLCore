@@ -29,18 +29,22 @@ public class OutputParser {
         STDERR
     }
 
+    public enum LogType {
+        FATAL,
+        ERROR,
+        WARN,
+        INFO,
+        DEBUG,
+        TRACE
+    }
+
     @AllArgsConstructor(access = AccessLevel.PRIVATE)
     @Data
     public static class OutputLine {
         private final String data;
         private final OutputType type;
 
-        public void printAnsi() {
-            System.out.print("\r");
-            if (!isUseAnsiOutputOverride()) {
-                System.out.println(data);
-                return;
-            }
+        public LogType getLogType() {
             Matcher matcher = parse();
             if (!matcher.find()) {
                 if (
@@ -50,60 +54,71 @@ public class OutputParser {
                                 JAVA_EXC_STACK2.matcher(data).find() ||
                                 JAVA_EXC_STACK_BASE.matcher(data).find() ||
                                 JAVA_EXC_END.matcher(data).find()) {
-                    System.out.println(ansi()
-                            .apply(colorTheme.applyError())
-                            .a(data)
-                            .reset());
+                    return LogType.ERROR;
                 } else {
-                    System.out.println(ansi()
-                            .apply(type == OutputType.STDERR ? colorTheme.applyWarning() : colorTheme.applyInfo())
-                            .a(data)
-                            .reset()
-                    );
+                    return type == OutputType.STDERR ? LogType.WARN : LogType.INFO;
                 }
-                return;
             }
             String logType = matcher.group("type");
-            Ansi ansi = ansi();
-            Ansi.Consumer c;
             switch (type) {
                 default:
                 case STDOUT:
                     switch (logType.toLowerCase()) {
                         case "fatal":
-                            c = colorTheme.applyFatal();
-                            break;
+                            return LogType.FATAL;
                         case "error":
-                            c = colorTheme.applyError();
-                            break;
+                            return LogType.ERROR;
                         case "warn":
-                            c = colorTheme.applyWarning();
-                            break;
+                            return LogType.WARN;
                         default:
                         case "info":
-                            c = colorTheme.applyInfo();
-                            break;
+                            return LogType.INFO;
                         case "debug":
-                            c = colorTheme.applyDebug();
-                            break;
+                            return LogType.DEBUG;
                         case "trace":
-                            c = colorTheme.applyTrace();
-                            break;
+                            return LogType.TRACE;
                     }
-                    break;
                 case STDERR:
                     switch (logType.toLowerCase()) {
                         case "fatal":
-                            c = colorTheme.applyFatal();
-                            break;
+                            return LogType.FATAL;
                         case "error":
-                            c = colorTheme.applyError();
-                            break;
+                            return LogType.ERROR;
                         default:
                         case "warn":
-                            c = colorTheme.applyWarning();
-                            break;
+                            return LogType.WARN;
                     }
+            }
+        }
+
+        public void printAnsi() {
+            System.out.print("\r");
+            if (!isUseAnsiOutputOverride()) {
+                System.out.println(data);
+                return;
+            }
+
+            Ansi ansi = ansi();
+            Ansi.Consumer c;
+            switch (getLogType()) {
+                case FATAL:
+                    c = colorTheme.applyFatal();
+                    break;
+                case ERROR:
+                    c = colorTheme.applyError();
+                    break;
+                case WARN:
+                    c = colorTheme.applyWarning();
+                    break;
+                default:
+                case INFO:
+                    c = colorTheme.applyInfo();
+                    break;
+                case DEBUG:
+                    c = colorTheme.applyDebug();
+                    break;
+                case TRACE:
+                    c = colorTheme.applyTrace();
                     break;
             }
 
