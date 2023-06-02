@@ -11,6 +11,7 @@ import com.mcreater.amclcore.concurrent.task.AbstractAction;
 import com.mcreater.amclcore.concurrent.task.AbstractTask;
 import com.mcreater.amclcore.model.oauth.session.MinecraftNameChangedTimeRequestModel;
 import com.mcreater.amclcore.util.JsonUtil;
+import com.mcreater.amclcore.util.StringUtil;
 import org.jetbrains.annotations.NotNull;
 
 import java.io.File;
@@ -34,6 +35,8 @@ public class AbstractAccountAdapter extends TypeAdapter<AbstractAccount> {
                     .name("access_token").value(value.toMicrosoftAccount().getAccessToken())
                     .name("refresh_token").value(value.toMicrosoftAccount().getRefreshToken())
                     .name("token_type").value(value.toMicrosoftAccount().getTokenType())
+                    .name("name").value(value.toMicrosoftAccount().getAccountName())
+                    .name("uuid").value(StringUtil.toNoLineUUID(value.toMicrosoftAccount().getUuid()))
                     .endObject();
         } else if (value.isOffLineAccount()) {
             out.beginObject()
@@ -117,11 +120,16 @@ public class AbstractAccountAdapter extends TypeAdapter<AbstractAccount> {
                         UUID.fromString(mappedJson.tryGetString("uuid"))
                 );
             case 1:
-                return MicrosoftAccount.create(
+                MicrosoftAccount msaccount = MicrosoftAccount.create(
                         mappedJson.tryGetString("access_token"),
                         mappedJson.tryGetString("refresh_token"),
                         mappedJson.tryGetString("token_type")
                 );
+                msaccount.initBasicProfile(
+                        mappedJson.tryGetString("name"),
+                        StringUtil.toLineUUID(mappedJson.tryGetString("uuid"))
+                );
+                return msaccount;
         }
     }
 }

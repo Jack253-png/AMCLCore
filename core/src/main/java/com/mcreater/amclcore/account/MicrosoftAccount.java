@@ -120,6 +120,7 @@ public class MicrosoftAccount extends AbstractAccount {
     @Getter
     private final String tokenType;
     private MinecraftProfileRequestModel profile;
+    private boolean isBasicInited = false;
 
     private MicrosoftAccount(@NotNull MinecraftRequestModel minecraftUser, @NotNull String refreshToken) {
         super(minecraftUser.getAccessToken());
@@ -141,8 +142,16 @@ public class MicrosoftAccount extends AbstractAccount {
         return new MicrosoftAccount(accessToken, refreshToken, tokenType);
     }
 
+    public void initBasicProfile(String name, UUID uuid) {
+        if (profile == null && name != null && uuid != null) profile = MinecraftProfileRequestModel.builder()
+                .id(uuid)
+                .name(name)
+                .build();
+        isBasicInited = true;
+    }
+
     public boolean needFetchProfile() {
-        return profile == null;
+        return profile == null || isBasicInited;
     }
 
     /**
