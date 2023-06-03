@@ -1,14 +1,8 @@
-package com.mcreater.amclcore.nbt.tags;
-
-import java.util.Objects;
+package com.mcreater.amclcore.nbtlib.common.tags;
 
 public abstract class NumberTag<T extends Number & Comparable<T>> extends AbstractTag<T> {
     protected NumberTag(T value) {
         super(value);
-    }
-
-    public String toString() {
-        return Objects.toString(getValue());
     }
 
     public byte asByte() {

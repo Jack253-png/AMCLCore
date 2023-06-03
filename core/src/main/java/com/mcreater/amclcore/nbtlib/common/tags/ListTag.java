@@ -1,11 +1,11 @@
-package com.mcreater.amclcore.nbt.tags;
+package com.mcreater.amclcore.nbtlib.common.tags;
 
 import org.jetbrains.annotations.NotNull;
 
 import java.util.*;
 
 public class ListTag<T extends AbstractTag<?>> extends AbstractTag<List<T>> implements Iterable<T>, Comparable<ListTag<T>>, List<T> {
-    private Class<?> typeClass;
+    private Class<? super T> typeClass;
 
     public ListTag(Class<? super T> clazz, List<T> value) {
         super(value);
@@ -14,34 +14,6 @@ public class ListTag<T extends AbstractTag<?>> extends AbstractTag<List<T>> impl
 
     private ListTag(int initialCapacity) {
         super(createEmptyValue(initialCapacity));
-    }
-
-    /**
-     * <p>Creates a non-type-safe ListTag. Its element type will be set after the first
-     * element was added.</p>
-     *
-     * <p>This is an internal helper method for cases where the element type is not known
-     * at construction time. Use {@link #ListTag(Class)} when the type is known.</p>
-     *
-     * @return A new non-type-safe ListTag
-     */
-    public static ListTag<?> createUnchecked(Class<?> typeClass) {
-        return createUnchecked(typeClass, 3);
-    }
-
-    /**
-     * <p>Creates a non-type-safe ListTag. Its element type will be set after the first
-     * element was added.</p>
-     *
-     * <p>This is an internal helper method for cases where the element type is not known
-     * at construction time. Use {@link #ListTag(Class)} when the type is known.</p>
-     *
-     * @return A new non-type-safe ListTag
-     */
-    public static ListTag<?> createUnchecked(Class<?> typeClass, int initialCapacity) {
-        ListTag<?> list = new ListTag<>(initialCapacity);
-        list.typeClass = typeClass;
-        return list;
     }
 
     /**
@@ -78,16 +50,12 @@ public class ListTag<T extends AbstractTag<?>> extends AbstractTag<List<T>> impl
         this.typeClass = Objects.requireNonNull(typeClass);
     }
 
-    public String toString() {
-        return getValue().toString();
-    }
-
     public ListTag<T> clone() {
-        return new ListTag<>(typeClass, new Vector<>(getValue()));
+        return new ListTag<T>(typeClass, new Vector<>(getValue()));
     }
 
     public int compareTo(@NotNull ListTag<T> o) {
-        return getValue().toString().compareTo(o.getValue().toString());
+        return getValue().hashCode() - o.getValue().hashCode();
     }
 
     public int size() {

@@ -11,6 +11,7 @@ import com.mcreater.amclcore.model.game.arguments.GameArgumentsModel;
 import com.mcreater.amclcore.model.game.rule.GameRuleModel;
 import com.mcreater.amclcore.model.oauth.session.MinecraftNameChangeableRequestModel;
 import com.mcreater.amclcore.model.oauth.session.MinecraftProfileRequestModel;
+import com.mcreater.amclcore.nbtlib.common.tags.AbstractTag;
 import com.mcreater.amclcore.util.adapters.*;
 import com.mcreater.amclcore.util.date.GMTDate;
 import com.mcreater.amclcore.util.date.StandardDate;
@@ -45,6 +46,7 @@ public class JsonUtil {
             .registerTypeAdapter(JavaEnvironment.class, JavaEnvironmentAdapter.INSTANCE)
             .registerTypeAdapter(MemorySizeAdapter.class, MemorySizeAdapter.INSTANCE)
             .registerTypeAdapter(MavenLibName.class, MavenLibNameAdapter.INSTANCE)
+            .registerTypeAdapter(AbstractTag.class, AbstractTagSerializer.INSTANCE)
             .disableHtmlEscaping()
             .create();
     private static final Pattern NAME_PATTERN = Pattern.compile("\"name\":\\s*\"(.+?)\"");

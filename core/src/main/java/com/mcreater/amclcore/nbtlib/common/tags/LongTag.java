@@ -1,4 +1,4 @@
-package com.mcreater.amclcore.nbt.tags;
+package com.mcreater.amclcore.nbtlib.common.tags;
 
 import org.jetbrains.annotations.NotNull;
 

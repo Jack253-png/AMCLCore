@@ -13,14 +13,17 @@ import com.mcreater.amclcore.java.MemorySize;
 import com.mcreater.amclcore.model.config.ConfigLaunchModel;
 import com.mcreater.amclcore.model.config.ConfigMainModel;
 import com.mcreater.amclcore.model.config.ConfigMemoryModel;
+import com.mcreater.amclcore.nbtlib.nbt.io.NBTInputStream;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
 import java.io.File;
+import java.nio.file.Files;
 import java.util.Collections;
 import java.util.Optional;
 import java.util.Vector;
 import java.util.concurrent.ExecutionException;
+import java.util.zip.GZIPInputStream;
 
 import static com.mcreater.amclcore.MetaData.isUseAnsiOutputOverride;
 import static com.mcreater.amclcore.util.PropertyUtil.setProperty;
@@ -34,9 +37,17 @@ public class Main {
 
     public static void main(String[] args) throws Exception {
 //        loginTest();
-        launchTest();
-    }
+//        launchTest();
+        NBTInputStream stream = new NBTInputStream(
+                new GZIPInputStream(
+                        Files.newInputStream(
+                                new File("D:\\mods\\minecraft\\.minecraft\\versions\\MTR Client\\saves\\world\\level.dat").toPath()
+                        )
+                )
+        );
 
+        System.out.println(stream.readTag(Integer.MAX_VALUE));
+    }
     public static void launchTest() {
         GameRepository.of("D:\\mods\\minecraft\\.minecraft", "My minecraft repository").ifPresent(repository -> {
             try {
