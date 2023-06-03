@@ -1,10 +1,9 @@
 package com.mcreater.amclcore.nbtlib.common.tags;
 
+import com.mcreater.amclcore.util.ArrayUtils;
 import org.jetbrains.annotations.NotNull;
 
 import java.util.Arrays;
-import java.util.List;
-import java.util.Vector;
 
 public class LongArrayTag extends ArrayTag<Long> implements Comparable<LongArrayTag> {
     public LongArrayTag(Long[] value) {
@@ -12,10 +11,7 @@ public class LongArrayTag extends ArrayTag<Long> implements Comparable<LongArray
     }
 
     public LongArrayTag(long[] value) {
-        super(new Long[0]);
-        List<Long> a = new Vector<>();
-        for (long b : value) a.add(b);
-        setValue(a.toArray(new Long[0]));
+        super(ArrayUtils.boxed(value));
     }
 
     public LongArrayTag clone() {

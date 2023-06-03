@@ -5,10 +5,12 @@ import com.mcreater.amclcore.nbtlib.common.tags.NamedTag;
 
 import java.io.IOException;
 
-public interface NBTInput {
-    NamedTag readTag(int maxDepth) throws IOException;
+public interface NBTOutput {
+    void writeTag(NamedTag tag, int maxDepth) throws IOException;
 
-    AbstractTag<?> readRawTag(int maxDepth) throws IOException;
+    void writeTag(AbstractTag<?> tag, int maxDepth) throws IOException;
+
+    void flush() throws IOException;
 
     void close() throws IOException;
 }

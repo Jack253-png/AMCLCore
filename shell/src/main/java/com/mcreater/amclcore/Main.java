@@ -13,7 +13,9 @@ import com.mcreater.amclcore.java.MemorySize;
 import com.mcreater.amclcore.model.config.ConfigLaunchModel;
 import com.mcreater.amclcore.model.config.ConfigMainModel;
 import com.mcreater.amclcore.model.config.ConfigMemoryModel;
-import com.mcreater.amclcore.nbtlib.nbt.io.NBTInputStream;
+import com.mcreater.amclcore.nbtlib.common.tags.NamedTag;
+import com.mcreater.amclcore.nbtlib.nbt.io.NBTInput;
+import com.mcreater.amclcore.nbtlib.nbt.io.NBTOutput;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
@@ -24,8 +26,11 @@ import java.util.Optional;
 import java.util.Vector;
 import java.util.concurrent.ExecutionException;
 import java.util.zip.GZIPInputStream;
+import java.util.zip.GZIPOutputStream;
 
 import static com.mcreater.amclcore.MetaData.isUseAnsiOutputOverride;
+import static com.mcreater.amclcore.nbtlib.nbt.NBTIOUtil.createInput;
+import static com.mcreater.amclcore.nbtlib.nbt.NBTIOUtil.createOutput;
 import static com.mcreater.amclcore.util.PropertyUtil.setProperty;
 
 public class Main {
@@ -38,7 +43,7 @@ public class Main {
     public static void main(String[] args) throws Exception {
 //        loginTest();
 //        launchTest();
-        NBTInputStream stream = new NBTInputStream(
+        NBTInput stream = createInput(
                 new GZIPInputStream(
                         Files.newInputStream(
                                 new File("D:\\mods\\minecraft\\.minecraft\\versions\\MTR Client\\saves\\world\\level.dat").toPath()
@@ -46,7 +51,31 @@ public class Main {
                 )
         );
 
-        System.out.println(stream.readTag(Integer.MAX_VALUE));
+        NamedTag tg = stream.readTag(Integer.MAX_VALUE);
+        stream.close();
+
+        System.out.println("\n\n\n\n\n\n\n\n\n\n\n\n");
+
+        Files.delete(new File("D:\\test.dat").toPath());
+        NBTOutput stream1 = createOutput(
+                new GZIPOutputStream(
+                        Files.newOutputStream(
+                                new File("D:\\test.dat").toPath()
+                        )
+                )
+        );
+        stream1.writeTag(tg, Integer.MAX_VALUE);
+        stream1.close();
+
+        NBTInput stream2 = createInput(
+                new GZIPInputStream(
+                        Files.newInputStream(
+                                new File("D:\\test.dat").toPath()
+                        )
+                )
+        );
+        System.out.println(stream2.readTag(Integer.MAX_VALUE));
+        stream2.close();
     }
     public static void launchTest() {
         GameRepository.of("D:\\mods\\minecraft\\.minecraft", "My minecraft repository").ifPresent(repository -> {

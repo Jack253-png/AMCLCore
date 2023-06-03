@@ -26,6 +26,7 @@ public enum TagType {
     COMPOUND_TAG((byte) 10, CompoundTag.class, o -> new CompoundTag((Map<String, AbstractTag<?>>) o)),
     INTEGER_ARRAY_TAG((byte) 11, IntegerArrayTag.class, o -> new IntegerArrayTag((int[]) o)),
     LONG_ARRAY_TAG((byte) 12, LongArrayTag.class, o -> new LongArrayTag((long[]) o));
+    @Getter
     private final byte id;
     @Getter
     private final Class<?> clazz;

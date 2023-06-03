@@ -1,10 +1,12 @@
 package com.mcreater.amclcore.nbtlib.common.tags;
 
+import lombok.Getter;
 import org.jetbrains.annotations.NotNull;
 
 import java.util.*;
 
 public class ListTag<T extends AbstractTag<?>> extends AbstractTag<List<T>> implements Iterable<T>, Comparable<ListTag<T>>, List<T> {
+    @Getter
     private Class<? super T> typeClass;
 
     public ListTag(Class<? super T> clazz, List<T> value) {

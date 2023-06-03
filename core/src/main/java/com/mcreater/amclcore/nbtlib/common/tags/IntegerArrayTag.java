@@ -1,10 +1,9 @@
 package com.mcreater.amclcore.nbtlib.common.tags;
 
+import com.mcreater.amclcore.util.ArrayUtils;
 import org.jetbrains.annotations.NotNull;
 
 import java.util.Arrays;
-import java.util.List;
-import java.util.Vector;
 
 public class IntegerArrayTag extends ArrayTag<Integer> implements Comparable<IntegerArrayTag> {
     public IntegerArrayTag(Integer[] value) {
@@ -12,10 +11,7 @@ public class IntegerArrayTag extends ArrayTag<Integer> implements Comparable<Int
     }
 
     public IntegerArrayTag(int[] value) {
-        super(new Integer[0]);
-        List<Integer> a = new Vector<>();
-        for (int b : value) a.add(b);
-        setValue(a.toArray(new Integer[0]));
+        super(ArrayUtils.boxed(value));
     }
 
     public IntegerArrayTag clone() {
