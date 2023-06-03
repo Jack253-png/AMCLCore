@@ -33,4 +33,5 @@ public abstract class AbstractTag<T> implements Cloneable {
      * @return the cloned tag<br>返回复制的标签
      */
     public abstract AbstractTag<T> clone();
+
 }
