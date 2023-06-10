@@ -59,5 +59,7 @@
   "core.swing.api.task.clipboard.name": "clipboard copy %s task",
   "core.task.process.name": "starting process task",
   "core.transitions.name": "AMCL Core transitions pack",
-  "core.exception.reporting": "Reporting an exception"
+  "core.exception.reporting": "Reporting an exception",
+  "core.account.offline.cape.add": "add custom cape task",
+  "core.account.offline.cape.delete": "delete custom cape task"
 }

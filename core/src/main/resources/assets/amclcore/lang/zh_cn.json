@@ -59,5 +59,7 @@
   "core.swing.api.task.clipboard.name": "剪贴板复制 %s 任务",
   "core.task.process.name": "进程启动任务",
   "core.transitions.name": "AMCL 核心翻译包",
-  "core.exception.reporting": "正在报告一个问题"
+  "core.exception.reporting": "正在报告一个问题",
+  "core.account.offline.cape.add": "添加自定义披风任务",
+  "core.account.offline.cape.delete": "删除自定义披风任务"
 }

@@ -17,7 +17,9 @@ import org.jetbrains.annotations.NotNull;
 
 import java.io.File;
 import java.io.IOException;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.UUID;
 
 public class AbstractAccountAdapter extends TypeAdapter<AbstractAccount> {
@@ -46,7 +48,19 @@ public class AbstractAccountAdapter extends TypeAdapter<AbstractAccount> {
                     .name("name").value(value.toOffLineAccount().getAccountName())
                     .name("uuid").value(value.toOffLineAccount().getUuid().toString())
                     .name("custom").value(value.toOffLineAccount().isCustomSkin())
-                    .endObject();
+                    .name("custom_cape").beginObject()
+                    .name("selected").value(value.toOffLineAccount().getSelectedCape())
+                    .name("capes").beginObject();
+
+            value.toOffLineAccount().getCapes().forEach((s, file) -> {
+                try {
+                    out.name(s).value(file.getAbsolutePath());
+                } catch (IOException e) {
+                    e.printStackTrace();
+                }
+            });
+
+            out.endObject().endObject().endObject();
         } else {
             out.beginObject()
                     .name("type").value(-1)
@@ -131,6 +145,10 @@ public class AbstractAccountAdapter extends TypeAdapter<AbstractAccount> {
                         UUID.fromString(mappedJson.tryGetString("uuid"))
                 );
                 ofaccount.setCustomSkin(mappedJson.tryGetBoolean("custom"));
+                ofaccount.setSelectedCape(mappedJson.tryGetString("custom_cape", "selected"));
+                Map<String, File> capes = new HashMap<>();
+                mappedJson.tryGetMap("custom_cape", "capes").forEach((s, o) -> capes.put(s, new File(o.toString())));
+                ofaccount.setCapes(capes);
                 return ofaccount;
             case 1:
                 MicrosoftAccount msaccount = MicrosoftAccount.create(

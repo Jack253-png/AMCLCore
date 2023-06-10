@@ -14,9 +14,7 @@ import lombok.Setter;
 import org.jetbrains.annotations.NotNull;
 
 import java.io.File;
-import java.util.List;
-import java.util.UUID;
-import java.util.Vector;
+import java.util.*;
 
 import static com.mcreater.amclcore.i18n.I18NManager.translatable;
 import static com.mcreater.amclcore.util.ImageUtil.isValidImage;
@@ -28,6 +26,13 @@ public class OfflineAccount extends AbstractAccount {
     @Getter
     @Setter
     private boolean isCustomSkin;
+    @Getter
+    @Setter
+    @NotNull
+    private Map<String, File> capes = new HashMap<>();
+    @Getter
+    @Setter
+    private String selectedCape;
 
     private OfflineAccount(@NotNull String accountName, @NotNull UUID uuid) {
         super(accountName, uuid, toNoLineUUID(uuid));
@@ -49,19 +54,35 @@ public class OfflineAccount extends AbstractAccount {
         return BooleanTask.of(true);
     }
 
-    public AbstractAction disableAccountCapeAsync() {
-        return EmptyAction.of();
+    public RunnableAction disableAccountCapeAsync() {
+        return RunnableAction.of(() -> selectedCape = null, translatable("core.oauth.task.disable_cape.text"));
     }
 
-    public AbstractAction enableAccountCapeAsync(String id) {
-        return EmptyAction.of();
+    public RunnableAction enableAccountCapeAsync(String id) {
+        return RunnableAction.of(() -> {
+            if (capes.containsKey(id)) selectedCape = id;
+        }, translatable("core.oauth.task.enable_cape.text"));
+    }
+
+    public RunnableAction addAccountCapeAsync(String id, File file) {
+        return RunnableAction.of(() -> {
+            if (!isValidImage(file)) throw new RuntimeException("bad image");
+            capes.put(id, file);
+        }, translatable("core.account.offline.cape.add"));
+    }
+
+    public RunnableAction removeAccountCapeAsync(String id) {
+        return RunnableAction.of(() -> {
+            capes.remove(id);
+            if (Objects.equals(selectedCape, id)) selectedCape = null;
+        }, translatable("core.account.offline.cape.add"));
     }
 
     public BooleanTask checkAccountNameChangeableAsync(@NotNull String newName) {
         return BooleanTask.of(true, translatable("core.oauth.task.name_changeable_check.text"));
     }
 
-    public AbstractAction changeAccountNameAsync(@NotNull String newName) {
+    public RunnableAction changeAccountNameAsync(@NotNull String newName) {
         return RunnableAction.of(() -> setAccountName(newName), translatable("core.oauth.task.changeName.text"));
     }
 
@@ -77,7 +98,7 @@ public class OfflineAccount extends AbstractAccount {
         return EmptyAction.of();
     }
 
-    public AbstractAction uploadSkinAsync(File file, boolean isSlim) {
+    public RunnableAction uploadSkinAsync(File file, boolean isSlim) {
         return RunnableAction.of(() -> {
             if (!isValidImage(file)) throw new RuntimeException("bad image");
             // TODO to be done
