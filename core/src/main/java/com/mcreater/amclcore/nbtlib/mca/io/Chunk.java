@@ -5,6 +5,7 @@ import com.mcreater.amclcore.nbtlib.common.tags.ListTag;
 import com.mcreater.amclcore.nbtlib.common.tags.NamedTag;
 import com.mcreater.amclcore.nbtlib.nbt.io.NBTDeserializer;
 import com.mcreater.amclcore.nbtlib.nbt.io.NBTSerializer;
+import lombok.Getter;
 
 import java.io.*;
 import java.util.*;
@@ -20,6 +21,7 @@ public class Chunk implements Iterable<Section> {
 
     private int lastMCAUpdate;
 
+    @Getter
     private CompoundTag data;
 
     private int dataVersion;
@@ -51,7 +53,12 @@ public class Chunk implements Iterable<Section> {
      */
     public Chunk(CompoundTag data) {
         this.data = data;
-        initReferences(ALL_DATA);
+
+        try {
+            initReferences(ALL_DATA);
+        } catch (Exception ignored) {
+
+        }
     }
 
     private void initReferences(long loadFlags) {
@@ -175,7 +182,11 @@ public class Chunk implements Iterable<Section> {
         NamedTag tag = new NBTDeserializer(false).fromStream(dis);
         if (tag != null && tag.getTag() instanceof CompoundTag) {
             data = (CompoundTag) tag.getTag();
-            initReferences(loadFlags);
+            try {
+                initReferences(loadFlags);
+            } catch (Exception ignored) {
+
+            }
         } else {
             throw new IOException("invalid data tag: " + (tag == null ? "null" : tag.getClass().getName()));
         }
