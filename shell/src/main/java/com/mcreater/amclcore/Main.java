@@ -15,8 +15,7 @@ import com.mcreater.amclcore.model.config.ConfigMainModel;
 import com.mcreater.amclcore.model.config.ConfigMemoryModel;
 import com.mcreater.amclcore.nbtlib.common.io.Serializer;
 import com.mcreater.amclcore.nbtlib.common.tags.NamedTag;
-import com.mcreater.amclcore.nbtlib.nbt.io.NBTInput;
-import com.mcreater.amclcore.nbtlib.nbt.io.NBTOutput;
+import com.mcreater.amclcore.nbtlib.nbt.NBTUtil;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
@@ -27,12 +26,8 @@ import java.util.Collections;
 import java.util.Optional;
 import java.util.Vector;
 import java.util.concurrent.ExecutionException;
-import java.util.zip.GZIPInputStream;
-import java.util.zip.GZIPOutputStream;
 
 import static com.mcreater.amclcore.MetaData.isUseAnsiOutputOverride;
-import static com.mcreater.amclcore.nbtlib.nbt.NBTIOUtil.createInput;
-import static com.mcreater.amclcore.nbtlib.nbt.NBTIOUtil.createOutput;
 import static com.mcreater.amclcore.util.PropertyUtil.setProperty;
 
 public class Main {
@@ -45,39 +40,15 @@ public class Main {
     public static void main(String[] args) throws Exception {
 //        loginTest();
 //        launchTest();
-        NBTInput stream = createInput(
-                new GZIPInputStream(
-                        Files.newInputStream(
-                                new File("D:\\mods\\minecraft\\.minecraft\\versions\\MTR Client\\saves\\world\\level.dat").toPath()
-                        )
-                )
-        );
-
-        NamedTag tg = stream.readTag(Integer.MAX_VALUE);
-        stream.close();
+        NamedTag tg = NBTUtil.read("D:\\mods\\minecraft\\.minecraft\\versions\\MTR Client\\saves\\world\\level.dat", true);
 
         Files.delete(new File("D:\\test.dat").toPath());
-        NBTOutput stream1 = createOutput(
-                new GZIPOutputStream(
-                        Files.newOutputStream(
-                                new File("D:\\test.dat").toPath()
-                        )
-                )
-        );
-        stream1.writeTag(tg, Integer.MAX_VALUE);
-        stream1.close();
+        NBTUtil.write(tg, "D:\\test.dat", true);
 
-        NBTInput stream2 = createInput(
-                new GZIPInputStream(
-                        Files.newInputStream(
-                                new File("D:\\test.dat").toPath()
-                        )
-                )
-        );
+        NamedTag tag = NBTUtil.read("D:\\test.dat", true);
         StringWriter writer = new StringWriter();
-        Serializer.getSNBTInstance().toWriter(stream2.readTag(Integer.MAX_VALUE).getTag(), writer);
+        Serializer.getSNBTInstance().toWriter(tag.getTag(), writer);
         System.out.println(writer);
-        stream2.close();
     }
     public static void launchTest() {
         GameRepository.of("D:\\mods\\minecraft\\.minecraft", "My minecraft repository").ifPresent(repository -> {
