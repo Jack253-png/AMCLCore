@@ -52,7 +52,7 @@ public class MetaData {
      * Launcher internal version (>= 1)
      * 启动器内部版本 (>= 1)
      */
-    public static final int launcherBuildInternalVersion = 1;
+    public static final int launcherBuildInternalVersion = 2;
     /**
      * launcher name override, using command line -Damclcore.name.override=YOUR_LAUNCHERNAME<br>
      * 启动器名称覆盖，使用命令行 -Damclcore.name.override=你的启动器名称

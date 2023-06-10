@@ -17,6 +17,7 @@ import java.util.UUID;
 import java.util.Vector;
 
 import static com.mcreater.amclcore.i18n.I18NManager.translatable;
+import static com.mcreater.amclcore.util.ImageUtil.isValidImage;
 import static com.mcreater.amclcore.util.StringUtil.toNoLineUUID;
 
 public class OfflineAccount extends AbstractAccount {
@@ -72,7 +73,11 @@ public class OfflineAccount extends AbstractAccount {
     }
 
     public AbstractAction uploadSkinAsync(File file, boolean isSlim) {
-        return EmptyAction.of();
+        return RunnableAction.of(() -> {
+            if (!isValidImage(file)) throw new RuntimeException("bad image");
+            // TODO to be done
+
+        }, translatable("core.oauth.task.upload_skin.text"));
     }
 
     public List<CommandArg> getAddonArgs() {

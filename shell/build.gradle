@@ -14,7 +14,7 @@ plugins {
 }
 
 group 'com.mcreater'
-version '0.1'
+version '0.1-alpha2'
 
 compileJava {
     sourceCompatibility = JavaVersion.VERSION_1_8
@@ -83,7 +83,7 @@ publishing {
 
             artifact sourcesJar
             artifact jar
-            artifact javadocJar
+//            artifact javadocJar
 
             pom.withXml {
                 Node root = asNode().appendNode("dependencies", new HashMap())

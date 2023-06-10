@@ -28,6 +28,7 @@ import org.apache.http.entity.mime.MultipartEntityBuilder;
 import org.jetbrains.annotations.NotNull;
 
 import java.io.File;
+import java.io.IOException;
 import java.time.Instant;
 import java.time.ZoneId;
 import java.time.temporal.ChronoUnit;
@@ -36,6 +37,7 @@ import java.util.regex.Pattern;
 
 import static com.mcreater.amclcore.i18n.I18NManager.translatable;
 import static com.mcreater.amclcore.util.FunctionUtil.genSelfFunction;
+import static com.mcreater.amclcore.util.ImageUtil.isValidImage;
 import static com.mcreater.amclcore.util.JsonUtil.createPair;
 import static com.mcreater.amclcore.util.date.DateUtil.dateBetween;
 import static com.mcreater.amclcore.util.date.DateUtil.toDate;
@@ -568,6 +570,7 @@ public class MicrosoftAccount extends AbstractAccount {
         private boolean isSlim;
 
         protected void execute() throws Exception {
+            if (!isValidImage(file)) throw new IOException("bad image");
             profile = HttpClientWrapper.create(HttpClientWrapper.Method.POST)
                     .uri(apiAccessor.getMinecraftSkinModifyUrl())
                     .header(tokenHeader())

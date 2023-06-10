@@ -21,7 +21,7 @@ plugins {
 }
 
 group 'com.mcreater'
-version '0.1'
+version '0.1-alpha2'
 
 compileJava {
     sourceCompatibility = JavaVersion.VERSION_1_8
