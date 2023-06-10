@@ -58,5 +58,6 @@
   "core.swing.api.task.browser.name": "open browser url %s task",
   "core.swing.api.task.clipboard.name": "clipboard copy %s task",
   "core.task.process.name": "starting process task",
-  "core.transitions.name": "AMCL Core transitions pack"
+  "core.transitions.name": "AMCL Core transitions pack",
+  "core.exception.reporting": "Reporting an exception"
 }

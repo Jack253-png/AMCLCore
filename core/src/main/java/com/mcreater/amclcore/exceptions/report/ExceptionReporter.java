@@ -2,12 +2,18 @@ package com.mcreater.amclcore.exceptions.report;
 
 import com.mcreater.amclcore.concurrent.ConcurrentExecutors;
 import lombok.Getter;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 
 import java.util.List;
 import java.util.Vector;
 import java.util.function.BiConsumer;
 
+import static com.mcreater.amclcore.i18n.I18NManager.translatable;
+
 public class ExceptionReporter {
+    private static final Logger EVENT_LOGGER = LogManager.getLogger(ExceptionReporter.class);
+
     public enum ExceptionType {
         UNKNOWN,
         CONCURRENT,
@@ -24,7 +30,8 @@ public class ExceptionReporter {
     }
 
     public static void report(Throwable throwable, ExceptionType type) {
-        throwable.printStackTrace(System.out);
+        EVENT_LOGGER.error(translatable("core.exception.reporting").getText());
+        throwable.printStackTrace();
         ConcurrentExecutors.INTERFACE_EVENT_EXECUTORS.get(ExceptionReporter.class).execute(() -> getReporters().parallelStream().forEach(c -> c.accept(throwable, type)));
     }
 

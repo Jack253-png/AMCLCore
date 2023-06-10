@@ -58,5 +58,6 @@
   "core.swing.api.task.browser.name": "浏览器打开 URL %s 任务",
   "core.swing.api.task.clipboard.name": "剪贴板复制 %s 任务",
   "core.task.process.name": "进程启动任务",
-  "core.transitions.name": "AMCL 核心翻译包"
+  "core.transitions.name": "AMCL 核心翻译包",
+  "core.exception.reporting": "正在报告一个问题"
 }

@@ -32,8 +32,8 @@ public class Main {
     private static final Logger logger = LogManager.getLogger(Main.class);
 
     public static void main(String[] args) throws Exception {
-//        loginTest();
-        launchTest();
+        loginTest();
+//        launchTest();
     }
     public static void launchTest() {
         GameRepository.of("D:\\mods\\minecraft\\.minecraft", "My minecraft repository").ifPresent(repository -> {
