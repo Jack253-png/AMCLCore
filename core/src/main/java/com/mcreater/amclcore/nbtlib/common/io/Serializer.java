@@ -1,5 +1,7 @@
 package com.mcreater.amclcore.nbtlib.common.io;
 
+import com.mcreater.amclcore.nbtlib.snbt.io.SNBTSerializer;
+
 import java.io.*;
 import java.nio.file.Files;
 
@@ -17,5 +19,9 @@ public interface Serializer<T> {
         toStream(object, bos);
         bos.close();
         return bos.toByteArray();
+    }
+
+    static SNBTSerializer getSNBTInstance() {
+        return new SNBTSerializer();
     }
 }

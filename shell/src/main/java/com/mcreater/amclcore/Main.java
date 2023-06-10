@@ -13,6 +13,7 @@ import com.mcreater.amclcore.java.MemorySize;
 import com.mcreater.amclcore.model.config.ConfigLaunchModel;
 import com.mcreater.amclcore.model.config.ConfigMainModel;
 import com.mcreater.amclcore.model.config.ConfigMemoryModel;
+import com.mcreater.amclcore.nbtlib.common.io.Serializer;
 import com.mcreater.amclcore.nbtlib.common.tags.NamedTag;
 import com.mcreater.amclcore.nbtlib.nbt.io.NBTInput;
 import com.mcreater.amclcore.nbtlib.nbt.io.NBTOutput;
@@ -20,6 +21,7 @@ import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
 import java.io.File;
+import java.io.StringWriter;
 import java.nio.file.Files;
 import java.util.Collections;
 import java.util.Optional;
@@ -54,8 +56,6 @@ public class Main {
         NamedTag tg = stream.readTag(Integer.MAX_VALUE);
         stream.close();
 
-        System.out.println("\n\n\n\n\n\n\n\n\n\n\n\n");
-
         Files.delete(new File("D:\\test.dat").toPath());
         NBTOutput stream1 = createOutput(
                 new GZIPOutputStream(
@@ -74,7 +74,9 @@ public class Main {
                         )
                 )
         );
-        System.out.println(stream2.readTag(Integer.MAX_VALUE));
+        StringWriter writer = new StringWriter();
+        Serializer.getSNBTInstance().toWriter(stream2.readTag(Integer.MAX_VALUE).getTag(), writer);
+        System.out.println(writer);
         stream2.close();
     }
     public static void launchTest() {

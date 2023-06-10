@@ -1,5 +1,7 @@
 package com.mcreater.amclcore.nbtlib.common.io;
 
+import com.mcreater.amclcore.nbtlib.snbt.io.SNBTDeserializer;
+
 import java.io.*;
 import java.net.URL;
 import java.nio.file.Files;
@@ -29,5 +31,9 @@ public interface Deserializer<T> {
         try (InputStream stream = url.openStream()) {
             return fromStream(stream);
         }
+    }
+
+    static SNBTDeserializer createSNBTInstance() {
+        return new SNBTDeserializer();
     }
 }

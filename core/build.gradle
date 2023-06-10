@@ -53,6 +53,7 @@ dependencies {
     implementation 'org.projectlombok:lombok:1.18.26'
     implementation "org.fusesource.jansi:jansi:2.4.0"
     implementation "org.jenkins-ci:constant-pool-scanner:1.2"
+    implementation "org.javassist:javassist:3.25.0-GA"
     annotationProcessor 'org.projectlombok:lombok:1.18.26'
 }
 
