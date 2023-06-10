@@ -9,6 +9,8 @@ import com.mcreater.amclcore.concurrent.task.model.ObjectTask;
 import com.mcreater.amclcore.concurrent.task.model.RunnableAction;
 import com.mcreater.amclcore.model.oauth.session.MinecraftNameChangedTimeRequestModel;
 import com.mcreater.amclcore.util.StringUtil;
+import lombok.Getter;
+import lombok.Setter;
 import org.jetbrains.annotations.NotNull;
 
 import java.io.File;
@@ -23,6 +25,9 @@ import static com.mcreater.amclcore.util.StringUtil.toNoLineUUID;
 public class OfflineAccount extends AbstractAccount {
     public static final UUID STEVE = StringUtil.toLineUUID("000000000000300a9d83f9ec9e7fae8e");
     public static final UUID ALEX = StringUtil.toLineUUID("000000000000300a9d83f9ec9e7fae8d");
+    @Getter
+    @Setter
+    private boolean isCustomSkin;
 
     private OfflineAccount(@NotNull String accountName, @NotNull UUID uuid) {
         super(accountName, uuid, toNoLineUUID(uuid));

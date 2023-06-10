@@ -45,6 +45,7 @@ public class AbstractAccountAdapter extends TypeAdapter<AbstractAccount> {
                     .name("type").value(0)
                     .name("name").value(value.toOffLineAccount().getAccountName())
                     .name("uuid").value(value.toOffLineAccount().getUuid().toString())
+                    .name("custom").value(value.toOffLineAccount().isCustomSkin())
                     .endObject();
         } else {
             out.beginObject()
@@ -125,10 +126,12 @@ public class AbstractAccountAdapter extends TypeAdapter<AbstractAccount> {
                     }
                 };
             case 0:
-                return OfflineAccount.create(
+                OfflineAccount ofaccount = OfflineAccount.create(
                         mappedJson.tryGetString("name"),
                         UUID.fromString(mappedJson.tryGetString("uuid"))
                 );
+                ofaccount.setCustomSkin(mappedJson.tryGetBoolean("custom"));
+                return ofaccount;
             case 1:
                 MicrosoftAccount msaccount = MicrosoftAccount.create(
                         mappedJson.tryGetString("access_token"),

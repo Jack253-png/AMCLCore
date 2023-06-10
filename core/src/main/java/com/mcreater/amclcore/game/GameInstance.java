@@ -560,6 +560,10 @@ public class GameInstance {
                     );
                 }
             }
+            // TODO load account addon args
+            {
+                args.addAll(account.get().getAddonArgs());
+            }
             // TODO load main class
             {
                 args.add(CommandArg.create(model.getMainClass()));
