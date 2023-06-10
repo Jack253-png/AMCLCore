@@ -1,5 +1,6 @@
 package com.mcreater.amclcore.account;
 
+import com.mcreater.amclcore.command.CommandArg;
 import com.mcreater.amclcore.concurrent.task.AbstractAction;
 import com.mcreater.amclcore.concurrent.task.AbstractTask;
 import com.mcreater.amclcore.model.oauth.session.MinecraftNameChangedTimeRequestModel;
@@ -7,6 +8,7 @@ import lombok.Getter;
 import org.jetbrains.annotations.NotNull;
 
 import java.io.File;
+import java.util.List;
 import java.util.UUID;
 
 import static java.util.Objects.requireNonNull;
@@ -155,4 +157,8 @@ public abstract class AbstractAccount {
     public final boolean isOffLineAccount() {
         return this instanceof OfflineAccount;
     }
+
+    public abstract List<CommandArg> getAddonArgs();
+
+    public abstract AbstractAction preLaunchAsync();
 }

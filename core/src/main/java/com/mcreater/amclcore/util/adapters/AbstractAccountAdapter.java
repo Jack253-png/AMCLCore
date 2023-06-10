@@ -7,6 +7,7 @@ import com.google.gson.stream.JsonWriter;
 import com.mcreater.amclcore.account.AbstractAccount;
 import com.mcreater.amclcore.account.MicrosoftAccount;
 import com.mcreater.amclcore.account.OfflineAccount;
+import com.mcreater.amclcore.command.CommandArg;
 import com.mcreater.amclcore.concurrent.task.AbstractAction;
 import com.mcreater.amclcore.concurrent.task.AbstractTask;
 import com.mcreater.amclcore.model.oauth.session.MinecraftNameChangedTimeRequestModel;
@@ -16,6 +17,7 @@ import org.jetbrains.annotations.NotNull;
 
 import java.io.File;
 import java.io.IOException;
+import java.util.List;
 import java.util.UUID;
 
 public class AbstractAccountAdapter extends TypeAdapter<AbstractAccount> {
@@ -111,6 +113,14 @@ public class AbstractAccountAdapter extends TypeAdapter<AbstractAccount> {
                     }
 
                     public AbstractAction uploadSkinAsync(File file, boolean isSlim) {
+                        return null;
+                    }
+
+                    public List<CommandArg> getAddonArgs() {
+                        return null;
+                    }
+
+                    public AbstractAction preLaunchAsync() {
                         return null;
                     }
                 };

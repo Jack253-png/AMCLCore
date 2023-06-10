@@ -56,5 +56,7 @@
   "core.game.instance.launch.exit.normal": "游戏正常退出",
   "core.game.instance.launch.exit.crash": "游戏崩溃",
   "core.game.instance.task.fetch_addon": "获取 Addon 任务",
-  "core.game.instance.task.fetch_version": "获取版本任务"
+  "core.game.instance.task.fetch_version": "获取版本任务",
+  "core.concurrent.task.model.empty": "未命名任务",
+  "core.game.launch.pre": "预启动任务"
 }

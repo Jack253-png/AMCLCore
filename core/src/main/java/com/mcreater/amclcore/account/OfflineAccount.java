@@ -1,17 +1,22 @@
 package com.mcreater.amclcore.account;
 
+import com.mcreater.amclcore.command.CommandArg;
 import com.mcreater.amclcore.concurrent.task.AbstractAction;
 import com.mcreater.amclcore.concurrent.task.AbstractTask;
 import com.mcreater.amclcore.concurrent.task.model.BooleanTask;
 import com.mcreater.amclcore.concurrent.task.model.EmptyAction;
 import com.mcreater.amclcore.concurrent.task.model.ObjectTask;
+import com.mcreater.amclcore.concurrent.task.model.RunnableAction;
 import com.mcreater.amclcore.model.oauth.session.MinecraftNameChangedTimeRequestModel;
 import com.mcreater.amclcore.util.StringUtil;
 import org.jetbrains.annotations.NotNull;
 
 import java.io.File;
+import java.util.List;
 import java.util.UUID;
+import java.util.Vector;
 
+import static com.mcreater.amclcore.i18n.I18NManager.translatable;
 import static com.mcreater.amclcore.util.StringUtil.toNoLineUUID;
 
 public class OfflineAccount extends AbstractAccount {
@@ -47,11 +52,11 @@ public class OfflineAccount extends AbstractAccount {
     }
 
     public BooleanTask checkAccountNameChangeableAsync(@NotNull String newName) {
-        return BooleanTask.of(true);
+        return BooleanTask.of(true, translatable("core.oauth.task.name_changeable_check.text"));
     }
 
     public AbstractAction changeAccountNameAsync(@NotNull String newName) {
-        return null;
+        return RunnableAction.of(() -> setAccountName(newName), translatable("core.oauth.task.changeName.text"));
     }
 
     public AbstractTask<MinecraftNameChangedTimeRequestModel> checkAccountNameChangedTimeAsync() {
@@ -68,5 +73,14 @@ public class OfflineAccount extends AbstractAccount {
 
     public AbstractAction uploadSkinAsync(File file, boolean isSlim) {
         return EmptyAction.of();
+    }
+
+    public List<CommandArg> getAddonArgs() {
+        return new Vector<>();
+    }
+
+    public RunnableAction preLaunchAsync() {
+        return RunnableAction.of(() -> {
+        }, translatable("core.game.launch.pre"));
     }
 }

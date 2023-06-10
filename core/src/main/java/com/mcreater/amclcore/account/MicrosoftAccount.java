@@ -1,9 +1,11 @@
 package com.mcreater.amclcore.account;
 
 import com.mcreater.amclcore.account.auth.OAuth;
+import com.mcreater.amclcore.command.CommandArg;
 import com.mcreater.amclcore.concurrent.TaskState;
 import com.mcreater.amclcore.concurrent.task.AbstractAction;
 import com.mcreater.amclcore.concurrent.task.AbstractTask;
+import com.mcreater.amclcore.concurrent.task.model.RunnableAction;
 import com.mcreater.amclcore.exceptions.oauth.OAuthMinecraftNameChangeNotAllowedException;
 import com.mcreater.amclcore.exceptions.oauth.OAuthMinecraftNameConflictException;
 import com.mcreater.amclcore.exceptions.oauth.OAuthXBLNotFoundException;
@@ -266,6 +268,15 @@ public class MicrosoftAccount extends AbstractAccount {
      */
     public UploadSkinTask uploadSkinAsync(File file, boolean isSlim) {
         return new UploadSkinTask(file, isSlim);
+    }
+
+    public List<CommandArg> getAddonArgs() {
+        return new Vector<>();
+    }
+
+    public RunnableAction preLaunchAsync() {
+        return RunnableAction.of(() -> {
+        });
     }
 
     public List<MinecraftProfileRequestModel.MinecraftProfileSkinModel> getSkins() {

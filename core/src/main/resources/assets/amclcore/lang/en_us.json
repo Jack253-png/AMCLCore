@@ -56,5 +56,7 @@
   "core.game.instance.launch.exit.normal": "Game exit normally",
   "core.game.instance.launch.exit.crash": "Game crashed",
   "core.game.instance.task.fetch_addon": "fetch addon task",
-  "core.game.instance.task.fetch_version": "fetch version task"
+  "core.game.instance.task.fetch_version": "fetch version task",
+  "core.concurrent.task.model.empty": "unnamed task",
+  "core.game.launch.pre": "pre launching task"
 }

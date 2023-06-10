@@ -13,16 +13,10 @@ import com.mcreater.amclcore.java.MemorySize;
 import com.mcreater.amclcore.model.config.ConfigLaunchModel;
 import com.mcreater.amclcore.model.config.ConfigMainModel;
 import com.mcreater.amclcore.model.config.ConfigMemoryModel;
-import com.mcreater.amclcore.nbtlib.common.io.Serializer;
-import com.mcreater.amclcore.nbtlib.common.tags.NamedTag;
-import com.mcreater.amclcore.nbtlib.nbt.NBTUtil;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
 import java.io.File;
-import java.io.StringWriter;
-import java.nio.file.Files;
-import java.util.Collections;
 import java.util.Optional;
 import java.util.Vector;
 import java.util.concurrent.ExecutionException;
@@ -39,16 +33,7 @@ public class Main {
 
     public static void main(String[] args) throws Exception {
 //        loginTest();
-//        launchTest();
-        NamedTag tg = NBTUtil.read("D:\\mods\\minecraft\\.minecraft\\versions\\MTR Client\\saves\\world\\level.dat", true);
-
-        Files.delete(new File("D:\\test.dat").toPath());
-        NBTUtil.write(tg, "D:\\test.dat", true);
-
-        NamedTag tag = NBTUtil.read("D:\\test.dat", true);
-        StringWriter writer = new StringWriter();
-        Serializer.getSNBTInstance().toWriter(tag.getTag(), writer);
-        System.out.println(writer);
+        launchTest();
     }
     public static void launchTest() {
         GameRepository.of("D:\\mods\\minecraft\\.minecraft", "My minecraft repository").ifPresent(repository -> {
@@ -67,8 +52,11 @@ public class Main {
                         ConfigMainModel.builder()
                                 .launchConfig(
                                         ConfigLaunchModel.builder()
-                                                .environments(Collections.singletonList(JavaEnvironment.create(new File("C:\\Program Files\\Java\\jre1.8.0_351\\bin\\java.exe"))))
-                                                .selectedEnvironment(0)
+                                                .environments(new Vector<JavaEnvironment>() {{
+                                                    add(JavaEnvironment.create(new File("C:\\Program Files\\Java\\jre1.8.0_351\\bin\\java.exe")));
+                                                    add(JavaEnvironment.create(new File("C:\\Program Files\\Java\\jdk-17.0.1\\bin\\java.exe")));
+                                                }})
+                                                .selectedEnvironment(1)
                                                 .useSelfGamePath(true)
                                                 .memory(
                                                         ConfigMemoryModel.builder()
@@ -83,9 +71,9 @@ public class Main {
                                 }})
                                 .selectedAccountIndex(0)
                                 .build()
-                );
-//                        .submitTo(ConcurrentExecutors.LAUNCH_EVENT_EXECUTOR)
-//                        .get();
+                        )
+                        .submitTo(ConcurrentExecutors.LAUNCH_EVENT_EXECUTOR)
+                        .get();
             } catch (Exception e) {
                 e.printStackTrace();
             }

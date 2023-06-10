@@ -322,6 +322,8 @@ public class GameInstance {
                     .hasCustomResolution(true)
                     .build();
 
+            account.get().preLaunchAsync().bindTo(this).get();
+
             if (config.getLaunchConfig() == null) throw new ConfigCorruptException();
             // TODO load java environment
             {
@@ -362,18 +364,6 @@ public class GameInstance {
             }
             // TODO check and load libs
             {
-                classpath = Stream.concat(
-                                model.getLibraries().stream()
-                                        .filter(GameDependedLibModel::valid)
-                                        .filter(GameDependedLibModel::isNormalLib)
-                                        .map(GameDependedLibModel::getJarPath)
-                                        .map(libPath::resolve),
-                                Stream.of(minecraftMainJar.toPath())
-                        )
-                        .map(Path::toString)
-                        .distinct()
-                        .collect(Collectors.joining(OperatingSystem.PATH_SEPARATOR));
-
                 nativeLibs = model.getLibraries().stream()
                         .filter(GameDependedLibModel::valid)
                         .filter(GameDependedLibModel::hasNatives)
@@ -394,6 +384,18 @@ public class GameInstance {
                         .distinct()
                         .map(Paths::get)
                         .collect(Collectors.toList());
+
+                classpath = Stream.concat(Stream.concat(
+                                model.getLibraries().stream()
+                                        .filter(GameDependedLibModel::valid)
+                                        .filter(GameDependedLibModel::isNormalLib)
+                                        .map(GameDependedLibModel::getJarPath)
+                                        .map(libPath::resolve),
+                                Stream.of(minecraftMainJar.toPath())
+                        ), nativeLibs.stream())
+                        .map(Path::toString)
+                        .distinct()
+                        .collect(Collectors.joining(OperatingSystem.PATH_SEPARATOR));
             }
             // TODO check and load java arguments
             {
