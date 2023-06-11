@@ -111,7 +111,6 @@ public class OfflineAccount extends AbstractAccount {
     public RunnableAction uploadSkinAsync(File file, boolean isSlim) {
         return RunnableAction.of(() -> {
             if (!isValidImage(file)) throw new RuntimeException("bad image");
-            // TODO to be done
             skin = file;
             skinSlim = isSlim;
         }, translatable("core.oauth.task.upload_skin.text"));
