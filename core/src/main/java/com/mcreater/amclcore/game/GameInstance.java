@@ -15,7 +15,9 @@ import com.mcreater.amclcore.i18n.Text;
 import com.mcreater.amclcore.java.JVMArgument;
 import com.mcreater.amclcore.java.JavaEnvironment;
 import com.mcreater.amclcore.java.MemorySize;
+import com.mcreater.amclcore.model.config.ConfigLaunchModel;
 import com.mcreater.amclcore.model.config.ConfigMainModel;
+import com.mcreater.amclcore.model.config.ConfigWindowSizeModel;
 import com.mcreater.amclcore.model.game.GameManifestJsonModel;
 import com.mcreater.amclcore.model.game.arguments.GameArgumentsModel;
 import com.mcreater.amclcore.model.game.assets.GameAssetsIndexFileModel;
@@ -302,6 +304,8 @@ public class GameInstance {
             final Optional<String> nameOverride = Optional.ofNullable(config.getLaunchConfig().getLauncherNameOverride());
             final Optional<String> versionOverride = Optional.ofNullable(config.getLaunchConfig().getLauncherVersionOverride());
 
+            ConfigWindowSizeModel windowSize = Optional.of(config.getLaunchConfig()).map(ConfigLaunchModel::getWindowSize).orElse(new ConfigWindowSizeModel(854, 480, false));
+
             List<CommandArg> args = new Vector<>();
             GameManifestJsonModel model;
 
@@ -344,8 +348,8 @@ public class GameInstance {
                     // show rule: F3 debug -> {launcher_brand}/{version_name}/{version_type}
                     put("version_name", instanceName);
                     put("version_type", getLauncherFullName());
-                    put("resolution_width", 854);
-                    put("resolution_height", 480);
+                    put("resolution_width", windowSize.getWidth());
+                    put("resolution_height", windowSize.getHeight());
                     put("auth_player_name", account.get().getAccountName());
                     put("auth_access_token", account.get().getAccessToken());
                     put("auth_uuid", toNoLineUUID(account.get().getUuid()));
@@ -584,6 +588,8 @@ public class GameInstance {
                             .map(a -> a.parseMap(gameArgMetaData))
                             .forEach(args::add);
                 }
+
+                if (windowSize.isFullscreen()) args.add(CommandArg.create("--fullscreen"));
             }
 
             return args;
