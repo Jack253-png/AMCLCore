@@ -33,6 +33,13 @@ public class OfflineAccount extends AbstractAccount {
     @Getter
     @Setter
     private String selectedCape;
+    @Getter
+    @Setter
+    private File skin;
+    @Getter
+    @Setter
+    private boolean skinSlim = getUuid() == ALEX;
+    ;
 
     private OfflineAccount(@NotNull String accountName, @NotNull UUID uuid) {
         super(accountName, uuid, toNoLineUUID(uuid));
@@ -94,15 +101,19 @@ public class OfflineAccount extends AbstractAccount {
         return true;
     }
 
-    public AbstractAction resetSkinAsync() {
-        return EmptyAction.of();
+    public RunnableAction resetSkinAsync() {
+        return RunnableAction.of(() -> {
+            skin = null;
+            skinSlim = getUuid() == ALEX;
+        }, translatable("core.oauth.task.disable_cape.text"));
     }
 
     public RunnableAction uploadSkinAsync(File file, boolean isSlim) {
         return RunnableAction.of(() -> {
             if (!isValidImage(file)) throw new RuntimeException("bad image");
             // TODO to be done
-
+            skin = file;
+            skinSlim = isSlim;
         }, translatable("core.oauth.task.upload_skin.text"));
     }
 

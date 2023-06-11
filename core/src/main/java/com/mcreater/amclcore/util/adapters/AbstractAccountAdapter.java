@@ -17,10 +17,7 @@ import org.jetbrains.annotations.NotNull;
 
 import java.io.File;
 import java.io.IOException;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.UUID;
+import java.util.*;
 
 public class AbstractAccountAdapter extends TypeAdapter<AbstractAccount> {
     public static final AbstractAccountAdapter INSTANCE = new AbstractAccountAdapter();
@@ -47,7 +44,14 @@ public class AbstractAccountAdapter extends TypeAdapter<AbstractAccount> {
                     .name("type").value(0)
                     .name("name").value(value.toOffLineAccount().getAccountName())
                     .name("uuid").value(value.toOffLineAccount().getUuid().toString())
-                    .name("custom").value(value.toOffLineAccount().isCustomSkin())
+                    .name("custom").value(value.toOffLineAccount().isCustomSkin());
+            out.name("custom_skin").beginObject()
+                    .name("file").value(
+                            Optional.ofNullable(value.toOffLineAccount().getSkin())
+                                    .map(File::getAbsolutePath)
+                                    .orElse(null))
+                    .name("isSlim").value(value.toOffLineAccount().isSkinSlim())
+                    .endObject()
                     .name("custom_cape").beginObject()
                     .name("selected").value(value.toOffLineAccount().getSelectedCape())
                     .name("capes").beginObject();
@@ -145,10 +149,15 @@ public class AbstractAccountAdapter extends TypeAdapter<AbstractAccount> {
                         UUID.fromString(mappedJson.tryGetString("uuid"))
                 );
                 ofaccount.setCustomSkin(mappedJson.tryGetBoolean("custom"));
+                mappedJson.tryGetBoolean("custom");
                 ofaccount.setSelectedCape(mappedJson.tryGetString("custom_cape", "selected"));
                 Map<String, File> capes = new HashMap<>();
                 mappedJson.tryGetMap("custom_cape", "capes").forEach((s, o) -> capes.put(s, new File(o.toString())));
                 ofaccount.setCapes(capes);
+
+                ofaccount.setSkin(new File(mappedJson.tryGetString("custom_skin", "file")));
+                ofaccount.setSkinSlim(mappedJson.tryGetBoolean("custom_skin", "isSlim"));
+
                 return ofaccount;
             case 1:
                 MicrosoftAccount msaccount = MicrosoftAccount.create(
