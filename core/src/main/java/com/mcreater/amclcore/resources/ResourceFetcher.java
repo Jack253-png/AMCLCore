@@ -48,8 +48,8 @@ public class ResourceFetcher {
         removeRes(url.toArray(new URL[0]));
     }
 
-    public static InputStream get(String id, String type, String name) {
-        return get(String.format("assets/%s/%s/%s", id, type, name));
+    public static InputStream get(String id, String name) {
+        return get(String.format("assets/%s/%s", id, name));
     }
 
     public static InputStream get(String path) {

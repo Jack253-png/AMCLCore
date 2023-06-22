@@ -19,6 +19,6 @@ public class LuaBaseApiLoader {
     }
 
     public static void load() {
-        globals.load(new InputStreamReader(ResourceFetcher.get("assets/amclcore/test.lua")), "test.lua").call();
+        globals.load(new InputStreamReader(ResourceFetcher.get("amclcore", "test.lua")), "test.lua").call();
     }
 }
