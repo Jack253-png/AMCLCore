@@ -108,7 +108,6 @@ public class StartProcessTask extends AbstractTask<Integer> {
         }).submitTo(pool);
 
         do {
-
         }
         while (process.isAlive());
 

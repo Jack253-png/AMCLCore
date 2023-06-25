@@ -4,6 +4,7 @@ import com.mcreater.amclcore.account.AbstractAccount;
 import com.mcreater.amclcore.account.MicrosoftAccount;
 import com.mcreater.amclcore.account.OfflineAccount;
 import com.mcreater.amclcore.account.auth.OAuth;
+import com.mcreater.amclcore.account.auth.YggdrasilAuthServer;
 import com.mcreater.amclcore.concurrent.ConcurrentExecutors;
 import com.mcreater.amclcore.concurrent.task.AbstractTask;
 import com.mcreater.amclcore.game.GameInstance;
@@ -13,16 +14,11 @@ import com.mcreater.amclcore.java.MemorySize;
 import com.mcreater.amclcore.model.config.ConfigLaunchModel;
 import com.mcreater.amclcore.model.config.ConfigMainModel;
 import com.mcreater.amclcore.model.config.ConfigMemoryModel;
-import com.mcreater.amclcore.util.HttpClientWrapper;
-import org.apache.http.HttpEntity;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
-import java.io.BufferedReader;
 import java.io.File;
 import java.io.IOException;
-import java.io.InputStreamReader;
-import java.net.URISyntaxException;
 import java.util.Optional;
 import java.util.Vector;
 import java.util.concurrent.ExecutionException;
@@ -37,19 +33,14 @@ public class Main {
 
     private static final Logger logger = LogManager.getLogger(Main.class);
 
-    public static void main(String[] args) throws URISyntaxException, IOException {
+    public static void main(String[] args) throws IOException {
 //        loginTest();
 //        launchTest();
 
-        HttpEntity entity = HttpClientWrapper.create(HttpClientWrapper.Method.GET)
-                .uri("bmclapi2.bangbang93.com/mc/game/version_manifest.json")
-                .socTimeout(5000)
-                .timeout(5000)
-                .reqTimeout(5000)
-                .send();
-
-        BufferedReader reader = new BufferedReader(new InputStreamReader(entity.getContent()));
-        reader.lines().forEach(System.out::println);
+        YggdrasilAuthServer server = new YggdrasilAuthServer(9801);
+        server.start();
+        while (true) {
+        }
     }
 
     public static void launchTest() {

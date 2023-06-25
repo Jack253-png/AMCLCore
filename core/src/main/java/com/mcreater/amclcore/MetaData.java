@@ -90,7 +90,7 @@ public class MetaData {
     public static final String launcherBuildInternalVersionOverridePropertyName = "amclcore.version.build.internal.override";
 
     public static int getLauncherBuildInternalVersion() {
-        return Math.max(PropertyUtil.readPropertyInteger(launcherBuildInternalVersionOverridePropertyName, 1), 1);
+        return Math.max(PropertyUtil.readPropertyInteger(launcherBuildInternalVersionOverridePropertyName, launcherBuildInternalVersion), 1);
     }
 
     public static String getLauncherFullVersion() {

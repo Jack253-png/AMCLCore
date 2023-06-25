@@ -18,6 +18,7 @@ import com.mcreater.amclcore.util.date.StandardDate;
 import com.mcreater.amclcore.util.hash.Sha1String;
 import com.mcreater.amclcore.util.maven.MavenLibName;
 import com.mcreater.amclcore.util.url.MinecraftMirroredResourceURL;
+import org.apache.commons.lang3.tuple.ImmutablePair;
 import org.apache.http.NameValuePair;
 import org.apache.http.message.BasicNameValuePair;
 
@@ -66,10 +67,19 @@ public class JsonUtil {
         return new BasicNameValuePair(key, value);
     }
 
+    public static <T, V> Map.Entry<T, V> pair(T t, V v) {
+        return new ImmutablePair<>(t, v);
+    }
+
+    @SafeVarargs
+    public static <T, V> Map<T, V> map(Map.Entry<T, V>... p) {
+        Map<T, V> map = new HashMap<T, V>();
+        Arrays.stream(p).forEach(a -> map.put(a.getKey(), a.getValue()));
+        return map;
+    }
+
     public static Map<String, Object> createSingleMap(String s, Object o) {
-        return new HashMap<String, Object>() {{
-            put(s, o);
-        }};
+        return map(pair(s, o));
     }
 
     public static abstract class JsonProcessor {
