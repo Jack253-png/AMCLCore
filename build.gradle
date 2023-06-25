@@ -6,11 +6,11 @@ import java.nio.file.attribute.BasicFileAttributes
 
 buildscript {
     repositories {
+        maven { url = "https://maven.aliyun.com/repository/central" }
+        mavenCentral()
         maven { url = "https://maven.aliyun.com/repository/public" }
         maven { url = "https://maven.aliyun.com/repository/jcenter" }
         maven { url = "https://maven.aliyun.com/repository/google" }
-        maven { url = "https://maven.aliyun.com/repository/central" }
-        mavenCentral()
     }
 }
 
@@ -53,11 +53,11 @@ allprojects {
     }
 
     repositories {
+        maven { url = "https://maven.aliyun.com/repository/central" }
+        mavenCentral()
         maven { url = "https://maven.aliyun.com/repository/public" }
         maven { url = "https://maven.aliyun.com/repository/jcenter" }
         maven { url = "https://maven.aliyun.com/repository/google" }
-        maven { url = "https://maven.aliyun.com/repository/central" }
-        mavenCentral()
     }
 
     test {
@@ -151,4 +151,7 @@ publishing {
     repositories {
         maven { url uri(new File(rootProject.projectDir.getAbsolutePath(), "maven").getAbsolutePath()) }
     }
+}
+repositories {
+    mavenCentral()
 }

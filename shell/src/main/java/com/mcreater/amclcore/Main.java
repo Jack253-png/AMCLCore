@@ -13,10 +13,16 @@ import com.mcreater.amclcore.java.MemorySize;
 import com.mcreater.amclcore.model.config.ConfigLaunchModel;
 import com.mcreater.amclcore.model.config.ConfigMainModel;
 import com.mcreater.amclcore.model.config.ConfigMemoryModel;
+import com.mcreater.amclcore.util.HttpClientWrapper;
+import org.apache.http.HttpEntity;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
+import java.io.BufferedReader;
 import java.io.File;
+import java.io.IOException;
+import java.io.InputStreamReader;
+import java.net.URISyntaxException;
 import java.util.Optional;
 import java.util.Vector;
 import java.util.concurrent.ExecutionException;
@@ -31,9 +37,19 @@ public class Main {
 
     private static final Logger logger = LogManager.getLogger(Main.class);
 
-    public static void main(String[] args) {
+    public static void main(String[] args) throws URISyntaxException, IOException {
 //        loginTest();
-        launchTest();
+//        launchTest();
+
+        HttpEntity entity = HttpClientWrapper.create(HttpClientWrapper.Method.GET)
+                .uri("bmclapi2.bangbang93.com/mc/game/version_manifest.json")
+                .socTimeout(5000)
+                .timeout(5000)
+                .reqTimeout(5000)
+                .send();
+
+        BufferedReader reader = new BufferedReader(new InputStreamReader(entity.getContent()));
+        reader.lines().forEach(System.out::println);
     }
 
     public static void launchTest() {
@@ -78,26 +94,11 @@ public class Main {
             } catch (Exception e) {
                 e.printStackTrace();
             }
-
-            /*repository.getInstances().forEach(a -> {
-                try {
-                    System.out.println(a.getInstanceName());
-                    System.out.println(a.fetchAddonsAsync().submitTo(ConcurrentExecutors.EVENT_QUEUE_EXECUTOR).get());
-                } catch (Exception e) {
-                    e.printStackTrace();
-                }
-            });*/
-
-            /*LuaBaseApiLoader.init();
-            LuaBaseApiLoader.load();
-
-            System.out.println(I18NManager.translatable("aee").getText());*/
         });
     }
 
     public static void loginTest() throws Exception {
         // TODO test offline
-//        HttpClientWrapper.setProxy(new HttpHost(InetAddress.getLocalHost()));
         ConcurrentExecutors.OAUTH_LOGIN_EXECUTOR.getWrappedListeners().add(logger::info);
 
         Optional<MicrosoftAccount> account = OAuth.MICROSOFT.deviceCodeLoginAsync(OAuth.defaultDevHandler)

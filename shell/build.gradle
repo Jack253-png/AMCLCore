@@ -1,10 +1,10 @@
 buildscript {
     repositories {
+        maven { url = "https://maven.aliyun.com/repository/central" }
+        mavenCentral()
         maven { url = "https://maven.aliyun.com/repository/public" }
         maven { url = "https://maven.aliyun.com/repository/jcenter" }
         maven { url = "https://maven.aliyun.com/repository/google" }
-        maven { url = "https://maven.aliyun.com/repository/central" }
-        mavenCentral()
     }
 }
 
@@ -31,11 +31,11 @@ compileTestJava {
 }
 
 repositories {
+    maven { url = "https://maven.aliyun.com/repository/central" }
+    mavenCentral()
     maven { url = "https://maven.aliyun.com/repository/public" }
     maven { url = "https://maven.aliyun.com/repository/jcenter" }
     maven { url = "https://maven.aliyun.com/repository/google" }
-    maven { url = "https://maven.aliyun.com/repository/central" }
-    mavenCentral()
 }
 
 dependencies {
