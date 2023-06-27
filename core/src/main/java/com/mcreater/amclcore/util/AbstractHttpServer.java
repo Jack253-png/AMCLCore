@@ -6,16 +6,21 @@ import lombok.AccessLevel;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import org.apache.commons.lang3.tuple.ImmutablePair;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Objects;
 import java.util.function.Predicate;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
+import static com.mcreater.amclcore.i18n.I18NManager.translatable;
 import static com.mcreater.amclcore.util.JsonUtil.GSON_PARSER;
 
 public abstract class AbstractHttpServer extends NanoHTTPD {
+    private final Logger LOGGER = LogManager.getLogger(AbstractHttpServer.class);
     private final Map<Route, ExceptionFunction<Map.Entry<IHTTPSession, Matcher>, Response, Exception>> routes = new HashMap<>();
 
     public AbstractHttpServer(int port) {
@@ -44,17 +49,22 @@ public abstract class AbstractHttpServer extends NanoHTTPD {
 
     @Override
     public Response serve(IHTTPSession session) {
+        String pat = session.getUri();
         for (Map.Entry<Route, ExceptionFunction<Map.Entry<IHTTPSession, Matcher>, Response, Exception>> ent : routes.entrySet()) {
             Matcher mat = ent.getKey().pattern.matcher(session.getUri());
             if (mat.find() && ent.getKey().other.test(session)) {
                 try {
-                    return ent.getValue().accept(new ImmutablePair<>(session, mat));
+                    Response rep = ent.getValue().accept(new ImmutablePair<>(session, mat));
+                    Objects.requireNonNull(rep);
+                    LOGGER.info(translatable("core.server.response.success", pat, rep.getStatus().getRequestStatus()).getText());
+                    return rep;
                 } catch (Exception e) {
+                    LOGGER.error(translatable("core.server.response.internalerr", pat).getText(), e);
                     return newFixedLengthResponse(Response.Status.INTERNAL_ERROR, "application/json", "{\"message\": \"Internal Error\"}");
                 }
             }
         }
-
+        LOGGER.warn(translatable("core.server.response.notfound", pat).getText());
         return super.serve(session);
     }
 

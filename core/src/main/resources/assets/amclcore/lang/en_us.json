@@ -61,5 +61,8 @@
   "core.transitions.name": "AMCL Core transitions pack",
   "core.exception.reporting": "Reporting an exception",
   "core.account.offline.cape.add": "add custom cape task",
-  "core.account.offline.cape.delete": "delete custom cape task"
+  "core.account.offline.cape.delete": "delete custom cape task",
+  "core.server.response.notfound": "%s not found",
+  "core.server.response.success": "%s requesting with code %d",
+  "core.server.response.internalerr": "%s internal error"
 }
