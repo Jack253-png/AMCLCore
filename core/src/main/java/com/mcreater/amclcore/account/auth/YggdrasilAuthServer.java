@@ -5,6 +5,7 @@ import com.mcreater.amclcore.account.AbstractAccount;
 import com.mcreater.amclcore.account.OfflineAccount;
 import com.mcreater.amclcore.util.AbstractHttpServer;
 import com.mcreater.amclcore.util.KeyUtils;
+import lombok.Getter;
 
 import java.security.KeyPair;
 import java.util.*;
@@ -15,11 +16,13 @@ import static com.mcreater.amclcore.util.JsonUtil.*;
 
 public class YggdrasilAuthServer extends AbstractHttpServer {
     private final KeyPair keyPair = KeyUtils.generateKey();
+    @Getter
     private final List<OfflineAccount> accounts = new Vector<>();
 
     public YggdrasilAuthServer(int port) {
         super(port);
         addRoute(Route.create(Pattern.compile("^/$")), this::root);
+        addRoute(Route.create(Pattern.compile("/status")), this::status);
     }
 
     public Optional<OfflineAccount> findAccount(UUID uuid) {
@@ -28,6 +31,14 @@ public class YggdrasilAuthServer extends AbstractHttpServer {
 
     public Optional<UUID> findUUID(OfflineAccount account) {
         return accounts.stream().filter(a -> a == account).findFirst().map(AbstractAccount::getUuid);
+    }
+
+    private Response status(Map.Entry<IHTTPSession, Matcher> entry) {
+        return ok(map(
+                pair("user.count", accounts.size()),
+                pair("token.count", 0),
+                pair("pendingAuthentication.count", 0)
+        ));
     }
 
     private Response root(Map.Entry<IHTTPSession, Matcher> entry) {
