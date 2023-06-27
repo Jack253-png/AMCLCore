@@ -1,11 +1,13 @@
 package com.mcreater.amclcore.account.auth;
 
 import com.mcreater.amclcore.MetaData;
+import com.mcreater.amclcore.account.AbstractAccount;
+import com.mcreater.amclcore.account.OfflineAccount;
 import com.mcreater.amclcore.util.AbstractHttpServer;
 import com.mcreater.amclcore.util.KeyUtils;
 
 import java.security.KeyPair;
-import java.util.Map;
+import java.util.*;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -13,10 +15,19 @@ import static com.mcreater.amclcore.util.JsonUtil.*;
 
 public class YggdrasilAuthServer extends AbstractHttpServer {
     private final KeyPair keyPair = KeyUtils.generateKey();
+    private final List<OfflineAccount> accounts = new Vector<>();
 
     public YggdrasilAuthServer(int port) {
         super(port);
         addRoute(Route.create(Pattern.compile("^/$")), this::root);
+    }
+
+    public Optional<OfflineAccount> findAccount(UUID uuid) {
+        return accounts.stream().filter(a -> a.getUuid().equals(uuid)).findFirst();
+    }
+
+    public Optional<UUID> findUUID(OfflineAccount account) {
+        return accounts.stream().filter(a -> a == account).findFirst().map(AbstractAccount::getUuid);
     }
 
     private Response root(Map.Entry<IHTTPSession, Matcher> entry) {
