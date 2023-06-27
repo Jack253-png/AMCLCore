@@ -4,6 +4,9 @@ import com.mcreater.amclcore.command.CommandArg;
 import com.mcreater.amclcore.concurrent.task.AbstractAction;
 import com.mcreater.amclcore.concurrent.task.AbstractTask;
 import com.mcreater.amclcore.model.oauth.session.MinecraftNameChangedTimeRequestModel;
+import com.mcreater.amclcore.util.StringUtil;
+import lombok.AccessLevel;
+import lombok.AllArgsConstructor;
 import lombok.Getter;
 import org.jetbrains.annotations.NotNull;
 
@@ -161,4 +164,14 @@ public abstract class AbstractAccount {
     public abstract List<CommandArg> getAddonArgs();
 
     public abstract AbstractAction preLaunchAsync();
+
+    public Profile toProfile() {
+        return new Profile(StringUtil.toNoLineUUID(getUuid()), getAccountName());
+    }
+
+    @AllArgsConstructor(access = AccessLevel.PRIVATE)
+    public static class Profile {
+        private final String id;
+        private final String name;
+    }
 }

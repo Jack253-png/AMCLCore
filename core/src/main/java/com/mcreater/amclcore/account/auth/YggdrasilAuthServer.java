@@ -11,7 +11,11 @@ import java.security.KeyPair;
 import java.util.*;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
+import java.util.stream.Collectors;
 
+import static com.mcreater.amclcore.util.AbstractHttpServer.Route.IS_GET;
+import static com.mcreater.amclcore.util.AbstractHttpServer.Route.IS_POST;
+import static com.mcreater.amclcore.util.IOStreamUtil.readStream;
 import static com.mcreater.amclcore.util.JsonUtil.*;
 
 public class YggdrasilAuthServer extends AbstractHttpServer {
@@ -21,8 +25,9 @@ public class YggdrasilAuthServer extends AbstractHttpServer {
 
     public YggdrasilAuthServer(int port) {
         super(port);
-        addRoute(Route.create(Pattern.compile("^/$")), this::root);
-        addRoute(Route.create(Pattern.compile("/status")), this::status);
+        addRoute(Route.create(Pattern.compile("^/$"), IS_GET), this::root);
+        addRoute(Route.create(Pattern.compile("/status"), IS_GET), this::status);
+        addRoute(Route.create(Pattern.compile("/api/profiles/minecraft"), IS_POST), this::profiles);
     }
 
     public Optional<OfflineAccount> findAccount(UUID uuid) {
@@ -31,6 +36,17 @@ public class YggdrasilAuthServer extends AbstractHttpServer {
 
     public Optional<UUID> findUUID(OfflineAccount account) {
         return accounts.stream().filter(a -> a == account).findFirst().map(AbstractAccount::getUuid);
+    }
+
+    private Response profiles(Map.Entry<IHTTPSession, Matcher> entry) {
+        List<String> names = GSON_PARSER.fromJson(readStream(entry.getKey().getInputStream()), List.class);
+
+        return ok(
+                accounts.stream()
+                        .filter(p -> names.contains(p.getAccountName()))
+                        .map(OfflineAccount::toProfile)
+                        .collect(Collectors.toList())
+        );
     }
 
     private Response status(Map.Entry<IHTTPSession, Matcher> entry) {

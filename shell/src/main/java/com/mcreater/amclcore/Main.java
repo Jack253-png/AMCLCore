@@ -38,6 +38,9 @@ public class Main {
 //        launchTest();
 
         YggdrasilAuthServer server = new YggdrasilAuthServer(9801);
+        server.getAccounts().add(
+                OfflineAccount.create("test", OfflineAccount.STEVE)
+        );
         server.start();
         while (true) {
         }

@@ -83,6 +83,8 @@ public abstract class AbstractHttpServer extends NanoHTTPD {
     @AllArgsConstructor(access = AccessLevel.PRIVATE)
     @Data
     public static class Route {
+        public static final Predicate<IHTTPSession> IS_GET = a -> a.getMethod() == Method.GET;
+        public static final Predicate<IHTTPSession> IS_POST = a -> a.getMethod() == Method.POST;
         private final Pattern pattern;
         private final Predicate<IHTTPSession> other;
 
