@@ -5,6 +5,7 @@ import com.mcreater.amclcore.account.AbstractAccount;
 import com.mcreater.amclcore.account.OfflineAccount;
 import com.mcreater.amclcore.util.AbstractHttpServer;
 import com.mcreater.amclcore.util.KeyUtils;
+import com.mcreater.amclcore.util.NetworkUtils;
 import lombok.Getter;
 
 import java.security.KeyPair;
@@ -36,6 +37,20 @@ public class YggdrasilAuthServer extends AbstractHttpServer {
 
     public Optional<UUID> findUUID(OfflineAccount account) {
         return accounts.stream().filter(a -> a == account).findFirst().map(AbstractAccount::getUuid);
+    }
+
+    public Optional<OfflineAccount> findByName(String name) {
+        return accounts.stream().filter(a -> a.getAccountName().equals(name)).findFirst();
+    }
+
+    private Response getIsJoined(Map.Entry<IHTTPSession, Matcher> entry) {
+        Map<String, String> inp = map(NetworkUtils.parseQuery(entry.getKey().getQueryParameterString()));
+        if (!inp.containsKey("username")) return badRequest();
+
+        Optional<OfflineAccount> offlineAccount = findByName(inp.get("username"));
+        if (offlineAccount.isPresent()) {
+            return badRequest();
+        } else return badRequest();
     }
 
     private Response profiles(Map.Entry<IHTTPSession, Matcher> entry) {
