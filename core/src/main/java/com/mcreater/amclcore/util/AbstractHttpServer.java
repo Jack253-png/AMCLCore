@@ -81,12 +81,10 @@ public abstract class AbstractHttpServer extends NanoHTTPD {
     }
 
     protected Response badRequest() {
-        String.format("respoding with code %d", Response.Status.BAD_REQUEST.getRequestStatus());
         return newFixedLengthResponse(Response.Status.BAD_REQUEST, MIME_HTML, "400 bad request");
     }
 
     protected Response internalError() {
-        String.format("respoding with code %d", Response.Status.INTERNAL_ERROR.getRequestStatus());
         return newFixedLengthResponse(Response.Status.INTERNAL_ERROR, MIME_HTML, "500 internal error");
     }
 

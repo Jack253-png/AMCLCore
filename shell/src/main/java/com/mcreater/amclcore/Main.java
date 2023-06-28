@@ -18,7 +18,6 @@ import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
 import java.io.File;
-import java.io.IOException;
 import java.util.Optional;
 import java.util.Vector;
 import java.util.concurrent.ExecutionException;
@@ -33,8 +32,8 @@ public class Main {
 
     private static final Logger logger = LogManager.getLogger(Main.class);
 
-    public static void main(String[] args) throws IOException {
-//        loginTest();
+    public static void main(String[] args) throws Exception {
+        loginTest();
 //        launchTest();
 
         YggdrasilAuthServer server = new YggdrasilAuthServer(9801);
