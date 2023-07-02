@@ -79,8 +79,8 @@ public class JsonUtil {
     }
 
     public static <T, V> Map<T, V> map(List<Map.Entry<T, V>> p) {
-        Map<T, V> map = new HashMap<T, V>();
-        Arrays.stream(p).forEach(a -> map.put(a.getKey(), a.getValue()));
+        Map<T, V> map = new HashMap<>();
+        p.forEach(a -> map.put(a.getKey(), a.getValue()));
         return map;
     }
 

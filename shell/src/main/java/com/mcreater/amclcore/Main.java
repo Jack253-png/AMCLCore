@@ -33,13 +33,14 @@ public class Main {
     private static final Logger logger = LogManager.getLogger(Main.class);
 
     public static void main(String[] args) throws Exception {
-        loginTest();
+//        loginTest();
 //        launchTest();
-
         YggdrasilAuthServer server = new YggdrasilAuthServer(9801);
-        server.getAccounts().add(
-                OfflineAccount.create("test", OfflineAccount.STEVE)
-        );
+        OfflineAccount acc = OfflineAccount.create("test", OfflineAccount.STEVE);
+        acc.uploadSkinAsync(new File("D:\\mods\\skin.png"), true)
+                .submitTo(ConcurrentExecutors.EVENT_QUEUE_EXECUTOR)
+                .get();
+        server.getAccounts().add(acc);
         server.start();
         while (true) {
         }
@@ -55,7 +56,7 @@ public class Main {
 
             repository.getInstances().forEach(gameInstance -> System.out.println(gameInstance.getInstanceName()));
 
-            GameInstance gameInstance = repository.getInstances().get(repository.getInstances().size() - 4);
+            GameInstance gameInstance = repository.getInstances().get(5);
 
             try {
                 gameInstance.launchAsync(

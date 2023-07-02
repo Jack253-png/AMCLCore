@@ -68,10 +68,10 @@ public class StringUtil {
     public static UUID toLineUUID(String uuid) {
         if (!checkUUID(uuid)) return null;
         String s1 = uuid.substring(0, 8);
-        String s2 = uuid.substring(8, 13);
-        String s3 = uuid.substring(13, 18);
-        String s4 = uuid.substring(18, 23);
-        String s5 = uuid.substring(23);
+        String s2 = uuid.substring(8, 12);
+        String s3 = uuid.substring(12, 16);
+        String s4 = uuid.substring(16, 20);
+        String s5 = uuid.substring(20);
         return UUID.fromString(String.join("-", s1, s2, s3, s4, s5));
     }
 }

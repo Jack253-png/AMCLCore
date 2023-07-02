@@ -34,4 +34,18 @@ public class IOStreamUtil {
     public static Reader newReader(InputStream s) {
         return new InputStreamReader(s, StandardCharsets.UTF_8);
     }
+
+    public static byte[] read(File file) throws IOException {
+        byte[] buffer;
+        try (InputStream stream = Files.newInputStream(file.toPath())) {
+            int length = (int) file.length();
+            buffer = new byte[length];
+            int len = 0;
+            if ((len = stream.available()) <= buffer.length) {
+                stream.read(buffer, 0, len);
+            }
+        }
+
+        return buffer;
+    }
 }

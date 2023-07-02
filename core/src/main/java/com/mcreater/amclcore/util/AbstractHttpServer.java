@@ -32,7 +32,7 @@ public abstract class AbstractHttpServer extends NanoHTTPD {
     }
 
     public String getHost() {
-        return (getHostname() == null ? "localhost" : getHostname()) + ":" + getListeningPort();
+        return "http://" + (getHostname() == null ? "localhost" : getHostname()) + ":" + getListeningPort();
     }
 
     public void addRoute(Route route, ExceptionFunction<Map.Entry<IHTTPSession, Matcher>, Response, Exception> func) {

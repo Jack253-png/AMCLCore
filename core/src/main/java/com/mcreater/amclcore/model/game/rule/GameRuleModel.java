@@ -12,7 +12,6 @@ public class GameRuleModel {
     private GameRuleOsModel os;
     private GameRuleFeatureModel features;
 
-    // TODO to be implemented
     public boolean valid(GameRuleFeatureModel data) {
         if (features != null && data != null) {
             Boolean featuresDemoUserValid = null;

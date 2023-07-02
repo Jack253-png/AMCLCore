@@ -48,6 +48,7 @@ public class AbstractAccountAdapter extends TypeAdapter<AbstractAccount> {
             out.name("custom_skin").beginObject()
                     .name("file").value(
                             Optional.ofNullable(value.toOffLineAccount().getSkin())
+                                    .map(OfflineAccount.Texture::getSource)
                                     .map(File::getAbsolutePath)
                                     .orElse(null))
                     .name("isSlim").value(value.toOffLineAccount().isSkinSlim())
@@ -58,7 +59,7 @@ public class AbstractAccountAdapter extends TypeAdapter<AbstractAccount> {
 
             value.toOffLineAccount().getCapes().forEach((s, file) -> {
                 try {
-                    out.name(s).value(file.getAbsolutePath());
+                    out.name(s).value(file.getSource().getAbsolutePath());
                 } catch (IOException e) {
                     e.printStackTrace();
                 }
@@ -151,11 +152,21 @@ public class AbstractAccountAdapter extends TypeAdapter<AbstractAccount> {
                 ofaccount.setCustomSkin(mappedJson.tryGetBoolean("custom"));
                 mappedJson.tryGetBoolean("custom");
                 ofaccount.setSelectedCape(mappedJson.tryGetString("custom_cape", "selected"));
-                Map<String, File> capes = new HashMap<>();
-                mappedJson.tryGetMap("custom_cape", "capes").forEach((s, o) -> capes.put(s, new File(o.toString())));
+                Map<String, OfflineAccount.Texture> capes = new HashMap<>();
+                mappedJson.tryGetMap("custom_cape", "capes").forEach((s, o) -> {
+                    try {
+                        capes.put(s, OfflineAccount.Texture.loadTexture(new File(o.toString())));
+                    } catch (IOException e) {
+                        e.printStackTrace();
+                    }
+                });
                 ofaccount.setCapes(capes);
 
-                ofaccount.setSkin(new File(mappedJson.tryGetString("custom_skin", "file")));
+                try {
+                    ofaccount.setSkin(OfflineAccount.Texture.loadTexture(new File(mappedJson.tryGetString("custom_skin", "file"))));
+                } catch (IOException e) {
+                    e.printStackTrace();
+                }
                 ofaccount.setSkinSlim(mappedJson.tryGetBoolean("custom_skin", "isSlim"));
 
                 return ofaccount;
