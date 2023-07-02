@@ -1,6 +1,7 @@
 package com.mcreater.amclcore.account;
 
 import com.google.gson.Gson;
+import com.mcreater.amclcore.account.auth.YggdrasilAuthServer;
 import com.mcreater.amclcore.command.CommandArg;
 import com.mcreater.amclcore.concurrent.task.AbstractAction;
 import com.mcreater.amclcore.concurrent.task.AbstractTask;
@@ -9,6 +10,7 @@ import com.mcreater.amclcore.concurrent.task.model.EmptyAction;
 import com.mcreater.amclcore.concurrent.task.model.ObjectTask;
 import com.mcreater.amclcore.concurrent.task.model.RunnableAction;
 import com.mcreater.amclcore.model.oauth.session.MinecraftNameChangedTimeRequestModel;
+import com.mcreater.amclcore.resources.ResourceFetcher;
 import com.mcreater.amclcore.util.Hex;
 import com.mcreater.amclcore.util.StringUtil;
 import lombok.AllArgsConstructor;
@@ -28,6 +30,7 @@ import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 import static com.mcreater.amclcore.i18n.I18NManager.translatable;
+import static com.mcreater.amclcore.util.IOStreamUtil.write;
 import static com.mcreater.amclcore.util.ImageUtil.isValidImage;
 import static com.mcreater.amclcore.util.JsonUtil.map;
 import static com.mcreater.amclcore.util.JsonUtil.pair;
@@ -53,6 +56,7 @@ public class OfflineAccount extends AbstractAccount {
     @Getter
     @Setter
     private boolean skinSlim = getUuid() == ALEX;
+    private YggdrasilAuthServer server;
 
     private OfflineAccount(@NotNull String accountName, @NotNull UUID uuid) {
         super(accountName, uuid, toNoLineUUID(uuid));
@@ -138,16 +142,48 @@ public class OfflineAccount extends AbstractAccount {
     }
 
     public List<CommandArg> getAddonArgs() {
-        return new Vector<>();
+        return new Vector<CommandArg>() {{
+            if (hasCustom()) {
+                File file = new File("authlib-injector.jar");
+                if (!file.exists()) {
+                    try {
+                        write(file, ResourceFetcher.get("authlib-injector.jar"));
+                    } catch (IOException e) {
+                        throw new RuntimeException(e);
+                    }
+                }
+                add(CommandArg.create("-javaagent:" + file.getAbsolutePath() + "=" + server.getHost()));
+            }
+        }};
     }
 
     public RunnableAction preLaunchAsync() {
         return RunnableAction.of(() -> {
+            if (hasCustom()) {
+                int port = 2;
+                while (port <= 65535) {
+                    try {
+                        YggdrasilAuthServer server1 = new YggdrasilAuthServer(port);
+                        server1.start();
+                        OfflineAccount.this.server = server1;
+                        server1.getAccounts().add(this);
+                        return;
+                    } catch (Exception e) {
+                        e.printStackTrace();
+                        port++;
+                    }
+                }
+                throw new RuntimeException(new IOException());
+            }
         }, translatable("core.game.launch.pre"));
     }
 
     private Texture getCape() {
         return capes.get(selectedCape);
+    }
+
+    private boolean hasCustom() {
+        return skin != null || capes.size() >= 1;
     }
 
     public Object toSkinResponse(String rootUrl, PrivateKey privateKey) {

@@ -4,7 +4,6 @@ import com.mcreater.amclcore.account.AbstractAccount;
 import com.mcreater.amclcore.account.MicrosoftAccount;
 import com.mcreater.amclcore.account.OfflineAccount;
 import com.mcreater.amclcore.account.auth.OAuth;
-import com.mcreater.amclcore.account.auth.YggdrasilAuthServer;
 import com.mcreater.amclcore.concurrent.ConcurrentExecutors;
 import com.mcreater.amclcore.concurrent.task.AbstractTask;
 import com.mcreater.amclcore.game.GameInstance;
@@ -34,16 +33,7 @@ public class Main {
 
     public static void main(String[] args) throws Exception {
 //        loginTest();
-//        launchTest();
-        YggdrasilAuthServer server = new YggdrasilAuthServer(9801);
-        OfflineAccount acc = OfflineAccount.create("test", OfflineAccount.STEVE);
-        acc.uploadSkinAsync(new File("D:\\mods\\skin.png"), true)
-                .submitTo(ConcurrentExecutors.EVENT_QUEUE_EXECUTOR)
-                .get();
-        server.getAccounts().add(acc);
-        server.start();
-        while (true) {
-        }
+        launchTest();
     }
 
     public static void launchTest() {
@@ -78,7 +68,15 @@ public class Main {
                                                 .build()
                                 )
                                 .accounts(new Vector<AbstractAccount>() {{
-                                    add(OfflineAccount.create("test", OfflineAccount.STEVE));
+                                    OfflineAccount acc = OfflineAccount.create("test", OfflineAccount.STEVE);
+                                    acc.uploadSkinAsync(new File("D:\\mods\\skin.png"), true)
+                                            .submitTo(ConcurrentExecutors.EVENT_QUEUE_EXECUTOR)
+                                            .get();
+                                    acc.addAccountCapeAsync("test", new File("D:\\mods\\skin.png"))
+                                            .submitTo(ConcurrentExecutors.EVENT_QUEUE_EXECUTOR)
+                                            .get();
+                                    acc.setSelectedCape("test");
+                                    add(acc);
                                 }})
                                 .selectedAccountIndex(0)
                                 .build()

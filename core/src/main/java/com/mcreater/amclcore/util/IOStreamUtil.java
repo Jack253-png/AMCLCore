@@ -48,4 +48,14 @@ public class IOStreamUtil {
 
         return buffer;
     }
+
+    public static void write(File file, InputStream stream) throws IOException {
+        try (OutputStream out = Files.newOutputStream(file.toPath())) {
+            byte[] buffer = new byte[1024];
+            int readLength;
+            while ((readLength = stream.read(buffer)) > 0) {
+                out.write(buffer, 0, readLength);
+            }
+        }
+    }
 }
