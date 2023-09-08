@@ -34,6 +34,7 @@ public class Main {
     public static void main(String[] args) throws Exception {
         // launchTest(loginTest());
         new VanillaInstallTask().submitTo(ConcurrentExecutors.DOWNLOAD_QUEUE_EXECUTOR).get();
+
     }
 
     public static void launchTest(AbstractAccount account) {
