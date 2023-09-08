@@ -17,6 +17,18 @@ import java.util.function.Function;
 
 @AllArgsConstructor(access = AccessLevel.PRIVATE)
 public class MinecraftMirroredResourceURL {
+    public static MinecraftMirroredResourceURL MANIFEST;
+    public static MinecraftMirroredResourceURL MANIFEST_V2;
+
+    static {
+        try {
+            MANIFEST = MinecraftMirroredResourceURL.create("https://launchermeta.mojang.com/mc/game/version_manifest.json");
+            MANIFEST_V2 = MinecraftMirroredResourceURL.create("https://launchermeta.mojang.com/mc/game/version_manifest_v2.json");
+        } catch (MalformedURLException e) {
+            e.printStackTrace();
+        }
+    }
+
     private static URL replaceURL(URL base, String old, String rep) {
         try {
             return URI.create(base.toString().replace(old, rep)).toURL();
@@ -131,6 +143,10 @@ public class MinecraftMirroredResourceURL {
 
     public static MinecraftMirroredResourceURL create(String url, @NotNull MirrorServer server) throws MalformedURLException {
         return create(URI.create(url).toURL(), server);
+    }
+
+    public String toString() {
+        return String.format("%s://%s (%s) ", toDownloadFormatWithMirror().getLeft().getScheme(), toDownloadFormatWithMirror().getRight(), server.toString().toLowerCase());
     }
 
     public ImmutablePair<HttpClientWrapper.Scheme, String> toDownloadFormat() {

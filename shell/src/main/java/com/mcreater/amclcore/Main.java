@@ -7,6 +7,7 @@ import com.mcreater.amclcore.concurrent.ConcurrentExecutors;
 import com.mcreater.amclcore.concurrent.task.AbstractTask;
 import com.mcreater.amclcore.game.GameInstance;
 import com.mcreater.amclcore.game.GameRepository;
+import com.mcreater.amclcore.installations.vanilla.VanillaInstallTask;
 import com.mcreater.amclcore.java.JavaEnvironment;
 import com.mcreater.amclcore.java.MemorySize;
 import com.mcreater.amclcore.model.config.ConfigLaunchModel;
@@ -32,6 +33,7 @@ public class Main {
 
     public static void main(String[] args) throws Exception {
         // launchTest(loginTest());
+        new VanillaInstallTask().submitTo(ConcurrentExecutors.DOWNLOAD_QUEUE_EXECUTOR).get();
     }
 
     public static void launchTest(AbstractAccount account) {

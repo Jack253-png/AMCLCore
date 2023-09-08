@@ -64,5 +64,9 @@
   "core.account.offline.cape.delete": "删除自定义披风任务",
   "core.server.response.notfound": "%s 未找到",
   "core.server.response.success": "正在响应 %s，返回码 %d",
-  "core.server.response.internalerr": "%s 服务器内部错误"
+  "core.server.response.internalerr": "%s 服务器内部错误",
+  "core.install.vanilla": "原版安装",
+  "core.download.checkhash": "正在检查哈希...",
+  "core.download.downloading": "正在下载...",
+  "core.download.complete": "下载完成"
 }
