@@ -68,5 +68,6 @@
   "core.install.vanilla": "Vanilla Installation",
   "core.download.checkhash": "Checking hash...",
   "core.download.downloading": "Downloading...",
-  "core.download.complete": "Download complete"
+  "core.download.complete": "Download complete",
+  "core.installation.task.fetch_metadata.name": "Fetch launcher metadata task"
 }
