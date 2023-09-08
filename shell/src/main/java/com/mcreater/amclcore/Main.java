@@ -2,7 +2,6 @@ package com.mcreater.amclcore;
 
 import com.mcreater.amclcore.account.AbstractAccount;
 import com.mcreater.amclcore.account.MicrosoftAccount;
-import com.mcreater.amclcore.account.OfflineAccount;
 import com.mcreater.amclcore.account.auth.OAuth;
 import com.mcreater.amclcore.concurrent.ConcurrentExecutors;
 import com.mcreater.amclcore.concurrent.task.AbstractTask;
@@ -32,11 +31,10 @@ public class Main {
     private static final Logger logger = LogManager.getLogger(Main.class);
 
     public static void main(String[] args) throws Exception {
-//        loginTest();
-        launchTest();
+        // launchTest(loginTest());
     }
 
-    public static void launchTest() {
+    public static void launchTest(AbstractAccount account) {
         GameRepository.of("D:\\mods\\minecraft\\.minecraft", "My minecraft repository").ifPresent(repository -> {
             try {
                 repository.updateAsync().submitTo(ConcurrentExecutors.EVENT_QUEUE_EXECUTOR).get();
@@ -68,7 +66,7 @@ public class Main {
                                                 .build()
                                 )
                                 .accounts(new Vector<AbstractAccount>() {{
-                                    OfflineAccount acc = OfflineAccount.create("test", OfflineAccount.STEVE);
+                                    /*OfflineAccount acc = OfflineAccount.create("test", OfflineAccount.STEVE);
                                     acc.uploadSkinAsync(new File("D:\\mods\\skin.png"), true)
                                             .submitTo(ConcurrentExecutors.EVENT_QUEUE_EXECUTOR)
                                             .get();
@@ -76,7 +74,8 @@ public class Main {
                                             .submitTo(ConcurrentExecutors.EVENT_QUEUE_EXECUTOR)
                                             .get();
                                     acc.setSelectedCape("test");
-                                    add(acc);
+                                    add(acc);*/
+                                    add(account);
                                 }})
                                 .selectedAccountIndex(0)
                                 .build()
@@ -89,7 +88,7 @@ public class Main {
         });
     }
 
-    public static void loginTest() throws Exception {
+    public static MicrosoftAccount loginTest() throws Exception {
         // TODO test offline
         ConcurrentExecutors.OAUTH_LOGIN_EXECUTOR.getWrappedListeners().add(logger::info);
 
@@ -99,7 +98,7 @@ public class Main {
                 .submitTo(ConcurrentExecutors.OAUTH_LOGIN_EXECUTOR)
                 .get();
 
-        account.ifPresent(a -> {
+        /*account.ifPresent(a -> {
             logger.info(a.getSkins());
             logger.info(a.getCapes());
             try {
@@ -109,6 +108,8 @@ public class Main {
             } catch (InterruptedException | ExecutionException e) {
                 e.printStackTrace();
             }
-        });
+        });*/
+
+        return account.orElse(null);
     }
 }
