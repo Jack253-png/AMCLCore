@@ -51,15 +51,19 @@ public class GameRepository {
         return Collections.unmodifiableList(instances);
     }
 
-    final Path getAssetsDirectory() {
+    public final Path getAssetsDirectory() {
         return path.resolve("assets");
     }
 
-    final Path getLibrariesDirectory() {
+    public final Path getAssetIndexDirectory() {
+        return path.resolve("assets").resolve("indexes");
+    }
+
+    public final Path getLibrariesDirectory() {
         return path.resolve("libraries");
     }
 
-    final Path getVersionsDirectory() {
+    public final Path getVersionsDirectory() {
         return path.resolve("versions");
     }
 

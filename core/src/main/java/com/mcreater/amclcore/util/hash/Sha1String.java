@@ -45,4 +45,8 @@ public class Sha1String {
         }
         return false;
     }
+
+    public String toString() {
+        return raw;
+    }
 }

@@ -146,7 +146,7 @@ public class MinecraftMirroredResourceURL {
     }
 
     public String toString() {
-        return String.format("%s://%s (%s) ", toDownloadFormatWithMirror().getLeft().getScheme(), toDownloadFormatWithMirror().getRight(), server.toString().toLowerCase());
+        return String.format("%s://%s (%s)", toDownloadFormatWithMirror().getLeft().getScheme(), toDownloadFormatWithMirror().getRight(), server.toString().toLowerCase());
     }
 
     public ImmutablePair<HttpClientWrapper.Scheme, String> toDownloadFormat() {

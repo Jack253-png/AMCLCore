@@ -7,6 +7,7 @@ import com.mcreater.amclcore.game.GameRepository;
 import com.mcreater.amclcore.i18n.I18NManager;
 import com.mcreater.amclcore.i18n.Text;
 import com.mcreater.amclcore.installations.common.LauncherMetadataFetchTask;
+import com.mcreater.amclcore.model.game.GameManifestJsonModel;
 import com.mcreater.amclcore.model.installation.launchermeta.LauncherMetaModel;
 import com.mcreater.amclcore.model.installation.launchermeta.LauncherMetaVersionModel;
 import com.mcreater.amclcore.util.url.DownloadTask;
@@ -42,7 +43,11 @@ public class VanillaInstallTask extends AbstractAction {
                 .bindTo(this)
                 .get();
 
+        GameManifestJsonModel manifest = json.readManifest();
 
+        new DownloadTask(manifest.getAssetIndex().getUrl(), repository.getAssetIndexDirectory().resolve(manifest.getAssets() + ".json").toFile(), manifest.getAssetIndex().getSha1())
+                .bindTo(this)
+                .get();
     }
 
     protected Text getTaskName() {

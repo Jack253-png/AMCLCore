@@ -28,7 +28,7 @@ public class GameManifestJson {
     }
 
     public static GameManifestJson create(GameRepository repository, String name) {
-        return new GameManifestJson(repository, repository.getPath().resolve(name), name);
+        return new GameManifestJson(repository, repository.getPath().resolve("versions").resolve(name), name);
     }
 
     public GameInstance toInstance() {

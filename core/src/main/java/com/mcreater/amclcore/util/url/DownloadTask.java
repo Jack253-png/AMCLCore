@@ -43,7 +43,7 @@ public class DownloadTask extends AbstractAction {
                         .build()
         );
         boolean needDownload = true;
-        if (sha1String != null && local.exists()) needDownload = sha1String.validate(local);
+        if (sha1String != null && local.exists()) needDownload = !sha1String.validate(local);
         if (!needDownload) return;
 
         if (!local.exists()) {

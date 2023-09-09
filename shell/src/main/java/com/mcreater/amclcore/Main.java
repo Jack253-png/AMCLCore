@@ -37,7 +37,7 @@ public class Main {
             try {
                 new VanillaInstallTask(
                         repository,
-                        "1.18.2",
+                        "1.20.1",
                         "1.18.2-installtest"
                 ).submitTo(ConcurrentExecutors.DOWNLOAD_QUEUE_EXECUTOR).get();
             } catch (Exception e) {
