@@ -1,5 +1,6 @@
 package com.mcreater.amclcore.util.maven;
 
+import com.mcreater.amclcore.util.url.MinecraftMirroredResourceURL;
 import lombok.AccessLevel;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
@@ -39,6 +40,23 @@ public class MavenLibName {
         ));
 
         return Paths.get("", names.toArray(new String[0]));
+    }
+
+    public MinecraftMirroredResourceURL toUrl(MinecraftMirroredResourceURL base) {
+        List<String> names = Arrays.stream(groupId.split("\\.")).collect(Collectors.toList());
+        names.addAll(createList(artifactId, version, String.format(
+                "%s-%s%s.jar",
+                artifactId,
+                version,
+                Optional.ofNullable(platform).map(s -> "-" + s).orElse(""))
+        ));
+
+        try {
+            return MinecraftMirroredResourceURL.create(base.getRawUrl().toString() + (base.getRawUrl().toString().endsWith("/") ? "" : "/") + String.join("/", names));
+        } catch (Exception e) {
+            e.printStackTrace();
+            return null;
+        }
     }
 
     public static MavenLibName of(String groupId, String artifactId, String version, String platform) {

@@ -2,6 +2,7 @@ package com.mcreater.amclcore.game;
 
 import com.mcreater.amclcore.concurrent.task.AbstractAction;
 import com.mcreater.amclcore.i18n.Text;
+import com.mcreater.amclcore.util.hash.Sha1String;
 import lombok.Getter;
 import lombok.Setter;
 
@@ -57,6 +58,10 @@ public class GameRepository {
 
     public final Path getAssetIndexDirectory() {
         return path.resolve("assets").resolve("indexes");
+    }
+
+    public final Path getAssetFilePath(Sha1String s) {
+        return path.resolve("assets").resolve("objects").resolve(s.getRaw().substring(0, 2)).resolve(s.getRaw());
     }
 
     public final Path getLibrariesDirectory() {

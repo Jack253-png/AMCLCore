@@ -70,5 +70,8 @@
   "core.download.downloading": "Downloading...",
   "core.download.complete": "Download complete",
   "core.installation.task.fetch_metadata.name": "Fetch launcher metadata task",
-  "core.exception.version_not_found": "Minecraft version not found"
+  "core.exception.version_not_found": "Minecraft version not found",
+  "core.install.vanilla.versionjson": "Downloading version json...",
+  "core.install.vanilla.fixresources": "Downloading resources and libs...",
+  "core.install.task.fixresources.name": "Download dependencies task"
 }

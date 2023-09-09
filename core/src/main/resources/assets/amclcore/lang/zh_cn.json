@@ -70,5 +70,8 @@
   "core.download.downloading": "正在下载...",
   "core.download.complete": "下载完成",
   "core.installation.task.fetch_metadata.name": "获取启动器元数据任务",
-  "core.exception.version_not_found": "Minecraft 版本未找到"
+  "core.exception.version_not_found": "Minecraft 版本未找到",
+  "core.install.vanilla.versionjson": "下载版本 Json 中...",
+  "core.install.vanilla.fixresources": "下载资源文件和依赖库中...",
+  "core.install.task.fixresources.name": "依赖库下载任务"
 }

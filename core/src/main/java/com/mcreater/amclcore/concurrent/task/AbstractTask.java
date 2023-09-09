@@ -74,7 +74,7 @@ public abstract class AbstractTask<T> extends RecursiveTask<Optional<T>> {
 
     protected void setState(TaskState<T> state) {
         this.state = state;
-        INTERFACE_EVENT_EXECUTORS.get(this).execute(() -> getStateConsumers().forEach(c -> c.accept(state)));
+        Optional.ofNullable(INTERFACE_EVENT_EXECUTORS.get(this)).ifPresent(a -> a.execute(() -> getStateConsumers().forEach(c -> c.accept(state))));
     }
 
     /**

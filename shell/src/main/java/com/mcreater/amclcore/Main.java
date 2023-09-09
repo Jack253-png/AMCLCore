@@ -13,10 +13,12 @@ import com.mcreater.amclcore.java.MemorySize;
 import com.mcreater.amclcore.model.config.ConfigLaunchModel;
 import com.mcreater.amclcore.model.config.ConfigMainModel;
 import com.mcreater.amclcore.model.config.ConfigMemoryModel;
+import com.mcreater.amclcore.util.url.MinecraftMirroredResourceURL;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
 import java.io.File;
+import java.lang.management.ManagementFactory;
 import java.util.Optional;
 import java.util.Vector;
 import java.util.concurrent.ExecutionException;
@@ -32,13 +34,24 @@ public class Main {
     private static final Logger logger = LogManager.getLogger(Main.class);
 
     public static void main(String[] args) throws Exception {
+        /*JFrame frame = new JFrame();
+        frame.setVisible(true);
+        frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);*/
+        new Thread(() -> {
+            while (true) {
+                if (ManagementFactory.getMemoryMXBean().getHeapMemoryUsage().getUsed() + ManagementFactory.getMemoryMXBean().getNonHeapMemoryUsage().getUsed() >= 256L * 1024 * 1024) {
+                    System.gc();
+                }
+            }
+        }).start();
         // launchTest(loginTest());
         GameRepository.of("D:\\mods\\minecraft\\.minecraft", "My minecraft repository").ifPresent(repository -> {
             try {
                 new VanillaInstallTask(
                         repository,
                         "1.20.1",
-                        "1.18.2-installtest"
+                        "1.18.2-installtest",
+                        MinecraftMirroredResourceURL.MirrorServer.MCBBS
                 ).submitTo(ConcurrentExecutors.DOWNLOAD_QUEUE_EXECUTOR).get();
             } catch (Exception e) {
                 e.printStackTrace();

@@ -2,6 +2,7 @@ package com.mcreater.amclcore.model.game.lib;
 
 import com.mcreater.amclcore.model.game.rule.GameRuleFeatureModel;
 import com.mcreater.amclcore.model.game.rule.GameRuleModel;
+import com.mcreater.amclcore.util.hash.Sha1String;
 import com.mcreater.amclcore.util.maven.MavenLibName;
 import com.mcreater.amclcore.util.url.MinecraftMirroredResourceURL;
 import lombok.Builder;
@@ -52,5 +53,17 @@ public class GameDependedLibModel {
         if (getDownloads() != null && getDownloads().getArtifact() != null)
             return Paths.get(getDownloads().getArtifact().getPath());
         else return getName().toPath();
+    }
+
+    public MinecraftMirroredResourceURL getUrl() {
+        if (getDownloads() != null && getDownloads().getArtifact() != null)
+            return getDownloads().getArtifact().getUrl();
+        else return getName().toUrl(url);
+    }
+
+    public Sha1String getHash() {
+        if (getDownloads() != null && getDownloads().getArtifact() != null)
+            return getDownloads().getArtifact().getSha1();
+        else return null;
     }
 }

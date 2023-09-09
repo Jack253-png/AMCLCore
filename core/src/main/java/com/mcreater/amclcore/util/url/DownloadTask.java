@@ -24,6 +24,10 @@ public class DownloadTask extends AbstractAction {
         this(url, local, null);
     }
 
+    public static boolean vaildate(File file, Sha1String sha1String) {
+        return !file.exists() || !sha1String.validate(file);
+    }
+
     protected void execute() throws Exception {
         setState(
                 TaskState.<Void>builder()
@@ -64,6 +68,7 @@ public class DownloadTask extends AbstractAction {
                 .uri(url.toDownloadFormatWithMirror().getRight())
                 .reqTimeout(5000)
                 .socTimeout(5000)
+                .retry(5)
                 .send()
                 .writeTo(Files.newOutputStream(local.toPath(), StandardOpenOption.WRITE));
 

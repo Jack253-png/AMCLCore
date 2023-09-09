@@ -105,6 +105,7 @@ ext {
 
 application {
     mainClassName = javaMainClass
+    applicationDefaultJvmArgs = ["-Xmx512M"]
 }
 
 task sourcesJar(type: Jar, dependsOn: classes) {

@@ -29,6 +29,14 @@ public class MinecraftMirroredResourceURL {
         }
     }
 
+    public static MinecraftMirroredResourceURL ASSETS(String s) {
+        try {
+            return MinecraftMirroredResourceURL.create(String.format("http://resources.download.minecraft.net/%s/%s", s.substring(0, 2), s));
+        } catch (Exception e) {
+            return null;
+        }
+    }
+
     private static URL replaceURL(URL base, String old, String rep) {
         try {
             return URI.create(base.toString().replace(old, rep)).toURL();

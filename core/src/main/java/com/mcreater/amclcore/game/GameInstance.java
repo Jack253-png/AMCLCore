@@ -600,7 +600,7 @@ public class GameInstance {
         }
     }
 
-    private GameAssetsIndexFileModel getAssetsIndex(GameManifestJsonModel model) throws FileNotFoundException {
+    public GameAssetsIndexFileModel getAssetsIndex(GameManifestJsonModel model) throws FileNotFoundException {
         return GSON_PARSER.fromJson(
                 new FileReader(getAssetsIndexFile(model)),
                 GameAssetsIndexFileModel.class
