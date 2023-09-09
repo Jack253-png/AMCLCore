@@ -27,11 +27,15 @@ public class GameManifestJson {
         );
     }
 
+    public static GameManifestJson create(GameRepository repository, String name) {
+        return new GameManifestJson(repository, repository.getPath().resolve(name), name);
+    }
+
     public GameInstance toInstance() {
         return GameInstance.createInstance(this);
     }
 
-    private Path getJsonPath() {
+    public Path getJsonPath() {
         return versionPath.resolve(name + ".json");
     }
 

@@ -33,7 +33,17 @@ public class Main {
 
     public static void main(String[] args) throws Exception {
         // launchTest(loginTest());
-        new VanillaInstallTask().submitTo(ConcurrentExecutors.DOWNLOAD_QUEUE_EXECUTOR).get();
+        GameRepository.of("D:\\mods\\minecraft\\.minecraft", "My minecraft repository").ifPresent(repository -> {
+            try {
+                new VanillaInstallTask(
+                        repository,
+                        "1.18.2",
+                        "1.18.2-installtest"
+                ).submitTo(ConcurrentExecutors.DOWNLOAD_QUEUE_EXECUTOR).get();
+            } catch (Exception e) {
+                e.printStackTrace();
+            }
+        });
     }
 
     public static void launchTest(AbstractAccount account) {

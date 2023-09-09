@@ -3,7 +3,6 @@ package com.mcreater.amclcore.util;
 import com.mcreater.amclcore.util.url.MinecraftMirroredResourceURL;
 import org.apache.commons.lang3.tuple.ImmutablePair;
 import org.apache.commons.lang3.tuple.Pair;
-import org.apache.http.util.EntityUtils;
 
 import java.io.IOException;
 import java.net.URISyntaxException;
@@ -26,12 +25,10 @@ public class NetUtil {
         return buildScopeString(delimiter, Arrays.asList(s));
     }
 
-    public static String readFrom(MinecraftMirroredResourceURL url) throws URISyntaxException, IOException {
-        return EntityUtils.toString(
-                HttpClientWrapper.create(HttpClientWrapper.Method.GET)
-                        .uriScheme(url.toDownloadFormatWithMirror().getLeft())
-                        .uri(url.toDownloadFormatWithMirror().getRight())
-                        .send()
-        );
+    public static <T> T readFrom(MinecraftMirroredResourceURL url, Class<T> clazz) throws URISyntaxException, IOException {
+        return HttpClientWrapper.create(HttpClientWrapper.Method.GET)
+                .uriScheme(url.toDownloadFormatWithMirror().getLeft())
+                .uri(url.toDownloadFormatWithMirror().getRight())
+                .sendAndReadJson(clazz);
     }
 }

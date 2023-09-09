@@ -27,7 +27,7 @@ public class DownloadTask extends AbstractAction {
     protected void execute() throws Exception {
         setState(
                 TaskState.<Void>builder()
-                        .totalStage(2)
+                        .totalStage(3)
                         .currentStage(0)
                         .message(fixed(""))
                         .taskType(TaskState.Type.EXECUTING)
@@ -46,7 +46,10 @@ public class DownloadTask extends AbstractAction {
         if (sha1String != null && local.exists()) needDownload = sha1String.validate(local);
         if (!needDownload) return;
 
-        if (!local.exists()) local.createNewFile();
+        if (!local.exists()) {
+            local.getParentFile().mkdirs();
+            local.createNewFile();
+        }
 
         setState(
                 TaskState.<Void>builder()
