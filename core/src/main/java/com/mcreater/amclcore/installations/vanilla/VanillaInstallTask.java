@@ -10,6 +10,7 @@ import com.mcreater.amclcore.installations.common.LauncherMetadataFetchTask;
 import com.mcreater.amclcore.installations.common.VanillaFixTask;
 import com.mcreater.amclcore.model.installation.launchermeta.LauncherMetaModel;
 import com.mcreater.amclcore.model.installation.launchermeta.LauncherMetaVersionModel;
+import com.mcreater.amclcore.util.platform.Mapping;
 import com.mcreater.amclcore.util.url.DownloadTask;
 import com.mcreater.amclcore.util.url.MinecraftMirroredResourceURL;
 import lombok.AllArgsConstructor;
@@ -49,7 +50,7 @@ public class VanillaInstallTask extends AbstractAction {
                 .ifPresent(versionModel::set);
 
         GameManifestJson json = GameManifestJson.create(repository, installName);
-
+        Mapping.patchVersion(json);
         new DownloadTask(versionModel.get().getUrl().toSource(server), json.getJsonPath().toFile(), versionModel.get().getSha1())
                 .bindTo(this)
                 .get();

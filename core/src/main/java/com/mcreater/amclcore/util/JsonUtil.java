@@ -49,6 +49,7 @@ public class JsonUtil {
             .registerTypeAdapter(MavenLibName.class, MavenLibNameAdapter.INSTANCE)
             .registerTypeAdapter(AbstractTag.class, AbstractTagSerializer.INSTANCE)
             .disableHtmlEscaping()
+            .setLenient()
             .create();
     private static final Pattern NAME_PATTERN = Pattern.compile("\"name\":\\s*\"(.+?)\"");
     private static final Pattern UUID_PATTERN = Pattern.compile("\"id\":\\s*\"(.+?)\"");

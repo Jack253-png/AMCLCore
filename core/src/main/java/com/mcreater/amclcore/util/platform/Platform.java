@@ -22,6 +22,7 @@ import java.util.Objects;
 public final class Platform {
     public static final Platform UNKNOWN = new Platform(OperatingSystem.UNKNOWN, Architecture.UNKNOWN);
 
+    public static final Platform WINDOWS_X86 = new Platform(OperatingSystem.WINDOWS, Architecture.X86);
     public static final Platform WINDOWS_X86_64 = new Platform(OperatingSystem.WINDOWS, Architecture.X86_64);
     public static final Platform WINDOWS_ARM64 = new Platform(OperatingSystem.WINDOWS, Architecture.ARM64);
 
@@ -64,6 +65,11 @@ public final class Platform {
                 case LINUX:
                     return LINUX_X86_64;
             }
+        } else if (arch == Architecture.X86) {
+            if (Objects.requireNonNull(os) == OperatingSystem.WINDOWS) {
+                return WINDOWS_X86;
+            }
+            return UNKNOWN;
         } else if (arch == Architecture.ARM64) {
             switch (os) {
                 case WINDOWS:

@@ -50,10 +50,9 @@ public class DownloadTask extends AbstractAction {
         if (sha1String != null && local.exists()) needDownload = !sha1String.validate(local);
         if (!needDownload) return;
 
-        if (!local.exists()) {
-            local.getParentFile().mkdirs();
-            local.createNewFile();
-        }
+        if (local.exists()) local.delete();
+        local.getParentFile().mkdirs();
+        local.createNewFile();
 
         setState(
                 TaskState.<Void>builder()
@@ -63,14 +62,22 @@ public class DownloadTask extends AbstractAction {
                         .taskType(TaskState.Type.EXECUTING)
                         .build()
         );
-        HttpClientWrapper.create(HttpClientWrapper.Method.GET)
-                .uriScheme(url.toDownloadFormatWithMirror().getLeft())
-                .uri(url.toDownloadFormatWithMirror().getRight())
-                .reqTimeout(5000)
-                .socTimeout(5000)
-                .retry(5)
-                .send()
-                .writeTo(Files.newOutputStream(local.toPath(), StandardOpenOption.WRITE));
+
+        while (true) {
+            try {
+                HttpClientWrapper.create(HttpClientWrapper.Method.GET)
+                        .uriScheme(url.toDownloadFormatWithMirror().getLeft())
+                        .uri(url.toDownloadFormatWithMirror().getRight())
+                        .reqTimeout(5000)
+                        .socTimeout(5000)
+                        .retry(5)
+                        .send()
+                        .writeTo(Files.newOutputStream(local.toPath(), StandardOpenOption.WRITE));
+                break;
+            } catch (Exception e) {
+                e.printStackTrace();
+            }
+        }
 
         setState(
                 TaskState.<Void>builder()

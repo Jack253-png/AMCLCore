@@ -26,6 +26,7 @@ import com.mcreater.amclcore.model.game.lib.GameDependedLibModel;
 import com.mcreater.amclcore.model.game.rule.GameRuleFeatureModel;
 import com.mcreater.amclcore.util.JsonUtil;
 import com.mcreater.amclcore.util.platform.Architecture;
+import com.mcreater.amclcore.util.platform.Mapping;
 import com.mcreater.amclcore.util.platform.OperatingSystem;
 import lombok.AccessLevel;
 import lombok.AllArgsConstructor;
@@ -371,6 +372,7 @@ public class GameInstance {
                 nativeLibs = model.getLibraries().stream()
                         .filter(GameDependedLibModel::valid)
                         .filter(GameDependedLibModel::hasNatives)
+                        .filter(a -> a.isNormalLib() || a.getName().getPlatform().equals(Mapping.getNativeName()))
                         .map(lib -> {
                             if (lib.isNormalLib()) {
                                 String nativeId = lib

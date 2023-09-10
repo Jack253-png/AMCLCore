@@ -9,10 +9,15 @@ import com.mcreater.amclcore.game.GameRepository;
 import com.mcreater.amclcore.i18n.Text;
 import com.mcreater.amclcore.model.game.GameManifestJsonModel;
 import com.mcreater.amclcore.model.game.lib.GameDependedLibModel;
+import com.mcreater.amclcore.util.hash.Sha1String;
+import com.mcreater.amclcore.util.platform.Architecture;
+import com.mcreater.amclcore.util.platform.Mapping;
+import com.mcreater.amclcore.util.platform.OperatingSystem;
 import com.mcreater.amclcore.util.url.DownloadTask;
 import com.mcreater.amclcore.util.url.MinecraftMirroredResourceURL;
 import lombok.AllArgsConstructor;
 
+import java.nio.file.Path;
 import java.util.List;
 import java.util.Vector;
 
@@ -59,6 +64,49 @@ public class VanillaFixTask extends AbstractAction {
                 ))
                 .forEach(tasks::add);
 
+        tasks.add(new DownloadTask(
+                manifest.getDownloads().getClient().getUrl().toSource(server),
+                json.toInstance().getInstancePath().resolve(json.getName() + ".jar").toFile()
+        ));
+
+        manifest.getLibraries().parallelStream()
+                .filter(GameDependedLibModel::hasNatives)
+                .filter(GameDependedLibModel::valid)
+                .filter(a -> a.isNormalLib() || a.getName().getPlatform().equals(Mapping.getNativeName()))
+                .forEachOrdered(lib -> {
+                    Path jarp;
+                    MinecraftMirroredResourceURL url;
+                    Sha1String sha1;
+                    if (lib.isNormalLib()) {
+                        String nativeId = lib
+                                .getNatives()
+                                .get(OperatingSystem.CURRENT_OS.getCheckedName())
+                                .replace("${arch}", Architecture.CURRENT_ARCH.getBits().getBit());
+
+                        jarp = lib.getDownloads()
+                                .getClassifiers()
+                                .get(nativeId)
+                                .getJarPath();
+
+                        url = lib.getDownloads()
+                                .getClassifiers()
+                                .get(nativeId)
+                                .getUrl();
+
+                        sha1 = lib.getDownloads()
+                                .getClassifiers()
+                                .get(nativeId)
+                                .getSha1();
+                    } else {
+                        jarp = lib.getJarPath();
+                        url = lib.getUrl();
+                        sha1 = lib.getDownloads().getArtifact().getSha1();
+                    }
+
+                    jarp = repository.getLibrariesDirectory().resolve(jarp);
+                    url = url.toSource(server);
+                    System.out.printf("%s\n%s\n%s\n", jarp, url, sha1);
+                });
 
         tasks.forEach(abstractTask -> abstractTask.submitTo(dlPool));
         do {

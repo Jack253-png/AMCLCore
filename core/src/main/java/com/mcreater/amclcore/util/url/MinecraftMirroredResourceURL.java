@@ -61,6 +61,7 @@ public class MinecraftMirroredResourceURL {
                     addURL(this, "launchermeta.mojang.com", "bmclapi2.bangbang93.com");
                     addURL(this, "launcher.mojang.com", "bmclapi2.bangbang93.com");
                     addURL(this, "piston-meta.mojang.com", "bmclapi2.bangbang93.com");
+                    addURL(this, "piston-data.mojang.com", "bmclapi2.bangbang93.com");
                     addURL(this, "resources.download.minecraft.net", "bmclapi2.bangbang93.com/assets");
                     addURL(this, "libraries.minecraft.net", "bmclapi2.bangbang93.com/maven");
                     addURL(this, "files.minecraftforge.net/maven", "bmclapi2.bangbang93.com/maven");
@@ -71,6 +72,7 @@ public class MinecraftMirroredResourceURL {
                     addURL(this, "authlib-injector.yushi.moe", "bmclapi2.bangbang93.com/mirrors/authlib-injector");
                     addURL(this, "meta.fabricmc.net", "bmclapi2.bangbang93.com/fabric-meta");
                     addURL(this, "maven.fabricmc.net", "bmclapi2.bangbang93.com/maven");
+                    addURL(this, "maven.neoforged.net/releases/net/neoforged/forge", "bmclapi2.bangbang93.com/maven/net/neoforged/forge");
                 }}
         ),
         MCBBS(
@@ -78,6 +80,7 @@ public class MinecraftMirroredResourceURL {
                     addURL(this, "launchermeta.mojang.com", "download.mcbbs.net");
                     addURL(this, "launcher.mojang.com", "download.mcbbs.net");
                     addURL(this, "piston-meta.mojang.com", "download.mcbbs.net");
+                    addURL(this, "piston-data.mojang.com", "download.mcbbs.net");
                     addURL(this, "resources.download.minecraft.net", "download.mcbbs.net/assets");
                     addURL(this, "libraries.minecraft.net", "download.mcbbs.net/maven");
                     addURL(this, "files.minecraftforge.net/maven", "download.mcbbs.net/maven");
@@ -88,6 +91,7 @@ public class MinecraftMirroredResourceURL {
                     addURL(this, "authlib-injector.yushi.moe", "download.mcbbs.net/mirrors/authlib-injector");
                     addURL(this, "meta.fabricmc.net", "download.mcbbs.net/fabric-meta");
                     addURL(this, "maven.fabricmc.net", "download.mcbbs.net/maven");
+                    addURL(this, "maven.neoforged.net/releases/net/neoforged/forge", "download.mcbbs.net/maven/net/neoforged/forge");
                 }}
         );
         private final Map<String, Function<URL, URL>> parseMap;

@@ -28,6 +28,8 @@ public class MavenLibNameAdapter extends TypeAdapter<MavenLibName> {
             in.nextNull();
             return null;
         }
-        return MavenLibName.of(in.nextString());
+        String s = in.nextString();
+        if (s.contains(":")) return MavenLibName.of(s);
+        else return MavenLibName.of(null, s, null, null);
     }
 }
