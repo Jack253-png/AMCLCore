@@ -66,7 +66,8 @@ public class VanillaFixTask extends AbstractAction {
 
         tasks.add(new DownloadTask(
                 manifest.getDownloads().getClient().getUrl().toSource(server),
-                json.toInstance().getInstancePath().resolve(json.getName() + ".jar").toFile()
+                json.toInstance().getInstancePath().resolve(json.getName() + ".jar").toFile(),
+                manifest.getDownloads().getClient().getSha1()
         ));
 
         manifest.getLibraries().parallelStream()
