@@ -3,18 +3,18 @@ package com.mcreater.amclcore
 import com.mcreater.amclcore.account.AbstractAccount
 import com.mcreater.amclcore.account.MicrosoftAccount
 import com.mcreater.amclcore.account.auth.OAuth
+import com.mcreater.amclcore.api.mihoyo.genshin.AbstractGenshinGachaApi
 import com.mcreater.amclcore.concurrent.ConcurrentExecutors
 import com.mcreater.amclcore.concurrent.task.AbstractTask
 import com.mcreater.amclcore.game.GameInstance
 import com.mcreater.amclcore.game.GameRepository
-import com.mcreater.amclcore.installations.vanilla.VanillaInstallTask
 import com.mcreater.amclcore.java.JavaEnvironment
 import com.mcreater.amclcore.java.MemorySize
 import com.mcreater.amclcore.model.config.ConfigLaunchModel
 import com.mcreater.amclcore.model.config.ConfigMainModel
 import com.mcreater.amclcore.model.config.ConfigMemoryModel
+import com.mcreater.amclcore.util.JsonUtil.GSON_PARSER
 import com.mcreater.amclcore.util.PropertyUtil
-import com.mcreater.amclcore.util.url.MinecraftMirroredResourceURL
 import org.apache.logging.log4j.LogManager
 import java.io.File
 import java.util.*
@@ -33,19 +33,24 @@ class Main {
         @JvmStatic
         fun main(args: Array<String>) {
             // launchTest(loginTest());
-            GameRepository.of("D:\\basetest", "My minecraft repository")
+            /*GameRepository.of("D:\\basetest", "My minecraft repository")
                 .ifPresent {
                     try {
                         VanillaInstallTask(
                             it,
                             "1.20.1",
-                            "1.18.2-installtest",
+                            "1.18.2-installer",
                             MinecraftMirroredResourceURL.MirrorServer.MCBBS
                         ).submitTo(ConcurrentExecutors.DOWNLOAD_QUEUE_EXECUTOR).get()
                     } catch (e: Exception) {
                         e.printStackTrace()
                     }
-                }
+                }*/
+            GSON_PARSER.toJson(
+                AbstractGenshinGachaApi.getCnInstance().genshinGachaFetchAsync(Locale.ENGLISH)
+                    .submitTo(ConcurrentExecutors.EVENT_QUEUE_EXECUTOR).get().get(),
+                System.out
+            )
         }
 
         fun launchTest(account: AbstractAccount?) {
