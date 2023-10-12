@@ -11,6 +11,7 @@ buildscript {
 plugins {
     id 'java'
     id 'maven-publish'
+    id 'org.jetbrains.kotlin.jvm'
 }
 
 group 'com.mcreater'
@@ -48,6 +49,7 @@ dependencies {
             .orElse(rootProject).configurations.implementation.dependencies
             .forEach { implementation(it) }
     annotationProcessor 'org.projectlombok:lombok:1.18.26'
+    implementation "org.jetbrains.kotlin:kotlin-stdlib-jdk8"
 }
 
 test {
@@ -97,5 +99,15 @@ publishing {
 
     repositories {
         maven { url uri(new File(rootProject.projectDir.getAbsolutePath(), "maven").getAbsolutePath()) }
+    }
+}
+compileKotlin {
+    kotlinOptions {
+        jvmTarget = "17"
+    }
+}
+compileTestKotlin {
+    kotlinOptions {
+        jvmTarget = "17"
     }
 }

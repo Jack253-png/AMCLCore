@@ -7,10 +7,11 @@ import com.mcreater.amclcore.model.game.lib.GameDependedLibModel;
 import com.mcreater.amclcore.resources.ResourceFetcher;
 import com.mcreater.amclcore.util.maven.MavenLibName;
 
+import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStreamReader;
+import java.nio.ByteBuffer;
 import java.nio.file.Files;
-import java.nio.file.StandardOpenOption;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -105,9 +106,13 @@ public class Mapping {
                 replacements.forEach(jsonElement -> element.getAsJsonObject().getAsJsonArray("libraries").add(jsonElement));
             }
         }
-        GSON_PARSER.toJson(
-                element,
-                Files.newBufferedWriter(json.getJsonPath(), StandardOpenOption.WRITE)
-        );
+        json.getJsonPath().toFile().delete();
+        json.getJsonPath().toFile().createNewFile();
+        String jsonstring = GSON_PARSER.toJson(element);
+        ByteBuffer byteBuffer = ByteBuffer.allocate(jsonstring.length() + 64);
+        byteBuffer.put(jsonstring.getBytes());
+        try (FileOutputStream s = new FileOutputStream(json.getJsonPath().toFile())) {
+            s.getChannel().write(byteBuffer.flip());
+        }
     }
 }

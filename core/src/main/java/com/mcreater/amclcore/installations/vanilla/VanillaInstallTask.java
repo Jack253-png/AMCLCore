@@ -50,10 +50,10 @@ public class VanillaInstallTask extends AbstractAction {
                 .ifPresent(versionModel::set);
 
         GameManifestJson json = GameManifestJson.create(repository, installName);
-        Mapping.patchVersion(json);
         new DownloadTask(versionModel.get().getUrl().toSource(server), json.getJsonPath().toFile(), versionModel.get().getSha1())
                 .bindTo(this)
                 .get();
+        Mapping.patchVersion(json);
 
         setState(TaskState.<Void>builder()
                 .message(translatable("core.install.vanilla.fixresources"))

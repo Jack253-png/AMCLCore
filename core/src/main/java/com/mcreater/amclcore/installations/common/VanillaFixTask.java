@@ -20,6 +20,7 @@ import lombok.AllArgsConstructor;
 import java.nio.file.Path;
 import java.util.List;
 import java.util.Vector;
+import java.util.concurrent.ExecutionException;
 
 import static com.mcreater.amclcore.concurrent.ConcurrentExecutors.excHandler;
 import static com.mcreater.amclcore.i18n.I18NManager.translatable;
@@ -109,12 +110,14 @@ public class VanillaFixTask extends AbstractAction {
                     System.out.printf("%s\n%s\n%s\n", jarp, url, sha1);
                 });
 
-        tasks.forEach(abstractTask -> abstractTask.submitTo(dlPool));
-        do {
-            System.out.println(dlPool.getActiveThreadCount());
-            Thread.sleep(1000);
-        }
-        while (dlPool.getActiveThreadCount() != 0);
+        tasks.forEach(a -> a.bindTo(this));
+        tasks.forEach(a -> {
+            try {
+                a.get();
+            } catch (InterruptedException | ExecutionException e) {
+                throw new RuntimeException(e);
+            }
+        });
     }
 
     protected Text getTaskName() {
