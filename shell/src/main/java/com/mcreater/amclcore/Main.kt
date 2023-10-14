@@ -32,14 +32,12 @@ class Main {
 
         @JvmStatic
         fun main(args: Array<String>) {
-            println(
-                GSON_PARSER.toJson(
-                    AbstractGenshinGachaApi.getCnInstance().genshinGachaFetchAsync()
-                        .submitTo(ConcurrentExecutors.OAUTH_LOGIN_EXECUTOR).get().get()
-                )
+            GSON_PARSER.toJson(
+                AbstractGenshinGachaApi.getCnInstance().genshinGachaFetchAsync()
+                    .submitTo(ConcurrentExecutors.OAUTH_LOGIN_EXECUTOR).get().get(),
+                System.out
             )
-            // var acc = loginTest()
-            // launchTest(loginTest());
+            launchTest(loginTest())
             /*GameRepository.of("D:\\basetest", "My minecraft repository")
                 .ifPresent {
                     try {

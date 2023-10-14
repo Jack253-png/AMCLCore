@@ -278,7 +278,7 @@ public class MicrosoftAccount extends AbstractAccount {
 
     public RunnableAction preLaunchAsync() {
         return RunnableAction.of(() -> {
-        });
+        }, translatable("core.game.launch.pre"));
     }
 
     public List<MinecraftProfileRequestModel.MinecraftProfileSkinModel> getSkins() {
