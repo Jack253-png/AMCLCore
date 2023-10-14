@@ -1,5 +1,5 @@
 package com.mcreater.amclcore.annotations
 
-@Target(AnnotationTarget.TYPE)
+@Target(AnnotationTarget.CLASS)
 @Retention(AnnotationRetention.RUNTIME)
 annotation class ConfigModel
