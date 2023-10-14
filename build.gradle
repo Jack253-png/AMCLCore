@@ -107,7 +107,7 @@ ext {
 
 application {
     mainClassName = javaMainClass
-    applicationDefaultJvmArgs = ["-XX:+UseZGC", "-Xmx512M"]
+    applicationDefaultJvmArgs = ["-XX:+UseZGC", "-Xmx1G"]
 }
 
 task sourcesJar(type: Jar, dependsOn: classes) {

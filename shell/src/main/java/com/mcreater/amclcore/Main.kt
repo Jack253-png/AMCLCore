@@ -32,6 +32,13 @@ class Main {
 
         @JvmStatic
         fun main(args: Array<String>) {
+            println(
+                GSON_PARSER.toJson(
+                    AbstractGenshinGachaApi.getCnInstance().genshinGachaFetchAsync()
+                        .submitTo(ConcurrentExecutors.OAUTH_LOGIN_EXECUTOR).get().get()
+                )
+            )
+            // var acc = loginTest()
             // launchTest(loginTest());
             /*GameRepository.of("D:\\basetest", "My minecraft repository")
                 .ifPresent {
@@ -46,11 +53,7 @@ class Main {
                         e.printStackTrace()
                     }
                 }*/
-            GSON_PARSER.toJson(
-                AbstractGenshinGachaApi.getCnInstance().genshinGachaFetchAsync(Locale.ENGLISH)
-                    .submitTo(ConcurrentExecutors.EVENT_QUEUE_EXECUTOR).get().get(),
-                System.out
-            )
+
         }
 
         fun launchTest(account: AbstractAccount?) {
