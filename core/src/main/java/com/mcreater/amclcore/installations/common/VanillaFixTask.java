@@ -38,7 +38,7 @@ public class VanillaFixTask extends AbstractAction {
                 .get();
 
         ExtendForkJoinPool dlPool = new ExtendForkJoinPool(
-                256,
+                128,
                 ConcurrentExecutors.ForkJoinWorkerThreadFactoryImpl.INSTANCE,
                 excHandler,
                 true
@@ -115,6 +115,7 @@ public class VanillaFixTask extends AbstractAction {
             Thread.sleep(1000);
         }
         while (dlPool.getActiveThreadCount() != 0);
+
     }
 
     protected Text getTaskName() {
