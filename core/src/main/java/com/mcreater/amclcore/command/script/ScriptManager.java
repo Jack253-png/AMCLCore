@@ -10,9 +10,9 @@ public class ScriptManager {
     private static final Map<String, ScriptProvider> scriptProviders = new HashMap<>();
 
     static {
-        register("powershell", PowerShellScriptProvider.INSTANCE);
-        register("cmdlet", CmdletScriptProvider.INSTANCE);
-        register("sh", ShellScriptProvider.INSTANCE);
+        register("powershell", PowerShellScriptProvider.Companion.getINSTANCE());
+        register("cmdlet", CmdletScriptProvider.Companion.getINSTANCE());
+        register("sh", ShellScriptProvider.Companion.getINSTANCE());
     }
 
     public static List<String> getProviders() {

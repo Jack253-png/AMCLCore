@@ -122,10 +122,10 @@ public enum OAuth {
     private static final String minecraftStoreUrl = "api.minecraftservices.com/entitlements/mcstore";
 
     /**
-     * Default device code handler, copy the user code {@link DeviceCodeModelKt#getUserCode()} and open browser {@link DeviceCodeModelKt#getVerificationUri()}<br>
-     * 默认设备码处理器, 复制从 {@link DeviceCodeModelKt#getUserCode()} 得到的用户码并打开浏览器 {@link DeviceCodeModelKt#getVerificationUri()}
+     * Default device code handler, copy the user code {@link DeviceCodeModel#getUserCode()} and open browser {@link DeviceCodeModel#getVerificationUri()}<br>
+     * 默认设备码处理器, 复制从 {@link DeviceCodeModel#getUserCode()} 得到的用户码并打开浏览器 {@link DeviceCodeModel#getVerificationUri()}
      */
-    public static final Consumer<DeviceCodeModelKt> defaultDevHandler =
+    public static final Consumer<DeviceCodeModel> defaultDevHandler =
             model2 -> Arrays.asList(
                     copyContentAsync(model2.getUserCode()),
                     openBrowserAsync(model2.getVerificationUri())
@@ -181,15 +181,15 @@ public enum OAuth {
      * @throws URISyntaxException If the device code api url {@link OAuth#deviceCodeUrl} malformed<br>如果设备码API URL {@link OAuth#deviceCodeUrl} 错误
      * @throws IOException        If an I/O exception occurred<br>如果一个IO错误发生
      */
-    private DeviceCodeModelKt fetchDeviceToken(Consumer<DeviceCodeModelKt> requestHandler) throws URISyntaxException, IOException, NullPointerException {
-        DeviceCodeModelKt model = HttpClientWrapper.create(HttpClientWrapper.Method.GET)
+    private DeviceCodeModel fetchDeviceToken(Consumer<DeviceCodeModel> requestHandler) throws URISyntaxException, IOException, NullPointerException {
+        DeviceCodeModel model = HttpClientWrapper.create(HttpClientWrapper.Method.GET)
                 .uri(deviceCodeUrl)
                 .uriParam("client_id", getOauthDefaultClientId())
                 .uriParam("scope", buildScopeString(" ", "XboxLive.signin", "offline_access"))
                 .timeout(5000)
                 .reqTimeout(5000)
                 .retry(5)
-                .sendAndReadJson(DeviceCodeModelKt.class);
+                .sendAndReadJson(DeviceCodeModel.class);
 
         Optional.of(requestHandler).ifPresent(c -> c.accept(model));
         return model;
@@ -224,7 +224,7 @@ public enum OAuth {
      * @return the processed device code<br>被处理过的设备代码
      * @throws IOException If an I/O Exception occurred<br>如果一个IO错误发生
      */
-    private DeviceCodeConverterModel fetchUserLoginToken(DeviceCodeModelKt model) throws IOException {
+    private DeviceCodeConverterModel fetchUserLoginToken(DeviceCodeModel model) throws IOException {
         long startTime = System.nanoTime();
         int interval = model.getInterval();
 
@@ -390,16 +390,16 @@ public enum OAuth {
      * @param requestHandler the handler for device token<br>设备码的处理器
      * @return created task<br>创建的任务
      */
-    public OAuthLoginTask deviceCodeLoginAsync(Consumer<DeviceCodeModelKt> requestHandler) {
+    public OAuthLoginTask deviceCodeLoginAsync(Consumer<DeviceCodeModel> requestHandler) {
         return new OAuthLoginTask(requestHandler);
     }
 
     @AllArgsConstructor(access = AccessLevel.PRIVATE)
     public class OAuthLoginTask extends AbstractTask<MicrosoftAccount> {
-        private final Consumer<DeviceCodeModelKt> requestHandler;
+        private final Consumer<DeviceCodeModel> requestHandler;
 
         protected MicrosoftAccount call() throws Exception {
-            DeviceCodeModelKt deviceCodeRaw;
+            DeviceCodeModel deviceCodeRaw;
             DeviceCodeConverterModel deviceCode;
             // TODO fetch device code
             {

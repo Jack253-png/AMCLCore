@@ -4,7 +4,7 @@ import com.mcreater.amclcore.annotations.RequestModel
 
 @RequestModel
 data class GenshinGachaModel(
-    val retcode: Int = 0,
-    val message: String? = null,
-    val data: GenshinGachaDataModel? = null
+    var retcode: Int = 0,
+    var message: String? = null,
+    var data: GenshinGachaDataModel? = null
 )

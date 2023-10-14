@@ -6,7 +6,7 @@ import com.mcreater.amclcore.annotations.RequestModel
 
 @OAuthLoginModel
 @RequestModel
-data class DeviceCodeModelKt(
+data class DeviceCodeModel(
     @SerializedName("user_code") var userCode: String? = null,
     @SerializedName("device_code") var deviceCode: String? = null,
     @SerializedName("verification_uri") var verificationUri: String? = null,
