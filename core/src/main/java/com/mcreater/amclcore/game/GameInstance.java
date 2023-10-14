@@ -267,20 +267,21 @@ public class GameInstance {
 
             if (exitRes != 0) {
                 setState(
-                        TaskState.<Void>builder()
-                                .totalStage(1)
-                                .currentStage(1)
-                                .message(translatable("core.game.instance.launch.exit.crash"))
-                                .taskType(TaskState.Type.ERROR)
-                                .build()
+                        new TaskState<>(
+                                TaskState.Type.ERROR,
+                                null,
+                                null,
+                                1, 1, translatable("core.game.instance.launch.exit.crash")
+                        )
                 );
             } else {
                 setState(
-                        TaskState.<Void>builder()
-                                .totalStage(1)
-                                .currentStage(1)
-                                .message(translatable("core.game.instance.launch.exit.normal"))
-                                .build()
+                        new TaskState<>(
+                                TaskState.Type.FINISHED,
+                                null,
+                                null,
+                                1, 1, translatable("core.game.instance.launch.exit.normal")
+                        )
                 );
             }
         }
@@ -296,11 +297,12 @@ public class GameInstance {
 
         protected List<CommandArg> call() throws Exception {
             setState(
-                    TaskState.<List<CommandArg>>builder()
-                            .currentStage(0)
-                            .totalStage(1)
-                            .message(translatable("core.game.instance.launchAsync.pre_launching"))
-                            .build()
+                    new TaskState<>(
+                            TaskState.Type.EXECUTING,
+                            null,
+                            null,
+                            1, 0, translatable("core.game.instance.launchAsync.pre_launching")
+                    )
             );
             final Optional<String> nameOverride = Optional.ofNullable(config.getLaunchConfig().getLauncherNameOverride());
             final Optional<String> versionOverride = Optional.ofNullable(config.getLaunchConfig().getLauncherVersionOverride());

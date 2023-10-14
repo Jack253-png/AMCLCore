@@ -54,7 +54,7 @@ class Main {
 
         }
 
-        fun launchTest(account: AbstractAccount?) {
+        private fun launchTest(account: AbstractAccount?) {
             GameRepository.of("D:\\mods\\minecraft\\.minecraft", "My minecraft repository")
                 .ifPresent { repository: GameRepository ->
                     try {

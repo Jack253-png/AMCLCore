@@ -87,23 +87,24 @@ public abstract class AbstractTask<T> extends RecursiveTask<Optional<T>> {
     protected abstract T call() throws Exception;
 
     private void stateFinish(ImmutablePair<Integer, Integer> lastState, T result) {
-        setState(TaskState.<T>builder()
-                .taskType(TaskState.Type.FINISHED)
-                .totalStage(lastState.getKey())
-                .currentStage(lastState.getKey())
-                .result(result)
-                .build()
+        setState(
+                new TaskState<>(
+                        TaskState.Type.FINISHED,
+                        null,
+                        result,
+                        lastState.getKey(), lastState.getKey(), null
+                )
         );
     }
 
     private void stateExc(ImmutablePair<Integer, Integer> lastState, Throwable e) {
-        setState(TaskState.<T>builder()
-                .message(translatable("core.concurrent.base.event.exception.text", e.getClass().getName(), this.getTaskName().getText()))
-                .throwable(e)
-                .totalStage(lastState.getKey())
-                .currentStage(lastState.getValue())
-                .taskType(TaskState.Type.ERROR)
-                .build()
+        setState(
+                new TaskState<>(
+                        TaskState.Type.ERROR,
+                        e,
+                        null,
+                        lastState.getKey(), lastState.getValue(), translatable("core.concurrent.base.event.exception.text", e.getClass().getName(), this.getTaskName().getText())
+                )
         );
     }
 

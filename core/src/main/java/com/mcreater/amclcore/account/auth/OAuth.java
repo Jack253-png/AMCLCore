@@ -403,29 +403,33 @@ public enum OAuth {
             DeviceCodeConverterModel deviceCode;
             // TODO fetch device code
             {
-                setState(TaskState.<MicrosoftAccount>builder()
-                        .totalStage(3)
-                        .currentStage(0)
-                        .message(translatable("core.oauth.login.start"))
-                        .build());
+                setState(new TaskState<>(
+                        TaskState.Type.EXECUTING,
+                        null,
+                        null,
+                        3, 0, translatable("core.oauth.login.start")
+                ));
                 deviceCodeRaw = fetchDeviceToken(requestHandler);
             }
             // TODO let user login
             {
-                setState(TaskState.<MicrosoftAccount>builder()
-                        .totalStage(3)
-                        .currentStage(1)
-                        .message(translatable("core.oauth.deviceCode.pre.text"))
-                        .build());
+                //
+                setState(new TaskState<>(
+                        TaskState.Type.EXECUTING,
+                        null,
+                        null,
+                        3, 1, translatable("core.oauth.deviceCode.pre.text")
+                ));
                 deviceCode = fetchUserLoginToken(deviceCodeRaw);
             }
             // TODO fork & delegate internal task to login minecraft
             {
-                setState(TaskState.<MicrosoftAccount>builder()
-                        .totalStage(3)
-                        .currentStage(2)
-                        .message(translatable("core.oauth.deviceCode.after.text"))
-                        .build());
+                setState(new TaskState<>(
+                        TaskState.Type.EXECUTING,
+                        null,
+                        null,
+                        3, 1, translatable("core.oauth.deviceCode.after.text")
+                ));
                 return new OAuthLoginInternalTask(deviceCode)
                         .bindTo(this)
                         .get()
@@ -452,39 +456,43 @@ public enum OAuth {
             // TODO login XBox Live
             {
                 xblToken = fetchXBLUser(model);
-                setState(TaskState.<MicrosoftAccount>builder()
-                        .totalStage(5)
-                        .currentStage(1)
-                        .message(translatable("core.oauth.xbl.after.text"))
-                        .build());
+                setState(new TaskState<>(
+                        TaskState.Type.EXECUTING,
+                        null,
+                        null,
+                        5, 1, translatable("core.oauth.xbl.after.text")
+                ));
             }
             // TODO login XBox XSTS
             {
                 xstsToken = fetchXSTSUser(xblToken);
-                setState(TaskState.<MicrosoftAccount>builder()
-                        .totalStage(5)
-                        .currentStage(2)
-                        .message(translatable("core.oauth.xsts.after.text"))
-                        .build());
+                setState(new TaskState<>(
+                        TaskState.Type.EXECUTING,
+                        null,
+                        null,
+                        5, 2, translatable("core.oauth.xsts.after.text")
+                ));
             }
-            // TODO login minecraft and check account (to be done)
+            // TODO login minecraft and check account
             {
                 minecraftUser = fetchMinecraftUser(xstsToken);
-                setState(TaskState.<MicrosoftAccount>builder()
-                        .totalStage(5)
-                        .currentStage(3)
-                        .message(translatable("core.oauth.mclogin.after.text"))
-                        .build());
+                setState(new TaskState<>(
+                        TaskState.Type.EXECUTING,
+                        null,
+                        null,
+                        5, 3, translatable("core.oauth.mclogin.after.text")
+                ));
             }
             // TODO check minecraft store and create instance of MicrosoftAccount
             {
                 if (!checkMinecraftStore(minecraftUser)) throw new OAuthMinecraftStoreCheckException();
                 account = MicrosoftAccount.create(minecraftUser, model);
-                setState(TaskState.<MicrosoftAccount>builder()
-                        .totalStage(5)
-                        .currentStage(4)
-                        .message(translatable("core.oauth.storeCheck.after.text"))
-                        .build());
+                setState(new TaskState<>(
+                        TaskState.Type.EXECUTING,
+                        null,
+                        null,
+                        5, 4, translatable("core.oauth.storeCheck.after.text")
+                ));
             }
 
             account.fetchProfileAsync()

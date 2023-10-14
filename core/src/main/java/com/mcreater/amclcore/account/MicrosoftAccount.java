@@ -328,11 +328,12 @@ public class MicrosoftAccount extends AbstractAccount {
             TokenResponseModel model;
             // TODO Refresh with RefreshToken
             {
-                setState(TaskState.<Void>builder()
-                        .totalStage(5)
-                        .currentStage(1)
-                        .message(translatable("core.oauth.refreshAccount.pre.text"))
-                        .build()
+                setState(new TaskState<>(
+                                TaskState.Type.EXECUTING,
+                                null,
+                                null,
+                                5, 1, translatable("core.oauth.refreshAccount.pre.text")
+                        )
                 );
                 model = HttpClientWrapper.create(HttpClientWrapper.Method.POST)
                         .uri(apiAccessor.getTokenUrl())
@@ -348,21 +349,23 @@ public class MicrosoftAccount extends AbstractAccount {
             }
             // TODO Update refresh token
             {
-                setState(TaskState.<Void>builder()
-                        .totalStage(5)
-                        .currentStage(2)
-                        .message(translatable("core.oauth.refreshAccount.refreshingToken.text"))
-                        .build()
+                setState(new TaskState<>(
+                                TaskState.Type.EXECUTING,
+                                null,
+                                null,
+                                5, 2, translatable("core.oauth.refreshAccount.refreshingToken.text")
+                        )
                 );
                 refreshToken = model.getRefreshToken();
             }
             // TODO Fork internal task for fetching AccessToken
             {
-                setState(TaskState.<Void>builder()
-                        .totalStage(5)
-                        .currentStage(3)
-                        .message(translatable("core.oauth.refreshAccount.refreshingBase.text"))
-                        .build()
+                setState(new TaskState<>(
+                                TaskState.Type.EXECUTING,
+                                null,
+                                null,
+                                5, 3, translatable("core.oauth.refreshAccount.refreshingBase.text")
+                        )
                 );
                 MicrosoftAccount accountNew = apiAccessor.createLoginInternalTask(
                                 DeviceCodeConverterModel.builder()
@@ -376,11 +379,12 @@ public class MicrosoftAccount extends AbstractAccount {
             }
             // TODO Update profile
             {
-                setState(TaskState.<Void>builder()
-                        .totalStage(5)
-                        .currentStage(4)
-                        .message(translatable("core.oauth.refreshAccount.updateProfile.text"))
-                        .build()
+                setState(new TaskState<>(
+                                TaskState.Type.EXECUTING,
+                                null,
+                                null,
+                                5, 4, translatable("core.oauth.refreshAccount.updateProfile.text")
+                        )
                 );
                 fetchProfileAsync()
                         .bindTo(this)
