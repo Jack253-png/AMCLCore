@@ -113,10 +113,8 @@ class Main {
                 .addStateConsumer {
                     AbstractTask.printTextData(it) { message: String? -> logger.info(message) }
                 }
-                .addBindConsumer { it2 ->
-                    it2.addStateConsumer {
-                        AbstractTask.printTextData(it) { it3 -> logger.info(it3) }
-                    }
+                .addBindConsumer {
+
                 }
                 .submitTo(ConcurrentExecutors.OAUTH_LOGIN_EXECUTOR)
                 .get()

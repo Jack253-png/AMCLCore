@@ -306,7 +306,7 @@ class MicrosoftAccount : AbstractAccount {
             // TODO Refresh with RefreshToken
             run {
                 setState(
-                    TaskState<Void>(
+                    TaskState(
                         taskType = TaskState.Type.EXECUTING,
                         totalStage = 5,
                         currentStage = 1,
@@ -328,7 +328,7 @@ class MicrosoftAccount : AbstractAccount {
             // TODO Update refresh token
             run {
                 setState(
-                    TaskState<Void>(
+                    TaskState(
                         taskType = TaskState.Type.EXECUTING,
                         totalStage = 5,
                         currentStage = 2,
@@ -340,7 +340,7 @@ class MicrosoftAccount : AbstractAccount {
             // TODO Fork internal task for fetching AccessToken
             run {
                 setState(
-                    TaskState<Void>(
+                    TaskState(
                         taskType = TaskState.Type.EXECUTING,
                         totalStage = 5,
                         currentStage = 3,
@@ -358,7 +358,7 @@ class MicrosoftAccount : AbstractAccount {
             // TODO Update profile
             run {
                 setState(
-                    TaskState<Void>(
+                    TaskState(
                         taskType = TaskState.Type.EXECUTING,
                         totalStage = 5,
                         currentStage = 4,
@@ -367,7 +367,7 @@ class MicrosoftAccount : AbstractAccount {
                 )
                 fetchProfileAsync()
                     .bindTo(this)
-                    ?.get()
+                    .get()
             }
         }
 
@@ -435,11 +435,11 @@ class MicrosoftAccount : AbstractAccount {
         override fun execute() {
             val changeable: Boolean = (checkAccountNameChangeableAsync((newName)!!)
                 .bindTo(this)
-                ?.get()
+                .get()
                 ?.orElse(false))!!
             val model: Optional<MinecraftNameChangedTimeRequestModel?>? = checkAccountNameChangedTimeAsync()
                 .bindTo(this)
-                ?.get()
+                .get()
             val curr: Date = Date.from(
                 model?.map { it?.changedAt }
                     ?.orElse(StandardDate.DEFAULT)

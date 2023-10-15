@@ -6,10 +6,10 @@ import com.mcreater.amclcore.i18n.Text
 
 
 data class ObjectTask<T>(
-    private val result: T? = null,
+    private val result: T,
     private val text: Text? = null
 ) : AbstractTask<T>() {
-    override fun call(): T? {
+    override fun call(): T {
         return result
     }
 
