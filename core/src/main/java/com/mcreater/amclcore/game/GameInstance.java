@@ -267,20 +267,21 @@ public class GameInstance {
 
             if (exitRes != 0) {
                 setState(
-                        TaskState.<Void>builder()
-                                .totalStage(1)
-                                .currentStage(1)
-                                .message(translatable("core.game.instance.launch.exit.crash"))
-                                .taskType(TaskState.Type.ERROR)
-                                .build()
+                        new TaskState<>(
+                                TaskState.Type.ERROR,
+                                null,
+                                null,
+                                1, 1, translatable("core.game.instance.launch.exit.crash")
+                        )
                 );
             } else {
                 setState(
-                        TaskState.<Void>builder()
-                                .totalStage(1)
-                                .currentStage(1)
-                                .message(translatable("core.game.instance.launch.exit.normal"))
-                                .build()
+                        new TaskState<>(
+                                TaskState.Type.FINISHED,
+                                null,
+                                null,
+                                1, 1, translatable("core.game.instance.launch.exit.normal")
+                        )
                 );
             }
         }
@@ -296,11 +297,12 @@ public class GameInstance {
 
         protected List<CommandArg> call() throws Exception {
             setState(
-                    TaskState.<List<CommandArg>>builder()
-                            .currentStage(0)
-                            .totalStage(1)
-                            .message(translatable("core.game.instance.launchAsync.pre_launching"))
-                            .build()
+                    new TaskState<>(
+                            TaskState.Type.EXECUTING,
+                            null,
+                            null,
+                            1, 0, translatable("core.game.instance.launchAsync.pre_launching")
+                    )
             );
             final Optional<String> nameOverride = Optional.ofNullable(config.getLaunchConfig().getLauncherNameOverride());
             final Optional<String> versionOverride = Optional.ofNullable(config.getLaunchConfig().getLauncherVersionOverride());
@@ -409,72 +411,72 @@ public class GameInstance {
                 if (model.getArguments() == null || model.getArguments().getJvmArguments() == null) {
                     args.addAll(
                             JsonUtil.createList(
-                                    JVMArgument.FILE_ENCODING.parseMap(
+                                    JVMArgument.getFILE_ENCODING().parseMap(
                                             JsonUtil.createSingleMap("encoding", "UTF-8")
                                     ),
-                                    JVMArgument.MINECRAFT_CLIENT_JAR.parseMap(
+                                    JVMArgument.getMINECRAFT_CLIENT_JAR().parseMap(
                                             JsonUtil.createSingleMap("jar_path", minecraftMainJar)
                                     ),
-                                    JVMArgument.UNLOCK_EXPERIMENTAL_OPTIONS,
+                                    JVMArgument.getUNLOCK_EXPERIMENTAL_OPTIONS(),
 
-                                    JVMArgument.USE_G1GC,
-                                    JVMArgument.GC_YOUNG_SIZE_PERCENT.parseMap(
+                                    JVMArgument.getUSE_G1GC(),
+                                    JVMArgument.getGC_YOUNG_SIZE_PERCENT().parseMap(
                                             JsonUtil.createSingleMap("percent", 20)
                                     ),
-                                    JVMArgument.GC_RESERVE_SIZE_PERCENT.parseMap(
+                                    JVMArgument.getGC_RESERVE_SIZE_PERCENT().parseMap(
                                             JsonUtil.createSingleMap("percent", 20)
                                     ),
-                                    JVMArgument.MAX_GC_PAUSE.parseMap(
+                                    JVMArgument.getMAX_GC_PAUSE().parseMap(
                                             JsonUtil.createSingleMap("millis", 50)
                                     ),
-                                    JVMArgument.HEAP_REGION_SIZE.parseMap(
+                                    JVMArgument.getHEAP_REGION_SIZE().parseMap(
                                             JsonUtil.createSingleMap("size",
                                                     MemorySize.create(16, MemorySize.MemoryUnit.MEGABYTES)
                                             )
                                     ),
-                                    JVMArgument.ADAPTIVE_SIZE_POLICY,
-                                    JVMArgument.STACK_TRACE_FAST_THROW,
-                                    JVMArgument.DONT_COMPILE_HUGE_METHODS,
+                                    JVMArgument.getADAPTIVE_SIZE_POLICY(),
+                                    JVMArgument.getSTACK_TRACE_FAST_THROW(),
+                                    JVMArgument.getDONT_COMPILE_HUGE_METHODS(),
 
-                                    JVMArgument.FML_IGNORE_INVAILD_CERTIFICATES.parseMap(
+                                    JVMArgument.getFML_IGNORE_INVAILD_CERTIFICATES().parseMap(
                                             JsonUtil.createSingleMap("enable", true)
                                     ),
-                                    JVMArgument.FML_IGNORE_PATCH_DISCREPANCIES.parseMap(
+                                    JVMArgument.getFML_IGNORE_PATCH_DISCREPANCIES().parseMap(
                                             JsonUtil.createSingleMap("enable", true)
                                     ),
-                                    JVMArgument.USE_CODEBASE_ONLY.parseMap(
+                                    JVMArgument.getUSE_CODEBASE_ONLY().parseMap(
                                             JsonUtil.createSingleMap("enable", true)
                                     ),
-                                    JVMArgument.TRUST_URL_CODE_BASE.parseMap(
+                                    JVMArgument.getTRUST_URL_CODE_BASE().parseMap(
                                             JsonUtil.createSingleMap("enable", false)
                                     ),
                                     // TODO log4j2 bug fix
-                                    JVMArgument.DISABLE_MSG_LOOPUPS.parseMap(
+                                    JVMArgument.getDISABLE_MSG_LOOPUPS().parseMap(
                                             JsonUtil.createSingleMap("enable", true)
                                     ),
-                                    JVMArgument.INTEL_PERFORMANCE,
+                                    JVMArgument.getINTEL_PERFORMANCE(),
                                     // TODO to be done
-                                    JVMArgument.JAVA_LIBRARY_PATH.parseMap(
+                                    JVMArgument.getJAVA_LIBRARY_PATH().parseMap(
                                             JsonUtil.createSingleMap("lib_path", nativePath)
                                     ),
-                                    JVMArgument.MINECRAFT_LAUNCHER_BRAND.parseMap(
+                                    JVMArgument.getMINECRAFT_LAUNCHER_BRAND().parseMap(
                                             JsonUtil.createSingleMap("launcher_brand", nameOverride.orElse(getLauncherName()))
                                     ),
-                                    JVMArgument.MINECRAFT_LAUNCHER_VERSION.parseMap(
+                                    JVMArgument.getMINECRAFT_LAUNCHER_VERSION().parseMap(
                                             JsonUtil.createSingleMap("launcher_version", versionOverride.orElse(getLauncherFullVersion()))
                                     ),
-                                    JVMArgument.STDOUT_ENCODING.parseMap(
+                                    JVMArgument.getSTDOUT_ENCODING().parseMap(
                                             JsonUtil.createSingleMap("encoding", "UTF-8")
                                     ),
-                                    JVMArgument.STDERR_ENCODING.parseMap(
+                                    JVMArgument.getSTDERR_ENCODING().parseMap(
                                             JsonUtil.createSingleMap("encoding", "UTF-8")
                                     ),
-                                    JVMArgument.CLASSPATH,
+                                    JVMArgument.getCLASSPATH(),
                                     CommandArg.create(classpath),
-                                    JVMArgument.MAX_HEAP_SIZE.parseMap(
+                                    JVMArgument.getMAX_HEAP_SIZE().parseMap(
                                             JsonUtil.createSingleMap("size", config.getLaunchConfig().getMemory().getMaxMemory())
                                     ),
-                                    JVMArgument.MIN_HEAP_SIZE.parseMap(
+                                    JVMArgument.getMIN_HEAP_SIZE().parseMap(
                                             JsonUtil.createSingleMap("size", config.getLaunchConfig().getMemory().getMinMemory())
                                     )
                             )
@@ -493,54 +495,53 @@ public class GameInstance {
 
                     args.addAll(
                             JsonUtil.createList(
-                                    JVMArgument.FILE_ENCODING.parseMap(
+                                    JVMArgument.getFILE_ENCODING().parseMap(
                                             JsonUtil.createSingleMap("encoding", "UTF-8")
                                     ),
                                     // TODO to be done
-                                    JVMArgument.MINECRAFT_CLIENT_JAR.parseMap(
+                                    JVMArgument.getMINECRAFT_CLIENT_JAR().parseMap(
                                             JsonUtil.createSingleMap("jar_path", minecraftMainJar)
                                     ),
-                                    JVMArgument.UNLOCK_EXPERIMENTAL_OPTIONS,
-
-                                    JVMArgument.USE_G1GC,
-                                    JVMArgument.GC_YOUNG_SIZE_PERCENT.parseMap(
+                                    JVMArgument.getUNLOCK_EXPERIMENTAL_OPTIONS(),
+                                    JVMArgument.getUSE_G1GC(),
+                                    JVMArgument.getGC_YOUNG_SIZE_PERCENT().parseMap(
                                             JsonUtil.createSingleMap("percent", 20)
                                     ),
-                                    JVMArgument.GC_RESERVE_SIZE_PERCENT.parseMap(
+                                    JVMArgument.getGC_RESERVE_SIZE_PERCENT().parseMap(
                                             JsonUtil.createSingleMap("percent", 20)
                                     ),
-                                    JVMArgument.MAX_GC_PAUSE.parseMap(
+                                    JVMArgument.getMAX_GC_PAUSE().parseMap(
                                             JsonUtil.createSingleMap("millis", 50)
                                     ),
-                                    JVMArgument.HEAP_REGION_SIZE.parseMap(
+                                    JVMArgument.getHEAP_REGION_SIZE().parseMap(
                                             JsonUtil.createSingleMap("size",
                                                     MemorySize.create(16, MemorySize.MemoryUnit.MEGABYTES)
                                             )
                                     ),
-                                    JVMArgument.ADAPTIVE_SIZE_POLICY,
-                                    JVMArgument.STACK_TRACE_FAST_THROW,
-                                    JVMArgument.DONT_COMPILE_HUGE_METHODS,
+                                    JVMArgument.getADAPTIVE_SIZE_POLICY(),
+                                    JVMArgument.getSTACK_TRACE_FAST_THROW(),
+                                    JVMArgument.getDONT_COMPILE_HUGE_METHODS(),
 
-                                    JVMArgument.FML_IGNORE_INVAILD_CERTIFICATES.parseMap(
+                                    JVMArgument.getFML_IGNORE_INVAILD_CERTIFICATES().parseMap(
                                             JsonUtil.createSingleMap("enable", true)
                                     ),
-                                    JVMArgument.FML_IGNORE_PATCH_DISCREPANCIES.parseMap(
+                                    JVMArgument.getFML_IGNORE_PATCH_DISCREPANCIES().parseMap(
                                             JsonUtil.createSingleMap("enable", true)
                                     ),
-                                    JVMArgument.USE_CODEBASE_ONLY.parseMap(
+                                    JVMArgument.getUSE_CODEBASE_ONLY().parseMap(
                                             JsonUtil.createSingleMap("enable", true)
                                     ),
-                                    JVMArgument.TRUST_URL_CODE_BASE.parseMap(
+                                    JVMArgument.getTRUST_URL_CODE_BASE().parseMap(
                                             JsonUtil.createSingleMap("enable", false)
                                     ),
                                     // TODO log4j2 bug fix
-                                    JVMArgument.DISABLE_MSG_LOOPUPS.parseMap(
+                                    JVMArgument.getDISABLE_MSG_LOOPUPS().parseMap(
                                             JsonUtil.createSingleMap("enable", true)
                                     ),
-                                    JVMArgument.STDOUT_ENCODING.parseMap(
+                                    JVMArgument.getSTDOUT_ENCODING().parseMap(
                                             JsonUtil.createSingleMap("encoding", "UTF-8")
                                     ),
-                                    JVMArgument.STDERR_ENCODING.parseMap(
+                                    JVMArgument.getSTDERR_ENCODING().parseMap(
                                             JsonUtil.createSingleMap("encoding", "UTF-8")
                                     )
                             )
@@ -556,10 +557,10 @@ public class GameInstance {
 
                     args.addAll(
                             JsonUtil.createList(
-                                    JVMArgument.MAX_HEAP_SIZE.parseMap(
+                                    JVMArgument.getMAX_HEAP_SIZE().parseMap(
                                             JsonUtil.createSingleMap("size", config.getLaunchConfig().getMemory().getMaxMemory())
                                     ),
-                                    JVMArgument.MIN_HEAP_SIZE.parseMap(
+                                    JVMArgument.getMIN_HEAP_SIZE().parseMap(
                                             JsonUtil.createSingleMap("size", config.getLaunchConfig().getMemory().getMinMemory())
                                     )
                             )

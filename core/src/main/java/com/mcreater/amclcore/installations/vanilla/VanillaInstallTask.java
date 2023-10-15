@@ -29,11 +29,12 @@ public class VanillaInstallTask extends AbstractAction {
     private MinecraftMirroredResourceURL.MirrorServer server;
 
     protected void execute() throws Exception {
-        setState(TaskState.<Void>builder()
-                .message(translatable("core.install.vanilla.versionjson"))
-                .totalStage(2)
-                .currentStage(0)
-                .build()
+        setState(new TaskState<>(
+                        TaskState.Type.EXECUTING,
+                        null,
+                        null,
+                        2, 0, translatable("core.install.vanilla.versionjson")
+                )
         );
         LauncherMetaModel launchermeta = new LauncherMetadataFetchTask(server)
                 .bindTo(this)
@@ -54,23 +55,24 @@ public class VanillaInstallTask extends AbstractAction {
                 .bindTo(this)
                 .get();
         Mapping.patchVersion(json);
-
-        setState(TaskState.<Void>builder()
-                .message(translatable("core.install.vanilla.fixresources"))
-                .totalStage(2)
-                .currentStage(1)
-                .build()
+        setState(new TaskState<>(
+                        TaskState.Type.EXECUTING,
+                        null,
+                        null,
+                        2, 1, translatable("core.install.vanilla.fixresources")
+                )
         );
 
         new VanillaFixTask(repository, json, server)
                 .bindTo(this)
                 .get();
 
-        setState(TaskState.<Void>builder()
-                .message(fixed(""))
-                .totalStage(2)
-                .currentStage(2)
-                .build()
+        setState(new TaskState<>(
+                        TaskState.Type.EXECUTING,
+                        null,
+                        null,
+                        2, 2, fixed("")
+                )
         );
     }
 

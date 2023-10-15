@@ -114,11 +114,13 @@ publishing {
 }
 compileKotlin {
     kotlinOptions {
-        jvmTarget = "17"
+        jvmTarget = "1.8"
+        options.verbose = true
     }
 }
 compileTestKotlin {
     kotlinOptions {
-        jvmTarget = "17"
+        jvmTarget = "1.8"
+        options.verbose = true
     }
 }

@@ -30,21 +30,21 @@ public class DownloadTask extends AbstractAction {
 
     protected void execute() throws Exception {
         setState(
-                TaskState.<Void>builder()
-                        .totalStage(3)
-                        .currentStage(0)
-                        .message(fixed(""))
-                        .taskType(TaskState.Type.EXECUTING)
-                        .build()
+                new TaskState<>(
+                        TaskState.Type.EXECUTING,
+                        null,
+                        null,
+                        3, 0, fixed("")
+                )
         );
 
         setState(
-                TaskState.<Void>builder()
-                        .totalStage(3)
-                        .currentStage(1)
-                        .message(translatable("core.download.checkhash"))
-                        .taskType(TaskState.Type.EXECUTING)
-                        .build()
+                new TaskState<>(
+                        TaskState.Type.EXECUTING,
+                        null,
+                        null,
+                        3, 1, translatable("core.download.checkhash")
+                )
         );
         boolean needDownload = true;
         if (sha1String != null && local.exists()) needDownload = !sha1String.validate(local);
@@ -55,12 +55,12 @@ public class DownloadTask extends AbstractAction {
         local.createNewFile();
 
         setState(
-                TaskState.<Void>builder()
-                        .totalStage(3)
-                        .currentStage(2)
-                        .message(translatable("core.download.downloading"))
-                        .taskType(TaskState.Type.EXECUTING)
-                        .build()
+                new TaskState<>(
+                        TaskState.Type.EXECUTING,
+                        null,
+                        null,
+                        3, 2, translatable("core.download.downloading")
+                )
         );
 
         while (true) {
@@ -80,12 +80,12 @@ public class DownloadTask extends AbstractAction {
         }
 
         setState(
-                TaskState.<Void>builder()
-                        .totalStage(3)
-                        .currentStage(3)
-                        .message(translatable("core.download.complete"))
-                        .taskType(TaskState.Type.EXECUTING)
-                        .build()
+                new TaskState<>(
+                        TaskState.Type.EXECUTING,
+                        null,
+                        null,
+                        3, 3, translatable("core.download.complete")
+                )
         );
     }
 

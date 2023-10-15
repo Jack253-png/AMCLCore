@@ -32,14 +32,13 @@ class Main {
 
         @JvmStatic
         fun main(args: Array<String>) {
-            println(
-                GSON_PARSER.toJson(
-                    AbstractGenshinGachaApi.getCnInstance().genshinGachaFetchAsync()
-                        .submitTo(ConcurrentExecutors.OAUTH_LOGIN_EXECUTOR).get().get()
-                )
+            GSON_PARSER.toJson(
+                AbstractGenshinGachaApi.getCnInstance().genshinGachaFetchAsync()
+                    .submitTo(ConcurrentExecutors.OAUTH_LOGIN_EXECUTOR).get().get(),
+                System.out
             )
-            // var acc = loginTest()
-            // launchTest(loginTest());
+            println(loginTest()?.accountName)
+            // launchTest(loginTest())
             /*GameRepository.of("D:\\basetest", "My minecraft repository")
                 .ifPresent {
                     try {
@@ -56,7 +55,7 @@ class Main {
 
         }
 
-        fun launchTest(account: AbstractAccount?) {
+        private fun launchTest(account: AbstractAccount?) {
             GameRepository.of("D:\\mods\\minecraft\\.minecraft", "My minecraft repository")
                 .ifPresent { repository: GameRepository ->
                     try {
@@ -114,10 +113,8 @@ class Main {
                 .addStateConsumer {
                     AbstractTask.printTextData(it) { message: String? -> logger.info(message) }
                 }
-                .addBindConsumer { it2 ->
-                    it2.addStateConsumer {
-                        AbstractTask.printTextData(it) { it3 -> logger.info(it3) }
-                    }
+                .addBindConsumer {
+
                 }
                 .submitTo(ConcurrentExecutors.OAUTH_LOGIN_EXECUTOR)
                 .get()

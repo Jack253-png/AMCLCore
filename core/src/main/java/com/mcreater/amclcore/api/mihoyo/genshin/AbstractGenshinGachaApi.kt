@@ -31,7 +31,6 @@ interface AbstractGenshinGachaApi {
         AbstractTask<GenshinGachaModel?>() {
         @Throws(Exception::class)
         override fun call(): GenshinGachaModel {
-            println(locale.toString())
             return HttpClientWrapper.create(HttpClientWrapper.Method.GET)
                 .timeout(5000)
                 .reqTimeout(5000)

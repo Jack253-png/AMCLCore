@@ -51,7 +51,7 @@ public class AbstractAccountAdapter extends TypeAdapter<AbstractAccount> {
                                     .map(OfflineAccount.Texture::getSource)
                                     .map(File::getAbsolutePath)
                                     .orElse(null))
-                    .name("isSlim").value(value.toOffLineAccount().isSkinSlim())
+                    .name("isSlim").value(value.toOffLineAccount().getSkinSlim())
                     .endObject()
                     .name("custom_cape").beginObject()
                     .name("selected").value(value.toOffLineAccount().getSelectedCape())
