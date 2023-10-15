@@ -1,7 +1,7 @@
 package com.mcreater.amclcore.installations.common;
 
+import com.mcreater.amclcore.concurrent.AdvancedForkJoinPool;
 import com.mcreater.amclcore.concurrent.ConcurrentExecutors;
-import com.mcreater.amclcore.concurrent.ExtendForkJoinPool;
 import com.mcreater.amclcore.concurrent.task.AbstractAction;
 import com.mcreater.amclcore.concurrent.task.AbstractTask;
 import com.mcreater.amclcore.game.GameManifestJson;
@@ -21,7 +21,7 @@ import java.nio.file.Path;
 import java.util.List;
 import java.util.Vector;
 
-import static com.mcreater.amclcore.concurrent.ConcurrentExecutors.excHandler;
+import static com.mcreater.amclcore.concurrent.ConcurrentExecutors.getExcHandler;
 import static com.mcreater.amclcore.i18n.I18NManager.translatable;
 import static com.mcreater.amclcore.util.url.DownloadTask.vaildate;
 
@@ -37,10 +37,10 @@ public class VanillaFixTask extends AbstractAction {
                 .bindTo(this)
                 .get();
 
-        ExtendForkJoinPool dlPool = new ExtendForkJoinPool(
+        AdvancedForkJoinPool dlPool = new AdvancedForkJoinPool(
                 128,
-                ConcurrentExecutors.ForkJoinWorkerThreadFactoryImpl.INSTANCE,
-                excHandler,
+                ConcurrentExecutors.ForkJoinWorkerThreadFactoryImpl.getINSTANCE(),
+                getExcHandler(),
                 true
         );
 

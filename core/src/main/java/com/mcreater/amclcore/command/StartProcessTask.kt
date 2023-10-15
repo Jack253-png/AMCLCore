@@ -2,8 +2,8 @@ package com.mcreater.amclcore.command
 
 import com.mcreater.amclcore.command.OutputParser.OutputLine
 import com.mcreater.amclcore.command.OutputParser.OutputLine.Companion.create
+import com.mcreater.amclcore.concurrent.AdvancedForkJoinPool
 import com.mcreater.amclcore.concurrent.ConcurrentExecutors
-import com.mcreater.amclcore.concurrent.ExtendForkJoinPool
 import com.mcreater.amclcore.concurrent.TaskState
 import com.mcreater.amclcore.concurrent.task.AbstractTask
 import com.mcreater.amclcore.concurrent.task.model.RunnableAction
@@ -26,7 +26,7 @@ class StartProcessTask private constructor(private val args: List<CommandArg>) :
 
     @Getter
     private val logLines: MutableList<OutputLine> = Vector()
-    private val pool = ExtendForkJoinPool(
+    private val pool = AdvancedForkJoinPool(
         2,
         ConcurrentExecutors.ForkJoinWorkerThreadFactoryImpl.INSTANCE,
         ConcurrentExecutors.excHandler,

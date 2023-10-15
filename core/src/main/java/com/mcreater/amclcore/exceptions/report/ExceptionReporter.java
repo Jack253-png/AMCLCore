@@ -26,13 +26,13 @@ public class ExceptionReporter {
     private static final List<BiConsumer<Throwable, ExceptionType>> reporters = new Vector<>();
 
     static {
-        ConcurrentExecutors.INTERFACE_EVENT_EXECUTORS.put(ExceptionReporter.class, ConcurrentExecutors.createInterfaceEventExecutor());
+        ConcurrentExecutors.getINTERFACE_EVENT_EXECUTORS().put(ExceptionReporter.class, ConcurrentExecutors.createInterfaceEventExecutor());
     }
 
     public static void report(Throwable throwable, ExceptionType type) {
         EVENT_LOGGER.error(translatable("core.exception.reporting").getText());
         throwable.printStackTrace();
-        ConcurrentExecutors.INTERFACE_EVENT_EXECUTORS.get(ExceptionReporter.class).execute(() -> getReporters().parallelStream().forEach(c -> c.accept(throwable, type)));
+        ConcurrentExecutors.getINTERFACE_EVENT_EXECUTORS().get(ExceptionReporter.class).execute(() -> getReporters().parallelStream().forEach(c -> c.accept(throwable, type)));
     }
 
     public static void report(Throwable throwable) {
