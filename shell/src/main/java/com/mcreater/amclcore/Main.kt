@@ -37,7 +37,8 @@ class Main {
                     .submitTo(ConcurrentExecutors.OAUTH_LOGIN_EXECUTOR).get().get(),
                 System.out
             )
-            launchTest(loginTest())
+            println(loginTest()?.accountName)
+            // launchTest(loginTest())
             /*GameRepository.of("D:\\basetest", "My minecraft repository")
                 .ifPresent {
                     try {
